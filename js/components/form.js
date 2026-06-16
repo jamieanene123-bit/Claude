@@ -466,6 +466,21 @@
     var label = $('fp-label'); if (label) label.textContent = p.pct + ' % ausgefüllt' + (p.pct === 100 ? ' — bereit zum Absenden ✓' : '');
   }
 
+  /* ---------- Letzten Standort merken (Komfort) ---------- */
+  var LOC_KEY = 'tds_last_loc';
+  function saveLastLocation(land, region) {
+    try { global.localStorage.setItem(LOC_KEY, JSON.stringify({ land: land, region: region })); } catch (e) {}
+  }
+  function applyLastLocation() {
+    if ($('land').value) return;
+    var loc;
+    try { loc = JSON.parse(global.localStorage.getItem(LOC_KEY) || 'null'); } catch (e) { loc = null; }
+    if (!loc || !loc.land) return;
+    $('land').value = loc.land;
+    $('land').dispatchEvent(new Event('change'));
+    if (loc.region && $('region')) $('region').value = loc.region;
+  }
+
   function wire() {
     fillBudgets('CHF');
     showDraftBanner();
@@ -507,6 +522,9 @@
     $('budget-von').addEventListener('change', liveCheckBudget);
     $('budget-bis').addEventListener('change', liveCheckBudget);
 
+    // Komfort: zuletzt genutztes Land/Region vorbelegen (nur ohne Entwurf)
+    if (!loadDraft()) { applyLastLocation(); updateProgress(); }
+
     $('frm').addEventListener('submit', function (e) {
       e.preventDefault();
       if (!validate()) return;
@@ -515,7 +533,9 @@
       btn.disabled = true;
       btn.textContent = 'Wird gespeichert …';
 
-      store.create(collect()).then(function (record) {
+      var values = collect();
+      saveLastLocation(values.land, values.region);
+      store.create(values).then(function (record) {
         clearDraft();
         if (global.TDS.toast) global.TDS.toast.success('Anfrage gespeichert');
         router.navigate('/success/' + record.id);

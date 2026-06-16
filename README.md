@@ -93,7 +93,7 @@ tests/       framework · suite · node (Unit-Runner) · smoke (Render-Runner)
 ```
 
 Details & Erweiterungspfade (Backend, Login, Stripe): siehe
-[`ARCHITECTURE.md`](ARCHITECTURE.md).
+[`ARCHITECTURE.md`](ARCHITECTURE.md). Änderungsverlauf: [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Bewusst erweiterbar
 

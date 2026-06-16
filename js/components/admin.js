@@ -16,15 +16,28 @@
   var fmt = global.TDS.format;
   var toast = global.TDS.toast;
 
-  // Tabellenzustand (in-memory)
+  // Tabellenzustand (in-memory, persistiert über Sitzungen)
   var PAGE = 8;
+  var SKEY = 'tds_admin_state';
   var state = { q: '', status: 'Alle', sort: 'date-desc', limit: PAGE };
   var allRows = [];
 
   function $(id) { return global.document.getElementById(id); }
 
+  function loadState() {
+    try {
+      var s = JSON.parse(global.localStorage.getItem(SKEY) || 'null');
+      if (s) { state.q = s.q || ''; state.status = s.status || 'Alle'; state.sort = s.sort || 'date-desc'; }
+    } catch (e) {}
+    state.limit = PAGE;
+  }
+  function saveState() {
+    try { global.localStorage.setItem(SKEY, JSON.stringify({ q: state.q, status: state.status, sort: state.sort })); } catch (e) {}
+  }
+
   /* ============== LISTE / DASHBOARD ============== */
   function list() {
+    loadState();
     Promise.all([store.list(), store.stats()]).then(function (res) {
       allRows = res[0];
       var stats = res[1];
@@ -166,6 +179,7 @@
     var dir = (parts[0] === key && parts[1] === 'asc') ? 'desc' : 'asc';
     state.sort = key + '-' + dir;
     state.limit = PAGE;
+    saveState();
     var sel = $('sort'); if (sel) sel.value = state.sort; // falls Option existiert
     syncSortHeaders();
     refreshTable();
@@ -250,8 +264,8 @@
 
   function wireList() {
     var search = $('search');
-    search.addEventListener('input', global.TDS.dom.debounce(function () { state.q = search.value; state.limit = PAGE; refreshTable(); }, 140));
-    $('sort').addEventListener('change', function () { state.sort = this.value; state.limit = PAGE; syncSortHeaders(); refreshTable(); });
+    search.addEventListener('input', global.TDS.dom.debounce(function () { state.q = search.value; state.limit = PAGE; saveState(); refreshTable(); }, 140));
+    $('sort').addEventListener('change', function () { state.sort = this.value; state.limit = PAGE; saveState(); syncSortHeaders(); refreshTable(); });
 
     // Sortierbare Spaltenköpfe (Klick + Tastatur)
     Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
@@ -271,6 +285,7 @@
       btn.addEventListener('click', function () {
         state.status = this.getAttribute('data-filter');
         state.limit = PAGE;
+        saveState();
         Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (b) {
           b.classList.toggle('active', b === btn);
         });

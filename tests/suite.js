@@ -34,6 +34,13 @@
     it('Datum tolerant gegen ungültige Werte', function () {
       expect(TDS.format.date('')).toBe('–');
     });
+    it('money mit 0 und negativ', function () {
+      expect(TDS.format.money(0, 'CHF')).toBe('CHF 0');
+      expect(TDS.format.money(-1500, 'CHF')).toBe("CHF -1'500");
+    });
+    it('pct rundet', function () {
+      expect(TDS.format.pct(33.4)).toBe('33%');
+    });
   });
 
   /* ---------- Markt ---------- */
@@ -102,6 +109,10 @@
     it('respektiert maximale Kilometer', function () {
       var deals = TDS.scout.generate(req({ id: 'K', values: { km: "20'000 km" } })).deals;
       expect(deals.every(function (d) { return d.km <= 20000; })).toBeTruthy();
+    });
+    it('hält enges Mini-Budget ein', function () {
+      var deals = TDS.scout.generate(req({ id: 'B', values: { budget_von: '500', budget_bis: '1000', stil: [] } })).deals;
+      expect(deals.every(function (d) { return d.asking >= 500 && d.asking <= 1000; })).toBeTruthy();
     });
   });
 
@@ -190,6 +201,13 @@
         return TDS.store.restore(removed);
       }).then(function () { return TDS.store.get(savedId); })
         .then(function (r) { expect(r.id).toBe(savedId); });
+    });
+    it('importJSON weist ungültige Daten ab', function () {
+      fresh();
+      return TDS.store.importJSON('kein json', 'replace').then(
+        function () { throw new Error('hätte ablehnen müssen'); },
+        function (e) { expect(!!e).toBeTruthy(); }
+      );
     });
     it('clear liefert vorherige Liste, restoreMany stellt sie wieder her', function () {
       fresh();
