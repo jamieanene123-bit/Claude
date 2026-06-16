@@ -719,3 +719,19 @@ footer a:hover { color:#fff; }
   .print-only { display:block; }
   .print-head { font-family:var(--font-display); font-weight:700; font-size:14px; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom:12px; }
 }
+
+/* ============================================================
+   R29–R33 — Success-Steps, Bestes-Angebot, Kontrast/forced-colors
+   ============================================================ */
+.next-steps { text-align:left; margin:0 auto 18px; max-width:340px; padding-left:20px; display:grid; gap:8px; }
+.next-steps li { font-size:13px; color:var(--muted); line-height:1.5; }
+
+.deal-card.is-best { border-color:var(--accent); box-shadow:0 10px 34px rgba(232,93,26,.16); }
+.best-ribbon { display:inline-block; align-self:flex-start; font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#fff; background:var(--accent); padding:3px 10px; border-radius:99px; margin-bottom:8px; }
+
+/* Hoher Kontrast / Windows High-Contrast */
+@media (forced-colors: active) {
+  .btn-primary, .btn-submit, .badge, .pill, .pkg-badge, .best-ribbon { border:1px solid currentColor; }
+  .cb-fill, .fp-bar > span, .gauge-fill { forced-color-adjust:none; }
+  .reveal { opacity:1 !important; transform:none !important; }
+}

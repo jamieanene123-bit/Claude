@@ -61,7 +61,8 @@
           '<div class="report-actions">' +
             '<a class="btn-ghost" href="#/admin/' + ui.esc(rec.id) + '">← Zur Anfrage</a>' +
             '<div class="report-actions-right">' +
-              '<button class="btn-ghost" id="print-btn">🖨 Drucken / PDF</button>' +
+              '<button class="btn-ghost" id="copy-btn" type="button">Zusammenfassung kopieren</button>' +
+              '<button class="btn-ghost" id="print-btn" type="button">🖨 Drucken / PDF</button>' +
               '<a class="btn-primary" href="#/">Fertig</a>' +
             '</div>' +
           '</div>' +
@@ -71,7 +72,26 @@
       ui.render(html);
       var p = global.document.getElementById('print-btn');
       if (p) p.addEventListener('click', function () { global.print(); });
+      var c = global.document.getElementById('copy-btn');
+      if (c) c.addEventListener('click', function () {
+        var text = summaryText(rec, deals, s);
+        var done = function () { if (global.TDS.toast) global.TDS.toast.success('Report-Zusammenfassung kopiert'); };
+        if (global.navigator && global.navigator.clipboard) global.navigator.clipboard.writeText(text).then(done, done);
+        else done();
+      });
     });
+  }
+
+  function summaryText(rec, deals, s) {
+    var lines = ['Töff Deal Scout — Report ' + rec.id, 'Region: ' + s.region + ' · Budget: ' +
+      fmt.money(s.budgetVon, s.currency) + '–' + fmt.money(s.budgetBis, s.currency), ''];
+    deals.forEach(function (d, i) {
+      lines.push((i + 1) + '. ' + d.title + ' (' + d.year + ', ' + fmt.km(d.km) + ')');
+      lines.push('   Preis ' + fmt.money(d.asking, d.currency) + ' · Marktwert Ø ' + fmt.money(d.marketValue, d.currency) +
+        ' · Score ' + d.score.toFixed(1) + '/10 · Risiko ' + d.risk.label);
+      lines.push('   Empfehlung: ' + d.recommendation.text);
+    });
+    return lines.join('\n');
   }
 
   function scoreOverview(deals) {
@@ -92,7 +112,8 @@
 
   function cardHtml(d, i) {
     var args = d.negotiationArgs.map(function (a) { return '<li>' + ui.esc(a) + '</li>'; }).join('');
-    return '<div class="deal-card reco-border-' + d.recommendation.level + '">' +
+    return '<div class="deal-card reco-border-' + d.recommendation.level + (i === 0 ? ' is-best' : '') + '">' +
+        (i === 0 ? '<div class="best-ribbon">★ Bestes Angebot</div>' : '') +
         '<div class="deal-cardhead">' +
           '<span class="deal-rank">Deal ' + (i + 1) + '</span>' +
           ui.riskBadge(d.risk.level, 'Risiko: ' + d.risk.label) +

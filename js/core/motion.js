@@ -34,7 +34,13 @@
     if (!('IntersectionObserver' in global)) return null;
     observer = new global.IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('in'); observer.unobserve(e.target); }
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          // Charts/Zähler erst animieren, wenn sie sichtbar werden (lazy).
+          animateCharts(e.target, false);
+          countUps(e.target, false);
+          observer.unobserve(e.target);
+        }
       });
     }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
     return observer;
@@ -105,11 +111,12 @@
       return;
     }
     setupReveals(container);
-    // Charts/KPIs kurz nach dem ersten Paint starten
-    setTimeout(function () {
+    // Charts/Zähler werden pro Element animiert, sobald es sichtbar wird
+    // (siehe IntersectionObserver). Fallback ohne Observer:
+    if (!('IntersectionObserver' in global)) {
       animateCharts(container, false);
       countUps(container, false);
-    }, 120);
+    }
   }
 
   global.TDS = global.TDS || {};

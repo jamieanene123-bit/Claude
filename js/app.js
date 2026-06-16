@@ -46,6 +46,17 @@
     }
   });
 
+  // Globaler Fehler-Fänger: meldet unerwartete Fehler dezent (gedrosselt).
+  var lastErrToast = 0;
+  function reportError() {
+    var now = Date.now();
+    if (now - lastErrToast < 4000) return;
+    lastErrToast = now;
+    if (TDS.toast) TDS.toast.error('Etwas ist schiefgelaufen — bitte erneut versuchen.');
+  }
+  global.addEventListener('error', reportError);
+  global.addEventListener('unhandledrejection', reportError);
+
   router.start();
 
   // Verdichtende, "schwebende" Kopfzeile beim Scrollen.
