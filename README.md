@@ -19,7 +19,9 @@ npm start          # http://localhost:8000   (nutzt python3 http.server)
 ## Tests
 
 ```bash
-npm test           # 22 Tests headless (node tests/node.js)
+npm test           # Unit-Tests + Render-Smoke (alle Views headless)
+npm run test:unit  # nur Unit-Tests (tests/node.js)
+npm run smoke      # nur Render-Smoke (tests/smoke.js)
 ```
 
 Oder visuell: `tests.html` im Browser öffnen.
@@ -60,6 +62,16 @@ Hash-Router (läuft ohne Server, auch über `file://`):
 - **Druckbar** (Drucken / als PDF speichern) mit eigenem Print-Layout
 - Paket steuert die Anzahl Deals (Quick-Check 1 · Scout 3 · Premium 5)
 
+**Design & Bewegung ("smooth")**
+- Warmer **Hybrid-Look** mit Serif-Headlines (Fraunces) und Orange-Akzent
+- Sticky, beim Scrollen verdichtende **Blur-Kopfzeile**
+- Sanfte **Page-Transitions**, **Scroll-Reveals**, Count-up-KPIs, aufziehende Charts
+- Respektiert `prefers-reduced-motion`
+
+**Zugänglichkeit & Funnel**
+- `<main>`-Landmark, Skip-Link, `aria-current`/`aria-pressed`, sichtbarer Tastatur-Fokus
+- Live-**Fortschrittsbalken** im Formular, klebriger Submit auf Mobile
+
 **Plattform**
 - **Dark-/Light-Mode** (persistiert, folgt System-Einstellung)
 - **Toast**-Benachrichtigungen
@@ -72,12 +84,12 @@ Hash-Router (läuft ohne Server, auch über `file://`):
 index.html · tests.html · manifest.json · sw.js · favicon.svg
 css/styles.css
 js/
-  core/      events · format · charts · theme · toast
-  data/      config (Regionen/Pakete/Status) · market (Modell-Katalog)
+  core/      events · format · charts · theme · toast · motion · dom
+  data/      config (Regionen/Pakete/Status) · market (Katalog) · demo (Beispiele)
   services/  store (Repository + Adapter) · scout (Scoring-Engine)
   components/ layout · landing · form · success · admin · report · settings · notfound
   router.js · app.js
-tests/       framework · suite · node (Headless-Runner)
+tests/       framework · suite · node (Unit-Runner) · smoke (Render-Runner)
 ```
 
 Details & Erweiterungspfade (Backend, Login, Stripe): siehe

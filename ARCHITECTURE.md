@@ -16,11 +16,11 @@ gleichzeitig sauber in Schichten getrennt.
 ┌───────────────┴───────────┐        ┌───────────┴──────────────┐
 │  services/                │        │  core/                    │
 │  store  (Repository)      │        │  events · format · charts │
-│  scout  (Scoring-Engine)  │        │  theme · toast            │
+│  scout  (Scoring-Engine)  │        │  theme · toast · motion · dom │
 └───────────────▲───────────┘        └───────────────────────────┘
                 │ nutzt
 ┌───────────────┴───────────┐
-│  data/  config · market    │   (Stammdaten / Katalog)
+│  data/  config · market · demo │   (Stammdaten / Katalog / Beispiele)
 └────────────────────────────┘
 
 router.js  → Hash-Routing            app.js → Bootstrap & Verdrahtung
@@ -28,6 +28,14 @@ router.js  → Hash-Routing            app.js → Bootstrap & Verdrahtung
 
 **Abhängigkeitsregel:** Views → Services/Core → Data. Keine Rückwärts-Kopplung.
 Die Ladereihenfolge in `index.html` spiegelt das wider.
+
+**Layout-Vertrag:** Views liefern nur ihren Inhalt; `core`/`components/layout.js`
+`render(content)` ergänzt zentral `<header>`, `<main id="main">`-Landmark und
+`<footer>` (DRY + saubere Semantik/a11y) und stösst danach den Motion-Layer an.
+
+**Bewegung:** `core/motion.js` ist der zentrale Motion-Layer (Page-In,
+Scroll-Reveals, Count-up, Chart-Animationen), aktiviert über `render()`. Views
+wissen nichts davon. `prefers-reduced-motion` schaltet alles ab.
 
 ## Schlüsselentscheidungen
 
