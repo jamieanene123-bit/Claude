@@ -575,3 +575,38 @@ footer a:hover { color:#fff; }
   .cb-fill, .gauge-fill { transition:none !important; }
   .btn-primary:hover, .btn-submit:hover, .step:hover, .feat:hover, .deal-card:hover, .kpi:hover, .chart-card:hover, .btn-ghost:hover { transform:none !important; }
 }
+
+/* ============================================================
+   R3 — Visuelle Politur: Hero-Tiefe & Typo-Feinschliff
+   ============================================================ */
+.hero { position:relative; overflow:hidden; }
+.hero::before {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(58% 80% at 50% -12%, rgba(232,93,26,.11), transparent 62%),
+    radial-gradient(42% 62% at 88% -6%, rgba(232,93,26,.06), transparent 70%);
+}
+.hero > * { position:relative; z-index:1; }
+.hero h1 { font-size:clamp(30px,5.2vw,46px); line-height:1.08; letter-spacing:-.015em; margin-bottom:16px; }
+.hero p { font-size:clamp(14px,1.6vw,16px); max-width:480px; line-height:1.6; }
+.hero-sm h1 { font-size:clamp(24px,4vw,34px); }
+
+/* Sanftes Hervorheben einzelner Wörter in Headlines (optional via <span class="accentword">) */
+.accentword { color:var(--accent); }
+
+/* Etwas mehr vertikaler Rhythmus & ruhigere Sektionen */
+.section-eye { margin:36px 0 16px; }
+.wrap { margin-top:36px; }
+.feat { padding:22px; }
+.pill { padding:6px 13px; font-size:12px; }
+
+/* Report-Kopf bekommt denselben warmen Schimmer */
+.report-head { position:relative; overflow:hidden; }
+.report-head::before {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(50% 90% at 12% -20%, rgba(232,93,26,.10), transparent 60%);
+}
+.report-head-inner { position:relative; z-index:1; }
+
+/* CTA-Band: subtiler Verlauf statt Flächenschwarz */
+.cta-band { background:linear-gradient(120deg, #211913 0%, var(--black) 60%); }
