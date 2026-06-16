@@ -25,6 +25,7 @@
         '<h1>Den besten Deal finden — ohne Risiko.</h1>' +
         '<p>Sag uns, welches Töff du suchst. Wir analysieren den Markt und liefern eine klare Einschätzung mit Deal-Score, Risiko und Verhandlungsargumenten.</p>' +
         '<a class="btn-primary" href="#/form">Suchanfrage starten →</a>' +
+        '<div class="hero-trust">Kostenlos &amp; unverbindlich · ~2 Minuten · kein Konto nötig</div>' +
         '<div class="hero-pills">' +
           '<div class="pill">Preis-Check</div>' +
           '<div class="pill">Risikobewertung</div>' +

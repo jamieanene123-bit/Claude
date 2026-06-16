@@ -35,7 +35,7 @@
       '<div class="hero hero-sm">' +
         '<div class="hero-eye">Suchanfrage</div>' +
         '<h1>Erzähl uns von deinem Wunsch-Töff</h1>' +
-        '<p>Je genauer, desto besser der Report. Pflichtfelder sind mit <span style="color:var(--accent)">*</span> markiert.</p>' +
+        '<p>Je genauer, desto besser der Report. Dauert ~2 Minuten — kein Konto nötig. Pflichtfelder sind mit <span style="color:var(--accent)">*</span> markiert.</p>' +
       '</div>' +
 
       '<div class="wrap">' +
