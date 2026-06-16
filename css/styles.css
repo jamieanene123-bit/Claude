@@ -7,26 +7,31 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --black:#0D0D0D;
+  --black:#1A1512;        /* warmes Dunkel (Header/Footer/Admin-Bar) */
   --white:#FFFFFF;
-  --bg:#F5F4F1;
+  --bg:#FAF6F0;           /* warmes Cream */
   --surface:#FFFFFF;
-  --border:#E0DED9;
+  --border:#EBE3D7;
   --accent:#E85D1A;
   --accent-h:#CF4E0F;
-  --accent-lite:#FDF1EB;
-  --text:#0D0D0D;
-  --muted:#6B6860;
-  --hint:#A8A5A0;
+  --accent-lite:#FBEDE3;
+  --text:#241D17;         /* warmes Near-Black */
+  --muted:#6E655B;
+  --hint:#A89E90;
   --err:#C0392B;
-  --err-bg:#FDF0EF;
+  --err-bg:#FBEDEB;
   --ok:#1A7A3F;
-  --ok-bg:#EBF7F0;
+  --ok-bg:#E9F5EE;
   --warn:#B7791F;
-  --warn-bg:#FBF3E2;
-  --r:10px;
-  --r-sm:6px;
+  --warn-bg:#FAF1DD;
+  --r:12px;
+  --r-sm:8px;
+  --font-display:'Fraunces','Space Grotesk',Georgia,serif;
+  --ease:cubic-bezier(.16,.84,.44,1);
+  --shadow-sm:0 1px 2px rgba(40,30,20,.05);
+  --shadow:0 10px 30px rgba(40,30,20,.10);
 }
+html { scroll-behavior:smooth; }
 
 body {
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
@@ -466,4 +471,79 @@ footer a:hover { color:#fff; }
   .deals { grid-template-columns:1fr 1fr; }
   .report-cols { grid-template-columns:1fr 1fr; }
   a { color:#000 !important; text-decoration:none; }
+}
+
+/* ============================================================
+   HYBRID-LOOK & MOTION ("smooth")
+   Warmer, hellerer Auftritt mit Serif-Headlines + sanfter Bewegung.
+   Steht bewusst am Ende -> gewinnt in der Kaskade.
+   ============================================================ */
+
+/* ---- Serif-Headlines ---- */
+.hero h1, .report-head h1, .admin-title, .ok-title, .cta-title {
+  font-family:var(--font-display); font-weight:600; letter-spacing:-.01em;
+}
+.hero h1 { font-weight:600; }
+
+/* ---- Heller, warmer Hero (statt dunkel) ---- */
+.hero {
+  background:linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+.hero h1 { color:var(--text); }
+.hero p { color:var(--muted); }
+.hero-eye { color:var(--accent); }
+.hero-pills { margin-top:26px; }
+.pill { background:var(--surface); border:1px solid var(--border); color:var(--muted); box-shadow:var(--shadow-sm); }
+
+/* ---- Report-Kopf hell & konsistent ---- */
+.report-head {
+  background:linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  border-bottom:1px solid var(--border);
+}
+.report-head h1 { color:var(--text); }
+.report-summary { color:var(--muted); }
+.report-meta > span { background:var(--surface); border:1px solid var(--border); color:var(--muted); }
+
+/* ---- Weiche Karten-Tiefe ---- */
+.sec, .step, .feat, .kpi, .chart-card, .data-block, .deal-card, .table-card, .side-card {
+  box-shadow:var(--shadow-sm);
+}
+
+/* ---- Micro-Interactions (Hover-Lift) ---- */
+.btn-primary, .btn-submit { transition:background .15s, transform .18s var(--ease), box-shadow .25s var(--ease); }
+.btn-primary:hover, .btn-submit:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+.step, .feat, .deal-card, .kpi, .chart-card { transition:transform .28s var(--ease), box-shadow .28s var(--ease); }
+.step:hover, .feat:hover, .deal-card:hover, .kpi:hover, .chart-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+.btn-ghost { transition:border-color .15s, background .15s, transform .18s var(--ease); }
+.btn-ghost:hover { transform:translateY(-1px); }
+.hdr-link { transition:color .18s, opacity .18s; }
+.filter-btn, .chip-wrap label, .seg-btn, .pkg-card { transition:all .18s var(--ease); }
+
+/* ---- Scroll-Reveal ---- */
+.reveal { opacity:0; transform:translateY(18px); transition:opacity .6s var(--ease), transform .6s var(--ease); }
+.reveal.in { opacity:1; transform:none; }
+
+/* ---- Page-In (View-Wechsel) ---- */
+@keyframes pageIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+#app.page-in { animation:pageIn .42s var(--ease) both; }
+
+/* ---- Chart-Animationen ---- */
+.cb-fill { transition:width .85s var(--ease); }
+.gauge-fill { transition:stroke-dasharray .9s var(--ease); }
+@keyframes donutIn { from { opacity:0; transform:rotate(-10deg) scale(.92); } to { opacity:1; transform:none; } }
+.donut { animation:donutIn .7s var(--ease) both; transform-origin:center; }
+
+/* ---- Toasts weicher ---- */
+.toast { transition:opacity .3s var(--ease), transform .35s var(--ease); }
+
+/* ---- Respektiert Nutzer-Einstellung ---- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior:auto; }
+  .reveal { opacity:1 !important; transform:none !important; transition:none !important; }
+  #app.page-in { animation:none !important; }
+  .donut { animation:none !important; }
+  .cb-fill, .gauge-fill { transition:none !important; }
+  .btn-primary:hover, .btn-submit:hover, .step:hover, .feat:hover, .deal-card:hover, .kpi:hover, .chart-card:hover, .btn-ghost:hover { transform:none !important; }
 }

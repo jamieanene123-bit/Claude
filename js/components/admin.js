@@ -109,7 +109,10 @@
   }
 
   function kpi(label, value, sub) {
-    return '<div class="kpi"><div class="kpi-val">' + ui.esc(value) + '</div>' +
+    var valHtml = (typeof value === 'number')
+      ? '<div class="kpi-val" data-count="' + value + '">0</div>'
+      : '<div class="kpi-val">' + ui.esc(value) + '</div>';
+    return '<div class="kpi">' + valHtml +
       '<div class="kpi-label">' + ui.esc(label) + '</div>' +
       (sub ? '<div class="kpi-sub">' + ui.esc(sub) + '</div>' : '') + '</div>';
   }

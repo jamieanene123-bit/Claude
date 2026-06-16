@@ -19,7 +19,7 @@
       var w = Math.round((it.value / max) * 100);
       return '<div class="cb-row">' +
         '<div class="cb-label">' + esc(it.label) + '</div>' +
-        '<div class="cb-track"><div class="cb-fill" style="width:' + w + '%;background:' + (it.color || 'var(--accent)') + '"></div></div>' +
+        '<div class="cb-track"><div class="cb-fill" data-w="' + w + '%" style="width:0;background:' + (it.color || 'var(--accent)') + '"></div></div>' +
         '<div class="cb-val">' + esc(it.display != null ? it.display : it.value) + '</div>' +
         '</div>';
     }).join('') + '</div>';
@@ -64,8 +64,8 @@
     }
     return '<svg class="gauge" viewBox="0 0 ' + size + ' ' + (cy + sw) + '" width="' + size + '" role="img" aria-label="Score ' + value + ' von ' + max + '">' +
       '<path d="' + arc() + '" fill="none" stroke="var(--border)" stroke-width="' + sw + '" stroke-linecap="round"/>' +
-      '<path d="' + arc() + '" fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linecap="round" ' +
-      'stroke-dasharray="' + (half * frac).toFixed(2) + ' ' + half.toFixed(2) + '"/>' +
+      '<path class="gauge-fill" d="' + arc() + '" fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linecap="round" ' +
+      'stroke-dasharray="0 ' + half.toFixed(2) + '" data-dash="' + (half * frac).toFixed(2) + ' ' + half.toFixed(2) + '"/>' +
       '<text x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" class="gauge-num">' + esc(value.toFixed ? value.toFixed(1) : value) + '</text>' +
       '<text x="' + cx + '" y="' + (cy + 12) + '" text-anchor="middle" class="gauge-sub">von ' + max + '</text>' +
       '</svg>';

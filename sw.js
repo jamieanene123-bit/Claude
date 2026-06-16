@@ -15,6 +15,7 @@ var ASSETS = [
   'js/core/charts.js',
   'js/core/theme.js',
   'js/core/toast.js',
+  'js/core/motion.js',
   'js/data/config.js',
   'js/data/market.js',
   'js/services/store.js',

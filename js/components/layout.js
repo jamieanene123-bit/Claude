@@ -8,7 +8,11 @@
   var fmt = global.TDS.format;
 
   function app() { return global.document.getElementById('app'); }
-  function render(html) { app().innerHTML = html; }
+  function render(html) {
+    var el = app();
+    el.innerHTML = html;
+    if (global.TDS.motion) global.TDS.motion.enter(el); // Bewegungs-Layer
+  }
 
   function esc(value) {
     if (value === null || value === undefined) return '';
