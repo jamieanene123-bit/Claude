@@ -40,6 +40,10 @@
 
       '<div class="wrap">' +
       '<div id="draft-banner"></div>' +
+      '<div class="form-progress" aria-hidden="true">' +
+        '<div class="fp-bar"><span id="fp-fill" style="width:0"></span></div>' +
+        '<div class="fp-label" id="fp-label">0 % ausgefüllt</div>' +
+      '</div>' +
       '<form id="frm" novalidate>' +
 
         // SEKTION 1: KONTAKT
@@ -408,6 +412,7 @@
       '</span></div>';
     $('draft-restore').addEventListener('click', function () {
       applyDraft(draft.data); banner.innerHTML = '';
+      updateProgress();
       if (global.TDS.toast) global.TDS.toast.info('Entwurf wiederhergestellt');
     });
     $('draft-discard').addEventListener('click', function () {
@@ -415,13 +420,36 @@
     });
   }
 
+  function progressState() {
+    var checks = [
+      $('vorname').value.trim() !== '',
+      $('nachname').value.trim() !== '',
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim()),
+      $('land').value !== '',
+      $('region').value !== '',
+      !!document.querySelector('input[name="ausweis"]:checked'),
+      !!document.querySelector('input[name="stil"]:checked'),
+      !!($('budget-von').value && $('budget-bis').value),
+      !!document.querySelector('input[name="paket"]:checked')
+    ];
+    var done = checks.filter(Boolean).length;
+    return { done: done, total: checks.length, pct: Math.round(done / checks.length * 100) };
+  }
+
+  function updateProgress() {
+    var p = progressState();
+    var fill = $('fp-fill'); if (fill) fill.style.width = p.pct + '%';
+    var label = $('fp-label'); if (label) label.textContent = p.pct + ' % ausgefüllt' + (p.pct === 100 ? ' — bereit zum Absenden ✓' : '');
+  }
+
   function wire() {
     fillBudgets('CHF');
     showDraftBanner();
+    updateProgress();
 
-    // Autosave bei jeder Eingabe
-    $('frm').addEventListener('input', saveDraft);
-    $('frm').addEventListener('change', saveDraft);
+    // Autosave + Fortschritt bei jeder Eingabe
+    $('frm').addEventListener('input', function () { saveDraft(); updateProgress(); });
+    $('frm').addEventListener('change', function () { saveDraft(); updateProgress(); });
 
     $('land').addEventListener('change', function () {
       var land = this.value;
