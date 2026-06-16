@@ -532,8 +532,25 @@ footer a:hover { color:#fff; }
 .hdr-link { transition:color .18s, opacity .18s; }
 .filter-btn, .chip-wrap label, .seg-btn, .pkg-card { transition:all .18s var(--ease); }
 
+/* ---- Sticky, verdichtende Kopfzeile mit Backdrop-Blur ---- */
+.hdr {
+  position:sticky; top:0; z-index:100;
+  background:rgba(26,21,18,.82); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  transition:padding .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease);
+}
+.is-scrolled .hdr { padding-top:9px; padding-bottom:9px; box-shadow:0 8px 28px rgba(0,0,0,.22); background:rgba(20,16,13,.9); }
+.logo { transition:opacity .18s; }
+.logo:hover { opacity:.85; }
+/* Animierte Unterstreichung der Nav-Links (Hover) */
+.hdr-nav .hdr-link { position:relative; }
+.hdr-link:not(.active)::after {
+  content:""; position:absolute; left:0; right:100%; bottom:-3px; height:2px;
+  background:var(--accent); border-radius:2px; transition:right .25s var(--ease);
+}
+.hdr-link:not(.active):hover::after { right:0; }
+
 /* ---- Scroll-Reveal ---- */
-.reveal { opacity:0; transform:translateY(18px); transition:opacity .6s var(--ease), transform .6s var(--ease); }
+.reveal { opacity:0; transform:translateY(14px); transition:opacity .55s var(--ease), transform .55s var(--ease); }
 .reveal.in { opacity:1; transform:none; }
 
 /* ---- Page-In (View-Wechsel) ---- */

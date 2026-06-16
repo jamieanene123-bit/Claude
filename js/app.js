@@ -44,6 +44,14 @@
 
   router.start();
 
+  // Verdichtende, "schwebende" Kopfzeile beim Scrollen.
+  var onScroll = function () {
+    var y = global.scrollY || global.pageYOffset || 0;
+    global.document.documentElement.classList.toggle('is-scrolled', y > 8);
+  };
+  global.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
   // Service Worker (PWA) — nur über http(s), nicht über file://.
   if ('serviceWorker' in global.navigator && global.location.protocol.indexOf('http') === 0) {
     global.addEventListener('load', function () {
