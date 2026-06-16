@@ -162,9 +162,7 @@
       return;
     }
     tbody.innerHTML = rows.map(rowHtml).join('');
-    Array.prototype.forEach.call(tbody.querySelectorAll('tr[data-id]'), function (tr) {
-      tr.addEventListener('click', function () { router.navigate('/admin/' + this.getAttribute('data-id')); });
-    });
+    // Klicks werden delegiert (siehe wireList) — kein Listener pro Zeile.
   }
 
   function rowHtml(r) {
@@ -183,8 +181,14 @@
 
   function wireList() {
     var search = $('search');
-    search.addEventListener('input', function () { state.q = this.value; refreshTable(); });
+    search.addEventListener('input', global.TDS.dom.debounce(function () { state.q = search.value; refreshTable(); }, 140));
     $('sort').addEventListener('change', function () { state.sort = this.value; refreshTable(); });
+
+    // Ein delegierter Klick-Listener für alle (auch künftige) Tabellenzeilen.
+    $('tbody').addEventListener('click', function (e) {
+      var tr = e.target.closest && e.target.closest('tr[data-id]');
+      if (tr) router.navigate('/admin/' + tr.getAttribute('data-id'));
+    });
 
     Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (btn) {
       btn.addEventListener('click', function () {

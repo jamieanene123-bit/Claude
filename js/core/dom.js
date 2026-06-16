@@ -21,6 +21,16 @@
     setTimeout(function () { global.URL.revokeObjectURL(url); }, 1000);
   }
 
+  /** Funktion erst nach Ruhephase ausführen (z.B. Sucheingabe). */
+  function debounce(fn, ms) {
+    var t;
+    return function () {
+      var args = arguments, ctx = this;
+      clearTimeout(t);
+      t = setTimeout(function () { fn.apply(ctx, args); }, ms || 120);
+    };
+  }
+
   global.TDS = global.TDS || {};
-  global.TDS.dom = { byId: byId, qs: qs, qsa: qsa, download: download };
+  global.TDS.dom = { byId: byId, qs: qs, qsa: qsa, download: download, debounce: debounce };
 })(window);
