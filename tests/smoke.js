@@ -28,7 +28,7 @@ global.document = {
   getElementById: function (id) { return id === 'app' ? app : mk(); },
   querySelector: function () { return null; }, querySelectorAll: function () { return []; },
   createElement: function () { return mk(); }, body: mk(), addEventListener: function () {},
-  documentElement: { setAttribute: function () {}, classList: { add: function () {}, remove: function () {}, toggle: function () {}, contains: function () { return false; } } }
+  documentElement: { setAttribute: function () {}, style: { setProperty: function () {} }, classList: { add: function () {}, remove: function () {}, toggle: function () {}, contains: function () { return false; } } }
 };
 // Manche Globals (navigator/performance) sind in Node read-only -> defensiv setzen.
 function setGlobal(k, v) {
