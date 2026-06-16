@@ -39,6 +39,7 @@
       '</div>' +
 
       '<div class="wrap">' +
+      '<div id="draft-banner"></div>' +
       '<form id="frm" novalidate>' +
 
         // SEKTION 1: KONTAKT
@@ -332,8 +333,95 @@
     };
   }
 
+  /* ---------- Entwurf (Autosave/Resume) ---------- */
+  var DRAFT_KEY = 'tds_draft_v1';
+
+  function serializeDraft() {
+    var vals = {};
+    ['vorname', 'nachname', 'email', 'telefon', 'land', 'region', 'modell',
+      'prioritaeten', 'baujahr', 'km', 'budget-von', 'budget-bis'].forEach(function (id) {
+      var el = $(id); if (el) vals[id] = el.value;
+    });
+    var radios = {};
+    ['ausweis', 'erfahrung', 'nutzung', 'paket'].forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"]:checked');
+      radios[name] = el ? el.value : '';
+    });
+    var stil = [];
+    document.querySelectorAll('input[name="stil"]:checked').forEach(function (el) { stil.push(el.value); });
+    return { vals: vals, radios: radios, stil: stil };
+  }
+
+  function draftHasContent(d) {
+    return !!(d && d.vals && (d.vals.vorname || d.vals.nachname || d.vals.email || d.vals.modell || (d.stil && d.stil.length)));
+  }
+
+  function saveDraft() {
+    try {
+      var d = serializeDraft();
+      if (draftHasContent(d)) {
+        global.localStorage.setItem(DRAFT_KEY, JSON.stringify({ at: new Date().toISOString(), data: d }));
+      }
+    } catch (e) {}
+  }
+
+  function loadDraft() {
+    try { return JSON.parse(global.localStorage.getItem(DRAFT_KEY) || 'null'); }
+    catch (e) { return null; }
+  }
+
+  function clearDraft() {
+    try { global.localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  }
+
+  function pick(name, value) {
+    if (!value) return;
+    var el = document.querySelector('input[name="' + name + '"][value="' + value.replace(/"/g, '\\"') + '"]');
+    if (el) el.checked = true;
+  }
+
+  function applyDraft(d) {
+    var v = d.vals || {};
+    ['vorname', 'nachname', 'email', 'telefon', 'modell', 'prioritaeten'].forEach(function (id) {
+      if ($(id) && v[id] != null) $(id).value = v[id];
+    });
+    if (v.land) { $('land').value = v.land; $('land').dispatchEvent(new Event('change')); }
+    if (v.region && $('region')) $('region').value = v.region;
+    if (v['budget-von']) $('budget-von').value = v['budget-von'];
+    if (v['budget-bis']) $('budget-bis').value = v['budget-bis'];
+    if (v.baujahr && $('baujahr')) $('baujahr').value = v.baujahr;
+    if (v.km && $('km')) $('km').value = v.km;
+    Object.keys(d.radios || {}).forEach(function (name) { pick(name, d.radios[name]); });
+    (d.stil || []).forEach(function (val) { pick('stil', val); });
+  }
+
+  function showDraftBanner() {
+    var draft = loadDraft();
+    if (!draft || !draftHasContent(draft.data)) return;
+    var banner = $('draft-banner');
+    if (!banner) return;
+    banner.innerHTML = '<div class="draft-bar">' +
+      '<span>📝 Nicht abgeschickter Entwurf von <strong>' + ui.esc(ui.fmt.relative(draft.at)) + '</strong> gefunden.</span>' +
+      '<span class="draft-actions">' +
+        '<button type="button" class="btn-mini" id="draft-restore">Wiederherstellen</button>' +
+        '<button type="button" class="btn-mini ghost" id="draft-discard">Verwerfen</button>' +
+      '</span></div>';
+    $('draft-restore').addEventListener('click', function () {
+      applyDraft(draft.data); banner.innerHTML = '';
+      if (global.TDS.toast) global.TDS.toast.info('Entwurf wiederhergestellt');
+    });
+    $('draft-discard').addEventListener('click', function () {
+      clearDraft(); banner.innerHTML = '';
+    });
+  }
+
   function wire() {
     fillBudgets('CHF');
+    showDraftBanner();
+
+    // Autosave bei jeder Eingabe
+    $('frm').addEventListener('input', saveDraft);
+    $('frm').addEventListener('change', saveDraft);
 
     $('land').addEventListener('change', function () {
       var land = this.value;
@@ -367,12 +455,14 @@
       btn.textContent = 'Wird gespeichert …';
 
       store.create(collect()).then(function (record) {
+        clearDraft();
+        if (global.TDS.toast) global.TDS.toast.success('Anfrage gespeichert');
         router.navigate('/success/' + record.id);
       }).catch(function (err) {
         console.error(err);
         btn.disabled = false;
         btn.textContent = 'Anfrage absenden →';
-        alert('Speichern fehlgeschlagen. Bitte erneut versuchen.');
+        if (global.TDS.toast) global.TDS.toast.error('Speichern fehlgeschlagen. Bitte erneut versuchen.');
       });
     });
   }

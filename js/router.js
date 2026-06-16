@@ -16,6 +16,7 @@
   'use strict';
 
   var routes = [];
+  var notFoundHandler = null;
 
   function register(pattern, handler) {
     // pattern z.B. "/report/:id" -> Regex mit benannten Parametern
@@ -50,8 +51,13 @@
         return;
       }
     }
-    // Fallback -> Landing
-    global.location.hash = '#/';
+    // Keine Route passt
+    global.scrollTo(0, 0);
+    if (notFoundHandler) {
+      notFoundHandler({ path: path });
+    } else {
+      global.location.hash = '#/';
+    }
   }
 
   function navigate(path) {
@@ -62,6 +68,7 @@
   global.TDS.router = {
     register: register,
     navigate: navigate,
+    setNotFound: function (handler) { notFoundHandler = handler; },
     start: function () {
       global.addEventListener('hashchange', resolve);
       resolve();

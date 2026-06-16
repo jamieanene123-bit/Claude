@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Töff Deal Scout — Tests</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  .test-wrap { max-width:760px; margin:32px auto 64px; padding:0 16px; }
+  .test-summary { font-family:'Space Grotesk',sans-serif; font-size:20px; font-weight:700; margin:16px 0; }
+  .test-summary.ok { color:var(--ok); }
+  .test-summary.fail { color:var(--err); }
+  .test-suite { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--hint); margin:18px 0 8px; }
+  .test-row { display:flex; gap:10px; padding:8px 12px; border:1px solid var(--border); border-radius:8px; margin-bottom:6px; background:var(--surface); font-size:14px; align-items:baseline; }
+  .test-ico { font-weight:700; }
+  .test-row.pass .test-ico { color:var(--ok); }
+  .test-row.fail { border-color:var(--err); background:var(--err-bg); }
+  .test-row.fail .test-ico { color:var(--err); }
+  .test-err { color:var(--err); font-size:12.5px; margin-left:auto; }
+</style>
+</head>
+<body>
+<header class="hdr">
+  <a class="logo" href="index.html">Töff<em>Deal</em>Scout</a>
+  <nav class="hdr-nav"><span class="hdr-tag">Test-Suite</span></nav>
+</header>
+
+<div class="test-wrap">
+  <div id="summary" class="test-summary">Tests laufen …</div>
+  <div id="results"></div>
+  <p style="margin-top:18px;font-size:13px;color:var(--muted)">
+    Dieselben Tests laufen headless mit <code>node tests/node.js</code>.
+    <a href="index.html">← Zur App</a>
+  </p>
+</div>
+
+<!-- Zu testende Module -->
+<script src="js/core/events.js"></script>
+<script src="js/core/format.js"></script>
+<script src="js/core/charts.js"></script>
+<script src="js/data/config.js"></script>
+<script src="js/data/market.js"></script>
+<script src="js/services/store.js"></script>
+<script src="js/services/scout.js"></script>
+
+<!-- Test-Framework + Suite -->
+<script src="tests/framework.js"></script>
+<script src="tests/suite.js"></script>
+
+<script>
+TDS.test.run().then(function (res) {
+  var pass = res.filter(function (r) { return r.pass; }).length;
+  var fail = res.length - pass;
+  var sum = document.getElementById('summary');
+  sum.textContent = pass + '/' + res.length + ' Tests bestanden' + (fail ? ' · ' + fail + ' fehlgeschlagen' : ' ✓');
+  sum.className = 'test-summary ' + (fail ? 'fail' : 'ok');
+
+  var out = document.getElementById('results');
+  var html = '', lastSuite = '';
+  res.forEach(function (r) {
+    if (r.suite !== lastSuite) { html += '<div class="test-suite">' + r.suite + '</div>'; lastSuite = r.suite; }
+    html += '<div class="test-row ' + (r.pass ? 'pass' : 'fail') + '">' +
+      '<span class="test-ico">' + (r.pass ? '✓' : '✗') + '</span>' +
+      '<span>' + r.name + '</span>' +
+      (r.pass ? '' : '<span class="test-err">' + (r.err || '') + '</span>') +
+      '</div>';
+  });
+  out.innerHTML = html;
+});
+</script>
+</body>
+</html>

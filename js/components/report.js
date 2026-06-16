@@ -1,13 +1,18 @@
 /*
- * report.js — Report-Mockup für eine Anfrage.
- * Zeigt 3 Beispiel-Deals. Noch KEINE echten Inserate — die Werte werden
- * aus den Wunschangaben der Anfrage plausibel abgeleitet (reines Mockup).
+ * components/report.js — datengetriebener Deal-Report.
+ * Nutzt die Scout-Engine (services/scout.js), um aus der Anfrage Deals zu
+ * berechnen und darzustellen: Score-Gauge, Risiko, Preisvergleich,
+ * Verhandlungsargumente, Besichtigungs-Checkliste und Verkäuferfragen.
+ * Druckbar (Print/PDF). KEINE echten Inserate — siehe Hinweis im Report.
  */
 (function (global) {
   'use strict';
 
   var ui = global.TDS.ui;
   var store = global.TDS.store;
+  var scout = global.TDS.scout;
+  var charts = global.TDS.charts;
+  var fmt = global.TDS.format;
 
   function view(params) {
     store.get(params.id).then(function (rec) {
@@ -16,72 +21,101 @@
           '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + ui.footer());
         return;
       }
-      var v = rec.values;
-      var deals = buildDeals(v);
 
-      var cards = deals.map(function (d, i) { return cardHtml(d, i); }).join('');
+      var v = rec.values;
+      var result = scout.generate(rec);
+      var deals = result.deals;
+      var s = result.summary;
+      var top = deals[0];
 
       var html = ui.header() +
-        '<div class="report-head">' +
-          '<div class="report-head-inner">' +
-            '<div class="hero-eye">Deal-Report · Mockup</div>' +
-            '<h1>Top-Deals für ' + ui.esc(v.vorname) + '</h1>' +
-            '<p class="report-summary">' + ui.esc(summaryText(v)) + '</p>' +
-            '<div class="report-meta">' +
-              '<span class="mono">' + ui.esc(rec.id) + '</span>' +
-              '<span>' + ui.esc(v.region) + '</span>' +
-              '<span>' + ui.esc(budgetText(v)) + '</span>' +
-              ui.statusBadge(rec.status) +
-            '</div>' +
+        '<div class="report-head"><div class="report-head-inner">' +
+          '<div class="hero-eye">Deal-Report · Mockup</div>' +
+          '<h1>Top-Deals für ' + ui.esc(v.vorname) + '</h1>' +
+          '<p class="report-summary">Wir haben den Markt in ' + ui.esc(s.region) + ' nach ' + ui.esc(s.modelFocus) +
+            ' durchsucht und ' + s.count + ' passende Inserate bewertet — sortiert nach Deal-Score.</p>' +
+          '<div class="report-meta">' +
+            '<span class="mono">' + ui.esc(rec.id) + '</span>' +
+            '<span>Budget: ' + ui.esc(fmt.money(s.budgetVon, s.currency) + '–' + fmt.money(s.budgetBis, s.currency)) + '</span>' +
+            '<span>Ø Score: ' + s.avgScore.toFixed(1) + '</span>' +
+            ui.statusBadge(rec.status) +
           '</div>' +
-        '</div>' +
+        '</div></div>' +
 
         '<div class="wrap wrap-wide">' +
-          '<div class="report-note">⚠️ Demo-Report mit Beispiel-Inseraten. In der finalen Version stehen hier echte, geprüfte Angebote.</div>' +
-          '<div class="deals">' + cards + '</div>' +
+          '<div class="report-note">⚠️ Demo-Report mit synthetischen Beispiel-Inseraten. In der finalen Version stehen hier echte, geprüfte Angebote von ' +
+            ui.esc(s.sources.join(', ')) + '.</div>' +
+
+          scoreOverview(deals) +
+
+          '<div class="deals">' + deals.map(cardHtml).join('') + '</div>' +
+
+          comparisonTable(deals) +
+
+          '<div class="report-cols">' +
+            checklistCard(top) +
+            questionsCard(top) +
+          '</div>' +
 
           '<div class="report-actions">' +
             '<a class="btn-ghost" href="#/admin/' + ui.esc(rec.id) + '">← Zur Anfrage</a>' +
-            '<a class="btn-primary" href="#/">Fertig</a>' +
+            '<div class="report-actions-right">' +
+              '<button class="btn-ghost" id="print-btn">🖨 Drucken / PDF</button>' +
+              '<a class="btn-primary" href="#/">Fertig</a>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         ui.footer();
 
       ui.render(html);
+      var p = global.document.getElementById('print-btn');
+      if (p) p.addEventListener('click', function () { global.print(); });
     });
   }
 
+  function scoreOverview(deals) {
+    var bars = deals.map(function (d, i) {
+      var col = d.score >= 7.5 ? 'var(--ok)' : d.score >= 5.5 ? 'var(--warn)' : 'var(--err)';
+      return { label: 'Deal ' + (i + 1) + ' · ' + d.title, value: d.score, display: d.score.toFixed(1), color: col };
+    });
+    return '<div class="chart-card overview-card">' +
+      '<div class="chart-card-head">Deal-Score im Vergleich</div>' +
+      charts.bars(bars) + '</div>';
+  }
+
+  function gapLabel(d) {
+    if (d.valueGapPct > 1) return '<span class="gap good">' + d.valueGapPct + '% unter Markt</span>';
+    if (d.valueGapPct < -1) return '<span class="gap bad">' + Math.abs(d.valueGapPct) + '% über Markt</span>';
+    return '<span class="gap neutral">am Marktwert</span>';
+  }
+
   function cardHtml(d, i) {
-    var args = d.argumente.map(function (a) { return '<li>' + ui.esc(a) + '</li>'; }).join('');
-    return '' +
-      '<div class="deal-card">' +
-        '<div class="deal-rank">Deal ' + (i + 1) + '</div>' +
-        '<div class="deal-top">' +
-          '<div class="deal-model">' + ui.esc(d.modell) + '</div>' +
-          '<div class="deal-price">' + ui.esc(d.preis) + '</div>' +
+    var args = d.negotiationArgs.map(function (a) { return '<li>' + ui.esc(a) + '</li>'; }).join('');
+    return '<div class="deal-card reco-border-' + d.recommendation.level + '">' +
+        '<div class="deal-cardhead">' +
+          '<span class="deal-rank">Deal ' + (i + 1) + '</span>' +
+          ui.riskBadge(d.risk.level, 'Risiko: ' + d.risk.label) +
         '</div>' +
+        '<div class="deal-model">' + ui.esc(d.title) + '</div>' +
+        '<div class="deal-sub">' + d.year + ' · ' + ui.esc(fmt.km(d.km)) + ' · ' + ui.esc(d.condition) + ' · ' + ui.esc(d.seller) + '</div>' +
+
+        '<div class="deal-scorewrap">' + charts.gauge(d.score) + '</div>' +
+
+        '<div class="deal-pricebox">' +
+          '<div class="price-main">' + ui.esc(fmt.money(d.asking, d.currency)) + '</div>' +
+          '<div class="price-sub">Marktwert Ø ' + ui.esc(fmt.money(d.marketValue, d.currency)) + ' · ' + gapLabel(d) + '</div>' +
+        '</div>' +
+
         '<div class="deal-specs">' +
-          spec('Kilometer', d.km) +
-          spec('Baujahr', d.baujahr) +
+          spec('Baujahr', d.year) +
+          spec('Kilometer', fmt.number(d.km)) +
+          spec('Zustand', d.condition) +
+          spec('Service', d.serviceHistory ? 'Heft vorhanden' : 'unklar') +
         '</div>' +
-        '<div class="deal-scores">' +
-          '<div class="score">' +
-            '<div class="score-label">Deal-Score</div>' +
-            '<div class="score-bar"><span style="width:' + (d.score * 10) + '%"></span></div>' +
-            '<div class="score-val">' + d.score.toFixed(1) + '<small>/10</small></div>' +
-          '</div>' +
-          '<div class="risk risk-' + d.risikoLevel + '">' +
-            '<div class="score-label">Risiko</div>' +
-            '<div class="risk-val">' + ui.esc(d.risiko) + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="deal-reco reco-' + d.empfehlungLevel + '">' +
-          '<strong>Empfehlung:</strong> ' + ui.esc(d.empfehlung) +
-        '</div>' +
-        '<div class="deal-args">' +
-          '<div class="deal-args-head">Verhandlungsargumente</div>' +
-          '<ul>' + args + '</ul>' +
-        '</div>' +
+
+        '<div class="deal-reco reco-' + d.recommendation.level + '"><strong>Empfehlung:</strong> ' + ui.esc(d.recommendation.text) + '</div>' +
+
+        '<div class="deal-args"><div class="deal-args-head">Verhandlungsargumente</div><ul>' + args + '</ul></div>' +
       '</div>';
   }
 
@@ -90,86 +124,36 @@
       '<span class="spec-val">' + ui.esc(val) + '</span></div>';
   }
 
-  // ---------- Mock-Generierung ----------
-  function buildDeals(v) {
-    var cur = v.waehrung || 'CHF';
-    var lo = parseInt(v.budget_von) || 3000;
-    var hi = parseInt(v.budget_bis) || 8000;
-    var span = Math.max(hi - lo, 1000);
-
-    // Modellnamen: Wunschmodell + stil-typische Beispiele
-    var base = v.modell && v.modell.trim() ? v.modell.trim() : modelForStyle(v.stil);
-    var alts = altModels(v.stil, base);
-
-    function money(n) {
-      var sep = cur === 'CHF' ? "'" : '.';
-      return cur + ' ' + (n >= 1000 ? Math.floor(n / 1000) + sep + String(n % 1000).padStart(3, '0') : n);
-    }
-
-    return [
-      {
-        modell: base,
-        preis: money(lo + Math.round(span * 0.35)),
-        km: km(18000), baujahr: yearFrom(v.baujahr, 2),
-        score: 8.7, risiko: 'Niedrig', risikoLevel: 'low',
-        empfehlung: 'Top-Deal — schnell zuschlagen.', empfehlungLevel: 'good',
-        argumente: ['Preis 8% unter Marktschnitt für dieses Modell.', 'Lückenloses Serviceheft erwähnt.', 'Reifen & Bremsen laut Inserat neu — kein sofortiger Invest nötig.']
-      },
-      {
-        modell: alts[0],
-        preis: money(lo + Math.round(span * 0.6)),
-        km: km(31000), baujahr: yearFrom(v.baujahr, 4),
-        score: 7.2, risiko: 'Mittel', risikoLevel: 'mid',
-        empfehlung: 'Solide — bei Besichtigung Kette & Ritzel prüfen.', empfehlungLevel: 'ok',
-        argumente: ['Etwas höherer km-Stand → Spielraum für ' + (cur) + ' 300–500 Nachlass.', 'Letzter Service unklar — Nachweis verlangen.', 'Zweithand: Vorbesitzer-Historie erfragen.']
-      },
-      {
-        modell: alts[1],
-        preis: money(lo + Math.round(span * 0.85)),
-        km: km(9000), baujahr: yearFrom(v.baujahr, 1),
-        score: 6.4, risiko: 'Höher', risikoLevel: 'high',
-        empfehlung: 'Nur mit MFK/Gutachten — Preis grenzwertig.', empfehlungLevel: 'warn',
-        argumente: ['Preis am oberen Budgetrand — wenig Verhandlungsspielraum eingeplant.', 'Händlerinserat: Gewährleistung als Hebel nutzen.', 'Optische Mängel auf Fotos → Kostenvoranschlag als Argument.']
-      }
-    ];
+  function comparisonTable(deals) {
+    var rows = deals.map(function (d, i) {
+      return '<tr>' +
+        '<td><strong>Deal ' + (i + 1) + '</strong><br><span class="muted-cell">' + ui.esc(d.title) + '</span></td>' +
+        '<td>' + d.year + '</td>' +
+        '<td>' + ui.esc(fmt.number(d.km)) + '</td>' +
+        '<td>' + ui.esc(fmt.money(d.asking, d.currency)) + '</td>' +
+        '<td>' + ui.esc(fmt.money(d.marketValue, d.currency)) + '</td>' +
+        '<td><strong>' + d.score.toFixed(1) + '</strong></td>' +
+        '<td>' + ui.riskBadge(d.risk.level, d.risk.label) + '</td>' +
+        '</tr>';
+    }).join('');
+    return '<div class="chart-card"><div class="chart-card-head">Vergleich auf einen Blick</div>' +
+      '<div class="table-card no-shadow"><table class="tbl compare-tbl"><thead><tr>' +
+        '<th>Deal</th><th>Baujahr</th><th>km</th><th>Preis</th><th>Marktwert</th><th>Score</th><th>Risiko</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
   }
 
-  function modelForStyle(stil) {
-    var s = (Array.isArray(stil) ? stil[0] : stil) || '';
-    if (/Sport/i.test(s)) return 'Yamaha YZF-R3';
-    if (/Scrambler|Retro/i.test(s)) return 'Triumph Street Twin';
-    if (/Enduro|Adventure/i.test(s)) return 'Suzuki V-Strom 650';
-    if (/Touring/i.test(s)) return 'Kawasaki Versys 650';
-    return 'Yamaha MT-07';
+  function checklistCard(d) {
+    var items = d.inspectionPoints.map(function (p) { return '<li>' + ui.esc(p) + '</li>'; }).join('');
+    return '<div class="chart-card">' +
+      '<div class="chart-card-head">Besichtigungs-Checkliste · ' + ui.esc(d.title) + '</div>' +
+      '<ul class="check-list">' + items + '</ul></div>';
   }
 
-  function altModels(stil, base) {
-    var pool = ['Honda CB500F', 'Kawasaki Z650', 'KTM 390 Duke', 'Suzuki SV650', 'Honda CB650R', 'Yamaha XSR700'];
-    var out = pool.filter(function (m) { return m !== base; });
-    return [out[0], out[1]];
-  }
-
-  function km(n) {
-    return n.toLocaleString('de-CH').replace(/\./g, "'") + ' km';
-  }
-
-  function yearFrom(baujahrAb, offset) {
-    var y = parseInt(baujahrAb);
-    if (!y || isNaN(y)) y = 2022;
-    return String(y + offset > 2024 ? 2024 : y + offset);
-  }
-
-  function budgetText(v) {
-    var cur = v.waehrung || 'CHF';
-    if (!v.budget_von && !v.budget_bis) return cur + ' (offen)';
-    return cur + ' ' + (v.budget_von || '?') + '–' + (v.budget_bis || '?');
-  }
-
-  function summaryText(v) {
-    var stil = Array.isArray(v.stil) ? v.stil.join(', ') : (v.stil || 'verschiedene Stile');
-    var modell = v.modell ? '„' + v.modell + '“' : stil;
-    return 'Wir haben den Markt in ' + (v.region || 'deiner Region') +
-      ' nach ' + modell + ' durchsucht und 3 passende Inserate bewertet — sortiert nach Deal-Score.';
+  function questionsCard(d) {
+    var items = d.sellerQuestions.map(function (q) { return '<li>' + ui.esc(q) + '</li>'; }).join('');
+    return '<div class="chart-card">' +
+      '<div class="chart-card-head">Fragen an den Verkäufer</div>' +
+      '<ol class="q-list">' + items + '</ol></div>';
   }
 
   global.TDS = global.TDS || {};

@@ -1,0 +1,20 @@
+{
+  "name": "Töff Deal Scout",
+  "short_name": "DealScout",
+  "description": "Motorrad-Kaufberatung: den besten Deal finden — mit Deal-Score, Risiko und Verhandlungsargumenten.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0D0D0D",
+  "theme_color": "#0D0D0D",
+  "lang": "de-CH",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,85 +1,97 @@
-# Töff Deal Scout — Web-App (MVP)
+# Töff Deal Scout — Web-App
 
-Erste klickbare Frontend-Version des Töff Deal Scout. Reines Frontend,
-**kein Backend, kein Login, keine Zahlung, keine externe API**. Anfragen
-werden im **LocalStorage** des Browsers gespeichert.
+Klickbare Frontend-App für eine **Motorrad-Kaufberatung (Deal-Scout)**.
+Nutzer senden eine Suchanfrage ab, ein Admin verwaltet sie, und pro Anfrage
+wird ein datengetriebener **Deal-Report** erzeugt.
 
-## Sofort testen
+Reines Frontend — **kein Backend, kein Login, keine Zahlung, keine externe
+API.** Persistenz über **LocalStorage**. Kein Build-Schritt.
 
-Keine Installation, kein Build-Schritt nötig:
+## Sofort starten
 
+```bash
+# Variante A: einfach index.html im Browser öffnen (Doppelklick)
+
+# Variante B: lokaler Server (empfohlen — saubere URLs, PWA aktiv)
+npm start          # http://localhost:8000   (nutzt python3 http.server)
 ```
-index.html im Browser öffnen (Doppelklick genügt)
+
+## Tests
+
+```bash
+npm test           # 22 Tests headless (node tests/node.js)
 ```
 
-Optional über einen lokalen Server (empfohlen, sauberere URLs/Reload):
-
-```
-python3 -m http.server 8000
-# dann http://localhost:8000 öffnen
-```
+Oder visuell: `tests.html` im Browser öffnen.
 
 ## Seiten / Routen
 
-Die App nutzt einen Hash-Router (läuft ohne Server direkt über `file://`):
+Hash-Router (läuft ohne Server, auch über `file://`):
 
-| Route            | Seite                                            |
-|------------------|--------------------------------------------------|
-| `#/`             | Landingpage mit Erklärung                        |
-| `#/form`         | Suchanfrage-Formular                             |
-| `#/success/:id`  | Erfolgsseite nach dem Absenden                   |
-| `#/admin`        | Admin: Liste aller Anfragen + Status-Filter      |
-| `#/admin/:id`    | Admin: Detailansicht, Status ändern              |
-| `#/report/:id`   | Report-Mockup mit 3 Beispiel-Deals               |
+| Route             | Seite                                                        |
+|-------------------|-------------------------------------------------------------|
+| `#/`              | Landingpage mit Erklärung & Ablauf                          |
+| `#/form`          | Suchanfrage-Formular (mit Entwurf-Autosave)                 |
+| `#/success/:id`   | Erfolgsseite nach dem Absenden                              |
+| `#/admin`         | Admin-Dashboard: KPIs, Charts, Such-/Filter-/Sortier-Liste |
+| `#/admin/:id`     | Detail: Stammdaten, Status, Notizen, Verlauf               |
+| `#/report/:id`    | Deal-Report mit Score, Risiko, Verhandlungsargumenten      |
+| `#/settings`      | Design (Hell/Dunkel) & Datenverwaltung                     |
 
-## Bedienung
+## Features
 
-1. **Anfrage stellen:** `#/form` ausfüllen → wird lokal gespeichert (Status „Neu").
-2. **Admin:** `#/admin` zeigt alle Anfragen. Nach Status filtern, Zeile anklicken
-   für Details, Status umstellen (Neu → In Prüfung → Report erstellt → Abgeschlossen).
-3. **Report:** Aus Detail oder Erfolgsseite öffnen — Mockup mit 3 Deal-Karten.
+**Nutzer**
+- Vollständiges Suchanfrage-Formular (alle Felder des Originals) mit Validierung
+- Automatischer **Entwurf-Speicher** (Wiederherstellen nicht abgeschickter Eingaben)
+- Erfolgsseite mit Anfrage-Nummer und direktem Report-Link
 
-Im Admin gibt es **„Beispieldaten laden"** und **„Alle löschen"** für schnelles Demo.
+**Admin**
+- Dashboard mit **KPIs** und **Charts** (Status-Donut, Paket-Balken — reines SVG/CSS)
+- Liste mit **Volltextsuche**, **Statusfilter** und **Sortierung**
+- Detailansicht mit **Statuswechsel**, **internen Notizen** und **Status-Verlauf** (Audit-Trail)
+- **Export** als CSV und JSON, **Import** per JSON, Beispieldaten & „Alle löschen"
+
+**Report (Scout-Engine)**
+- Echte **Deal-Scoring-Engine** statt fixer Texte: berechnet Deal-Score (0–10),
+  Risiko, Marktwert-Abweichung und Empfehlung aus einem Motorrad-Markt-Datensatz
+- Berücksichtigt Budget, Stil, Wunschmodell, **A2-Tauglichkeit**, Baujahr & max. km
+- **Deterministisch** pro Anfrage (gleiche ID → gleicher Report)
+- Pro Deal: Verhandlungsargumente, Besichtigungs-Checkliste, Verkäuferfragen
+- **Druckbar** (Drucken / als PDF speichern) mit eigenem Print-Layout
+- Paket steuert die Anzahl Deals (Quick-Check 1 · Scout 3 · Premium 5)
+
+**Plattform**
+- **Dark-/Light-Mode** (persistiert, folgt System-Einstellung)
+- **Toast**-Benachrichtigungen
+- **PWA**: installierbar & offline (Service Worker, aktiv über http)
+- Mobile responsive, Tabellen werden auf kleinen Screens zu Karten
 
 ## Projektstruktur
 
 ```
-index.html                 Einstieg, lädt alle Skripte
-css/styles.css             gesamtes Design (auf Original-Formular aufgebaut)
+index.html · tests.html · manifest.json · sw.js · favicon.svg
+css/styles.css
 js/
-  config.js                Regionen, Budgets, Pakete, Status (zentral)
-  store.js                 Datenschicht (LocalStorage, Promise-basiert)
-  router.js                Hash-Router
-  app.js                   Routen-Registrierung & Start
-  components/
-    layout.js              Header, Footer, Helfer (esc, Datum, Status-Badge)
-    landing.js             Startseite
-    form.js                Suchanfrage-Formular + Validierung
-    success.js             Erfolgsseite
-    admin.js               Admin-Liste + Detail
-    report.js              Report-Mockup
+  core/      events · format · charts · theme · toast
+  data/      config (Regionen/Pakete/Status) · market (Modell-Katalog)
+  services/  store (Repository + Adapter) · scout (Scoring-Engine)
+  components/ layout · landing · form · success · admin · report · settings · notfound
+  router.js · app.js
+tests/       framework · suite · node (Headless-Runner)
 ```
 
-## Bewusst erweiterbar gehalten
+Details & Erweiterungspfade (Backend, Login, Stripe): siehe
+[`ARCHITECTURE.md`](ARCHITECTURE.md).
 
-Die Architektur ist auf spätere Ausbaustufen vorbereitet, ohne jetzt zu
-überengineeren:
+## Bewusst erweiterbar
 
-- **Backend:** Nur `js/store.js` austauschen. Die Methoden (`list`, `get`,
-  `create`, `updateStatus`, `remove`) sind bereits Promise-basiert — der Body
-  kann 1:1 auf `fetch()` umgestellt werden, Views bleiben unverändert.
-- **Login/Auth:** In `js/app.js` vor den Admin-Routen einen Guard einsetzen
-  (Markierung im Code vorhanden).
-- **Stripe/TWINT:** Im Submit-Handler von `js/form.js` nach `store.create()`
-  einen Checkout-Redirect ergänzen.
+- **Backend:** `RestAdapter` in `services/store.js` ergänzen und via
+  `store._useAdapter(...)` setzen — Promise-API & Views bleiben unverändert.
+- **Login/Auth:** Guard in `app.js` vor den Admin-/Settings-Routen einsetzen.
+- **Stripe/TWINT:** im Submit-Handler von `components/form.js` nach
+  `store.create()` einen Checkout-Redirect ergänzen.
+- **Echte Inserate:** `data/market.js` + `services/scout.js` durch
+  API/Preisindex ersetzen; `report.js` konsumiert nur `{ deals, summary }`.
 
-## Datenmodell (LocalStorage-Key `tds_requests_v1`)
-
-```json
-{
-  "id": "TDS-AB12CD",
-  "createdAt": "2026-06-16T13:00:00.000Z",
-  "status": "Neu",
-  "values": { "vorname": "...", "nachname": "...", "...": "..." }
-}
-```
+> Hinweis: Der Report nutzt **synthetische** Beispiel-Inserate (kein echter
+> Marktzugriff). Daten liegen ausschliesslich lokal im Browser.
