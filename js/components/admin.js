@@ -90,6 +90,9 @@
     var pkgBars = Object.keys(s.byPackage).map(function (k) {
       return { label: k, value: s.byPackage[k] };
     });
+    var countryBars = Object.keys(s.byCountry).map(function (k) {
+      return { label: k, value: s.byCountry[k] };
+    }).sort(function (a, b) { return b.value - a.value; });
 
     return '<div class="dash-grid">' +
         kpi('Anfragen gesamt', s.total, '') +
@@ -110,7 +113,29 @@
           '<div class="chart-card-head">Pakete</div>' +
           (pkgBars.length ? charts.bars(pkgBars) : '<div class="muted-cell">Noch keine Daten.</div>') +
         '</div>' +
+      '</div>' +
+      '<div class="dash-charts">' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Länder</div>' +
+          (countryBars.length ? charts.bars(countryBars) : '<div class="muted-cell">Noch keine Daten.</div>') +
+        '</div>' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Letzte Aktivität</div>' +
+          recentHtml() +
+        '</div>' +
       '</div>';
+  }
+
+  function recentHtml() {
+    if (!allRows.length) return '<div class="muted-cell">Noch keine Anfragen.</div>';
+    return '<div class="recent-list">' + allRows.slice(0, 5).map(function (r) {
+      var v = r.values;
+      return '<a class="recent-item" href="#/admin/' + ui.esc(r.id) + '">' +
+        '<span class="recent-name">' + ui.esc(v.vorname + ' ' + v.nachname) + '</span>' +
+        ui.statusBadge(r.status) +
+        '<span class="recent-time">' + ui.esc(fmt.relative(r.updatedAt || r.createdAt)) + '</span>' +
+        '</a>';
+    }).join('') + '</div>';
   }
 
   function kpi(label, value, sub) {

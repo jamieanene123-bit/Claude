@@ -16,8 +16,12 @@
   var router = TDS.router;
   var views = TDS.views;
 
-  // Theme so früh wie möglich anwenden.
+  // Theme & Dichte so früh wie möglich anwenden.
   TDS.theme.init();
+  try {
+    var dens = global.localStorage.getItem('tds_density');
+    if (dens) global.document.documentElement.setAttribute('data-density', dens);
+  } catch (e) {}
 
   // Routen
   router.register('/', views.landing);
@@ -48,9 +52,23 @@
   var onScroll = function () {
     var y = global.scrollY || global.pageYOffset || 0;
     global.document.documentElement.classList.toggle('is-scrolled', y > 8);
+    // Sanfter Parallax-Wert für den Hero-Glow (CSS nutzt --sy).
+    global.document.documentElement.style.setProperty('--sy', y);
   };
   global.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+
+  // Tastatur-Shortcuts: "/" fokussiert die Admin-Suche, "n" startet eine neue Anfrage.
+  global.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === '/') {
+      var s = global.document.getElementById('search');
+      if (s) { e.preventDefault(); s.focus(); }
+    } else if (e.key === 'n') {
+      router.navigate('/form');
+    }
+  });
 
   // Höfliche Ansage des Seitenwechsels für Screenreader (ohne Fokus zu stehlen).
   function announceRoute() {

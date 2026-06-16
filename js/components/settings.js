@@ -13,7 +13,8 @@
 
   function view() {
     store.stats().then(function (s) {
-      var cur = theme.current();
+      var cur = theme.mode();
+      var dens = currentDensity();
       var html = '' +
         '<div class="hero hero-sm">' +
           '<div class="hero-eye">Einstellungen</div>' +
@@ -27,10 +28,19 @@
             '<div class="field">' +
               '<label class="lbl">Farbschema</label>' +
               '<div class="segmented" id="theme-seg">' +
+                segBtn('system', 'System', cur) +
                 segBtn('light', 'Hell', cur) +
                 segBtn('dark', 'Dunkel', cur) +
               '</div>' +
-              '<div class="hint-text">Folgt standardmässig der System-Einstellung.</div>' +
+              '<div class="hint-text">„System" folgt der Einstellung deines Geräts.</div>' +
+            '</div>' +
+            '<div class="field">' +
+              '<label class="lbl">Dichte</label>' +
+              '<div class="segmented" id="density-seg">' +
+                densBtn('comfortable', 'Komfortabel', dens) +
+                densBtn('compact', 'Kompakt', dens) +
+              '</div>' +
+              '<div class="hint-text">„Kompakt" zeigt mehr auf einmal (engere Abstände).</div>' +
             '</div>' +
           '</div>' +
 
@@ -65,19 +75,42 @@
   function segBtn(val, label, cur) {
     return '<button class="seg-btn' + (cur === val ? ' active' : '') + '" data-theme="' + val + '">' + ui.esc(label) + '</button>';
   }
+  function densBtn(val, label, cur) {
+    return '<button class="seg-btn' + (cur === val ? ' active' : '') + '" data-density="' + val + '">' + ui.esc(label) + '</button>';
+  }
+
+  function currentDensity() {
+    try { return global.localStorage.getItem('tds_density') || 'comfortable'; } catch (e) { return 'comfortable'; }
+  }
+  function setDensity(val) {
+    try { global.localStorage.setItem('tds_density', val); } catch (e) {}
+    global.document.documentElement.setAttribute('data-density', val);
+  }
 
   function aboutRow(k, v) {
     return '<div class="dl-row"><dt>' + ui.esc(k) + '</dt><dd>' + ui.esc(v) + '</dd></div>';
   }
 
+  function activate(group, el) {
+    Array.prototype.forEach.call(group.parentNode.querySelectorAll('.seg-btn'), function (b) {
+      b.classList.toggle('active', b === el);
+    });
+  }
+
   function wire() {
-    Array.prototype.forEach.call(global.document.querySelectorAll('.seg-btn'), function (btn) {
+    Array.prototype.forEach.call(global.document.querySelectorAll('#theme-seg .seg-btn'), function (btn) {
       btn.addEventListener('click', function () {
         theme.set(this.getAttribute('data-theme'));
-        Array.prototype.forEach.call(global.document.querySelectorAll('.seg-btn'), function (b) {
-          b.classList.toggle('active', b === btn);
-        });
-        toast.info('Design: ' + (theme.current() === 'dark' ? 'Dunkel' : 'Hell'));
+        activate(this, this);
+        var m = theme.mode();
+        toast.info('Farbschema: ' + (m === 'system' ? 'System' : m === 'dark' ? 'Dunkel' : 'Hell'));
+      });
+    });
+    Array.prototype.forEach.call(global.document.querySelectorAll('#density-seg .seg-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        setDensity(this.getAttribute('data-density'));
+        activate(this, this);
+        toast.info('Dichte: ' + (this.getAttribute('data-density') === 'compact' ? 'Kompakt' : 'Komfortabel'));
       });
     });
 
