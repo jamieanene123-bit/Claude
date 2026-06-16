@@ -29,6 +29,7 @@
       var top = deals[0];
 
       var html = '' +
+        '<div class="print-only print-head">TöffDealScout · Deal-Report · ' + ui.esc(rec.id) + ' · ' + ui.esc(fmt.dateShort(new Date().toISOString())) + '</div>' +
         '<div class="report-head"><div class="report-head-inner">' +
           '<div class="hero-eye">Deal-Report · Mockup</div>' +
           '<h1>Top-Deals für ' + ui.esc(v.vorname) + '</h1>' +

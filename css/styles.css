@@ -688,3 +688,34 @@ footer a:hover { color:#fff; }
   .hero::before { transform:none !important; }
   .recent-item:hover { transform:none; }
 }
+
+/* ============================================================
+   R24–R28 — Pricing, FAQ, Print-Header
+   ============================================================ */
+.pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:10px; }
+@media(max-width:680px){ .pricing-grid{ grid-template-columns:1fr; } }
+.price-card { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:22px; display:flex; flex-direction:column; box-shadow:var(--shadow-sm); transition:transform .28s var(--ease), box-shadow .28s var(--ease); }
+.price-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+.price-card-rec { border-color:var(--accent); box-shadow:0 8px 30px rgba(232,93,26,.14); }
+.price-card .pkg-badge { position:absolute; top:14px; right:14px; }
+.price-name { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); }
+.price-amount { font-family:var(--font-display); font-weight:700; font-size:30px; margin:6px 0 2px; }
+.price-sub2 { font-size:12.5px; color:var(--muted); margin-bottom:12px; }
+.price-feats { list-style:none; display:grid; gap:7px; margin-bottom:16px; }
+.price-feats li { font-size:12.5px; color:var(--muted); padding-left:18px; position:relative; }
+.price-feats li::before { content:"✓"; position:absolute; left:0; color:var(--accent); font-weight:700; }
+.price-card .btn-block { margin-top:auto; }
+
+.faq { display:grid; gap:8px; margin-bottom:10px; }
+.faq-item { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:0 18px; box-shadow:var(--shadow-sm); }
+.faq-item summary { cursor:pointer; padding:15px 0; font-weight:500; font-size:14.5px; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.faq-item summary::-webkit-details-marker { display:none; }
+.faq-item summary::after { content:"+"; color:var(--accent); font-size:20px; font-weight:700; transition:transform .2s var(--ease); }
+.faq-item[open] summary::after { transform:rotate(45deg); }
+.faq-a { padding:0 0 16px; font-size:13.5px; color:var(--muted); line-height:1.6; }
+
+.print-only { display:none; }
+@media print {
+  .print-only { display:block; }
+  .print-head { font-family:var(--font-display); font-weight:700; font-size:14px; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom:12px; }
+}

@@ -3,7 +3,7 @@
  * Aktiv nur, wenn die App über http(s) ausgeliefert wird (nicht file://).
  * Strategie: cache-first für eigene Assets, Netzwerk als Fallback.
  */
-var CACHE = 'tds-shell-v1';
+var CACHE = 'tds-shell-v2';
 var ASSETS = [
   './',
   'index.html',
@@ -49,6 +49,11 @@ self.addEventListener('activate', function (e) {
 self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
+  // Navigationsanfragen offline auf die App-Shell zurückfallen lassen.
+  if (req.mode === 'navigate') {
+    e.respondWith(fetch(req).catch(function () { return caches.match('index.html'); }));
+    return;
+  }
   e.respondWith(
     caches.match(req).then(function (cached) {
       return cached || fetch(req).then(function (res) {
