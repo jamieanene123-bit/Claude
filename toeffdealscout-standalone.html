@@ -1,0 +1,3947 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Töff Deal Scout</title>
+<meta name="description" content="Töff Deal Scout — Motorrad-Kaufberatung mit Deal-Score, Risiko und Verhandlungsargumenten.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAF6F0">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1A1512">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Töff Deal Scout — Stylesheet
+   Basiert auf dem Original-Formular-Design, erweitert für die
+   gesamte App (Landing, Admin, Report). Mobile-first & responsive.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black:#1A1512;        /* warmes Dunkel (Header/Footer/Admin-Bar) */
+  --white:#FFFFFF;
+  --bg:#FAF6F0;           /* warmes Cream */
+  --surface:#FFFFFF;
+  --border:#EBE3D7;
+  --accent:#E85D1A;
+  --accent-h:#CF4E0F;
+  --accent-lite:#FBEDE3;
+  --text:#241D17;         /* warmes Near-Black */
+  --muted:#6E655B;
+  --hint:#A89E90;
+  --err:#C0392B;
+  --err-bg:#FBEDEB;
+  --ok:#1A7A3F;
+  --ok-bg:#E9F5EE;
+  --warn:#B7791F;
+  --warn-bg:#FAF1DD;
+  --r:12px;
+  --r-sm:8px;
+  --font-display:'Fraunces','Space Grotesk',Georgia,serif;
+  --ease:cubic-bezier(.16,.84,.44,1);
+  --shadow-sm:0 1px 2px rgba(40,30,20,.05);
+  --shadow:0 10px 30px rgba(40,30,20,.10);
+}
+html { scroll-behavior:smooth; }
+
+/* ---------- ACCESSIBILITY ---------- */
+.skip-link { position:absolute; left:-9999px; top:0; z-index:2000; background:var(--accent); color:#fff; padding:10px 16px; border-radius:0 0 8px 0; font-size:13px; font-weight:600; }
+.skip-link:focus { left:0; }
+.main { display:block; }
+.main:focus { outline:none; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+/* Sichtbarer Fokus nur bei Tastatur-Navigation */
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:3px; }
+.btn-primary:focus-visible, .btn-submit:focus-visible { outline-offset:3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh;
+  font-size:15px; line-height:1.6;
+}
+a { color:inherit; text-decoration:none; }
+
+/* ---------- HEADER ---------- */
+.hdr { background:var(--black); padding:14px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.logo { font-family:'Space Grotesk','Inter',sans-serif; font-size:18px; font-weight:700; color:#fff; letter-spacing:-.3px; }
+.logo em { color:var(--accent); font-style:normal; }
+.hdr-nav { display:flex; align-items:center; gap:18px; }
+.hdr-link { font-size:13px; color:#cfcdc8; transition:color .15s; }
+.hdr-link:hover { color:#fff; }
+.hdr-tag { font-size:11px; color:#666; text-transform:uppercase; letter-spacing:.08em; }
+@media(max-width:520px){ .hdr-tag{ display:none; } .hdr{ padding:14px 16px; } }
+
+/* ---------- HERO ---------- */
+.hero { background:var(--black); border-bottom:3px solid var(--accent); padding:48px 24px 52px; text-align:center; }
+.hero-sm { padding:34px 24px 38px; }
+.hero-eye { display:inline-block; font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
+.hero h1 { font-family:'Space Grotesk','Inter',sans-serif; font-size:clamp(24px,5vw,38px); font-weight:700; color:#fff; letter-spacing:-.4px; line-height:1.2; margin:0 auto 12px; max-width:560px; }
+.hero p { font-size:14px; color:#9a978f; max-width:440px; margin:0 auto 24px; }
+.hero-pills { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:24px; }
+.pill { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.11); border-radius:99px; padding:5px 12px; font-size:12px; color:#9a978f; display:flex; align-items:center; gap:5px; }
+.pill::before { content:"✓"; color:var(--accent); font-weight:700; }
+
+/* ---------- BUTTONS ---------- */
+.btn-primary {
+  display:inline-block; padding:13px 26px; background:var(--accent); color:#fff;
+  font-family:'Space Grotesk','Inter',sans-serif; font-size:15px; font-weight:700;
+  border:none; border-radius:var(--r); cursor:pointer; transition:background .15s, transform .1s; letter-spacing:-.2px;
+}
+.btn-primary:hover { background:var(--accent-h); }
+.btn-primary:active { transform:scale(.99); }
+.btn-sm { padding:9px 16px; font-size:13px; }
+.btn-ghost {
+  display:inline-block; padding:12px 22px; background:transparent; color:var(--text);
+  border:1.5px solid var(--border); border-radius:var(--r); font-size:14px; font-weight:500;
+  cursor:pointer; transition:border-color .15s, background .15s; font-family:inherit;
+}
+.btn-ghost:hover { border-color:var(--black); }
+.btn-ghost.danger { color:var(--err); border-color:transparent; }
+.btn-ghost.danger:hover { border-color:var(--err); background:var(--err-bg); }
+.btn-block { display:block; width:100%; text-align:center; margin-bottom:8px; }
+.btn-block:last-child { margin-bottom:0; }
+.link-btn { background:none; border:none; color:var(--accent); cursor:pointer; font:inherit; font-size:12px; padding:0; text-decoration:underline; }
+.link-btn.danger { color:var(--err); }
+
+/* ---------- WRAP ---------- */
+.wrap { max-width:600px; margin:32px auto 64px; padding:0 16px; }
+.wrap-narrow { max-width:520px; }
+.wrap-wide { max-width:980px; }
+
+/* ---------- LANDING: STEPS ---------- */
+.steps { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:28px; }
+@media(max-width:560px){ .steps{ grid-template-columns:1fr; } }
+.step { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:22px 20px; }
+.step-num { width:32px; height:32px; border-radius:50%; background:var(--black); color:#fff; font-family:'Space Grotesk',sans-serif; font-weight:700; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+.step-title { font-weight:600; font-size:15px; margin-bottom:6px; }
+.step-text { font-size:13px; color:var(--muted); }
+
+.cta-band { background:var(--black); border-radius:var(--r); padding:26px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; border-left:3px solid var(--accent); }
+.cta-title { font-family:'Space Grotesk',sans-serif; font-size:19px; font-weight:700; color:#fff; }
+.cta-sub { font-size:13px; color:#9a978f; margin-top:4px; }
+
+/* ---------- FORM ---------- */
+.sec { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:22px; margin-bottom:14px; }
+.sec-head { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--hint); margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.field { margin-bottom:16px; }
+.field:last-child { margin-bottom:0; }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media(max-width:480px){ .row2{ grid-template-columns:1fr; } }
+.mini-lbl { font-size:11px; color:var(--hint); margin-bottom:4px; }
+label.lbl { display:block; font-size:13px; font-weight:500; color:var(--text); margin-bottom:5px; }
+label.lbl .req { color:var(--accent); margin-left:2px; }
+label.lbl .opt { font-size:11px; font-weight:400; color:var(--hint); margin-left:5px; }
+.hint-text { font-size:11px; color:var(--hint); margin-top:4px; }
+
+input[type=text], input[type=email], input[type=tel], select, textarea {
+  width:100%; padding:10px 13px; font-family:inherit; font-size:14px; color:var(--text);
+  background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r-sm);
+  outline:none; transition:border-color .15s; appearance:none; -webkit-appearance:none;
+}
+input:focus, select:focus, textarea:focus { border-color:var(--black); }
+input.err, select.err, textarea.err { border-color:var(--err)!important; background:var(--err-bg); }
+input::placeholder, textarea::placeholder { color:var(--hint); }
+textarea { resize:vertical; min-height:80px; line-height:1.5; }
+.sel-wrap { position:relative; }
+.sel-wrap::after { content:'▾'; position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:12px; color:var(--hint); pointer-events:none; }
+select { padding-right:30px; cursor:pointer; }
+
+.err-msg { font-size:12px; color:var(--err); margin-top:4px; display:none; }
+.err-msg.show { display:block; }
+
+/* chips */
+.chips { display:flex; flex-wrap:wrap; gap:8px; }
+.chip-wrap { position:relative; }
+.chip-wrap input { position:absolute; opacity:0; width:0; height:0; }
+.chip-wrap label { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border:1.5px solid var(--border); border-radius:99px; font-size:13px; color:var(--muted); cursor:pointer; transition:all .12s; user-select:none; white-space:nowrap; }
+.chip-wrap input:checked + label { border-color:var(--black); background:var(--black); color:#fff; }
+.chip-wrap label:hover { border-color:var(--black); }
+.chips.err-chips .chip-wrap label { border-color:var(--err); }
+
+/* packages */
+.pkg-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+@media(max-width:480px){ .pkg-grid{ grid-template-columns:1fr; } }
+.pkg-wrap { position:relative; }
+.pkg-wrap input { position:absolute; opacity:0; width:0; height:0; }
+.pkg-card { display:block; height:100%; border:1.5px solid var(--border); border-radius:var(--r); padding:14px; cursor:pointer; transition:all .15s; }
+.pkg-wrap input:checked + .pkg-card { border-color:var(--black); background:var(--black); color:#fff; }
+.pkg-wrap input:focus-visible + .pkg-card { outline:2px solid var(--accent); outline-offset:2px; }
+.pkg-wrap input:checked + .pkg-card .pkg-sub, .pkg-wrap input:checked + .pkg-card .pkg-feat { color:#aaa; }
+.pkg-wrap input:checked + .pkg-card .pkg-name { color:#888; }
+.pkg-badge { display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:2px 7px; border-radius:4px; background:var(--accent); color:#fff; margin-bottom:7px; }
+.pkg-name { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--hint); margin-bottom:5px; }
+.pkg-price { font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; margin-bottom:4px; }
+.pkg-price sub { font-size:13px; font-weight:500; vertical-align:baseline; }
+.pkg-sub { font-size:11px; color:var(--muted); margin-bottom:8px; line-height:1.4; }
+.pkg-feats { list-style:none; }
+.pkg-feat { font-size:11px; color:var(--muted); padding:2px 0; display:flex; align-items:flex-start; gap:5px; }
+.pkg-feat::before { content:"✓"; color:var(--accent); font-weight:700; flex-shrink:0; }
+
+/* submit */
+.submit-area { margin-top:18px; }
+.btn-submit { width:100%; padding:15px 24px; background:var(--accent); color:#fff; font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:700; border:none; border-radius:var(--r); cursor:pointer; transition:background .15s, transform .1s; letter-spacing:-.2px; }
+.btn-submit:hover { background:var(--accent-h); }
+.btn-submit:active { transform:scale(.99); }
+.btn-submit:disabled { background:#bbb; cursor:not-allowed; }
+.submit-note { text-align:center; font-size:11px; color:var(--hint); margin-top:10px; line-height:1.7; }
+.submit-note strong { color:var(--muted); }
+
+/* ---------- SUCCESS ---------- */
+.success { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:40px 24px; text-align:center; }
+.ok-ico { width:56px; height:56px; border-radius:50%; background:var(--ok-bg); border:2px solid var(--ok); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; font-size:26px; color:var(--ok); }
+.ok-title { font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; margin-bottom:8px; }
+.ok-text { font-size:14px; color:var(--muted); max-width:380px; margin:0 auto 16px; }
+.ok-detail { background:var(--bg); border-radius:var(--r-sm); padding:14px 16px; font-size:13px; color:var(--muted); text-align:left; line-height:1.6; }
+.ok-detail strong { display:block; color:var(--text); font-weight:500; margin-bottom:4px; }
+.ok-meta { display:flex; justify-content:center; gap:24px; flex-wrap:wrap; margin:20px 0; padding:16px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.ok-meta > div { display:flex; flex-direction:column; gap:4px; align-items:center; }
+.ok-meta span { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); }
+.ok-meta strong { font-size:14px; }
+.success-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+/* ---------- BADGES (Status) ---------- */
+.badge { display:inline-block; font-size:11px; font-weight:600; padding:3px 10px; border-radius:99px; white-space:nowrap; border:1px solid transparent; }
+.st-neu { background:var(--accent-lite); color:var(--accent-h); border-color:#f3cdb8; }
+.st-in-pruefung { background:#EEF2FB; color:#2B4FB7; border-color:#cdd9f3; }
+.st-report-erstellt { background:var(--ok-bg); color:var(--ok); border-color:#b8e0c6; }
+.st-abgeschlossen { background:#EEEDEA; color:var(--muted); border-color:var(--border); }
+
+/* ---------- ADMIN ---------- */
+.admin-bar { background:var(--black); padding:22px 24px; }
+.admin-bar-inner { max-width:980px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:0 16px; }
+.admin-title { font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:#fff; }
+.admin-sub { font-size:12px; color:#9a978f; margin-top:2px; }
+.back-link { font-size:12px; color:var(--accent); display:inline-block; margin-bottom:6px; }
+.back-link:hover { color:#fff; }
+
+.filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.filter-btn { background:var(--surface); border:1.5px solid var(--border); border-radius:99px; padding:7px 14px; font-size:13px; color:var(--muted); cursor:pointer; font-family:inherit; transition:all .12s; display:inline-flex; align-items:center; gap:6px; }
+.filter-btn:hover { border-color:var(--black); }
+.filter-btn.active { background:var(--black); border-color:var(--black); color:#fff; }
+.filter-count { font-size:11px; background:rgba(0,0,0,.08); border-radius:99px; padding:1px 7px; min-width:20px; text-align:center; }
+.filter-btn.active .filter-count { background:rgba(255,255,255,.18); }
+
+.table-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+.tbl { width:100%; border-collapse:collapse; }
+.tbl thead th { text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--hint); padding:12px 16px; border-bottom:1px solid var(--border); background:var(--bg); font-weight:600; }
+.tbl tbody td { padding:14px 16px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:middle; }
+.tbl tbody tr:last-child td { border-bottom:none; }
+.tbl tbody tr[data-id] { cursor:pointer; transition:background .12s; }
+.tbl tbody tr[data-id]:hover { background:var(--accent-lite); }
+.mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; }
+.muted-cell { color:var(--muted); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.empty-row { text-align:center; color:var(--muted); padding:36px 16px!important; }
+.empty-row a { color:var(--accent); }
+.admin-foot-note { font-size:12px; color:var(--hint); margin-top:14px; text-align:center; }
+
+/* responsive table -> cards on mobile */
+@media(max-width:620px){
+  .tbl thead { display:none; }
+  .tbl, .tbl tbody, .tbl tr, .tbl td { display:block; width:100%; }
+  .tbl tbody tr[data-id] { padding:12px 14px; border-bottom:1px solid var(--border); }
+  .tbl tbody td { border:none; padding:3px 0; }
+  .tbl tbody td.mono { font-weight:600; font-size:13px; }
+}
+
+/* ---------- ADMIN DETAIL ---------- */
+.detail-grid { display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start; }
+@media(max-width:720px){ .detail-grid{ grid-template-columns:1fr; } }
+.data-block { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:20px; margin-bottom:14px; }
+.data-block-head { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--hint); margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.dl { display:grid; gap:10px; }
+.dl-row { display:grid; grid-template-columns:140px 1fr; gap:12px; font-size:13px; }
+@media(max-width:480px){ .dl-row{ grid-template-columns:1fr; gap:2px; } }
+.dl-row dt { color:var(--hint); }
+.dl-row dd { color:var(--text); }
+
+.detail-side { position:sticky; top:16px; display:grid; gap:14px; }
+@media(max-width:720px){ .detail-side{ position:static; } }
+.side-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:18px; }
+.side-card-head { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--hint); margin-bottom:12px; }
+.current-status { margin-bottom:12px; }
+.side-pkg { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; }
+.side-saved { font-size:12px; color:var(--ok); margin-top:8px; opacity:0; transition:opacity .2s; }
+.side-saved.show { opacity:1; }
+
+/* ---------- REPORT ---------- */
+.report-head { background:var(--black); border-bottom:3px solid var(--accent); padding:40px 24px; }
+.report-head-inner { max-width:980px; margin:0 auto; padding:0 16px; }
+.report-head h1 { font-family:'Space Grotesk',sans-serif; font-size:clamp(22px,4vw,32px); font-weight:700; color:#fff; letter-spacing:-.4px; margin-bottom:10px; }
+.report-summary { font-size:14px; color:#9a978f; max-width:560px; margin-bottom:16px; }
+.report-meta { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.report-meta > span { font-size:12px; color:#cfcdc8; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.11); border-radius:99px; padding:4px 12px; }
+.report-note { background:var(--warn-bg); border:1px solid #ecd9ad; color:var(--warn); font-size:13px; padding:12px 16px; border-radius:var(--r); margin-bottom:18px; }
+
+.deals { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media(max-width:820px){ .deals{ grid-template-columns:1fr; } }
+.deal-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:20px; display:flex; flex-direction:column; }
+.deal-rank { display:inline-block; align-self:flex-start; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#fff; background:var(--black); padding:3px 10px; border-radius:99px; margin-bottom:14px; }
+.deal-top { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:14px; }
+.deal-model { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; line-height:1.25; }
+.deal-price { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:17px; color:var(--accent); white-space:nowrap; }
+.deal-specs { display:flex; gap:10px; margin-bottom:16px; }
+.spec { flex:1; background:var(--bg); border-radius:var(--r-sm); padding:8px 10px; }
+.spec-label { display:block; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); }
+.spec-val { font-size:13px; font-weight:600; }
+
+.deal-scores { display:flex; gap:12px; align-items:flex-end; margin-bottom:14px; }
+.score { flex:1; }
+.score-label { font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); margin-bottom:5px; }
+.score-bar { height:8px; background:var(--border); border-radius:99px; overflow:hidden; margin-bottom:5px; }
+.score-bar span { display:block; height:100%; background:var(--accent); border-radius:99px; }
+.score-val { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; }
+.score-val small { color:var(--hint); font-weight:500; font-size:11px; }
+.risk { text-align:right; }
+.risk-val { font-weight:700; font-size:14px; padding:3px 10px; border-radius:99px; display:inline-block; }
+.risk-low .risk-val { background:var(--ok-bg); color:var(--ok); }
+.risk-mid .risk-val { background:var(--warn-bg); color:var(--warn); }
+.risk-high .risk-val { background:var(--err-bg); color:var(--err); }
+
+.deal-reco { font-size:13px; padding:10px 12px; border-radius:var(--r-sm); margin-bottom:14px; line-height:1.45; }
+.deal-reco strong { font-weight:600; }
+.reco-good { background:var(--ok-bg); color:#155f31; }
+.reco-ok { background:#EEF2FB; color:#2B4FB7; }
+.reco-warn { background:var(--warn-bg); color:var(--warn); }
+
+.deal-args { margin-top:auto; }
+.deal-args-head { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--hint); margin-bottom:8px; }
+.deal-args ul { list-style:none; display:grid; gap:7px; }
+.deal-args li { font-size:12px; color:var(--muted); padding-left:18px; position:relative; line-height:1.4; }
+.deal-args li::before { content:"→"; position:absolute; left:0; color:var(--accent); font-weight:700; }
+
+.report-actions { display:flex; justify-content:space-between; gap:12px; margin-top:24px; flex-wrap:wrap; }
+
+/* ---------- FOOTER ---------- */
+footer { background:var(--black); padding:22px 24px; font-size:11px; color:#888; line-height:1.8; }
+.footer-inner { max-width:980px; margin:0 auto; display:flex; flex-wrap:wrap; gap:6px 18px; align-items:center; justify-content:center; text-align:center; }
+.footer-note { color:#555; width:100%; }
+footer a { color:#aaa; }
+footer a:hover { color:#fff; }
+
+/* ============================================================
+   ERWEITERUNGEN (Dark-Mode, Header-Controls, Charts, Dashboard,
+   Report, Settings, Toasts, Print)
+   ============================================================ */
+
+/* ---------- DARK THEME ---------- */
+[data-theme="dark"] {
+  --white:#15140F;
+  --bg:#121110;
+  --surface:#1B1A18;
+  --border:#2C2A26;
+  --text:#F2F0EC;
+  --muted:#A8A5A0;
+  --hint:#75726C;
+  --accent-lite:#2A1A10;
+  --err-bg:#2A1715;
+  --ok-bg:#13241A;
+  --warn-bg:#2A2212;
+}
+[data-theme="dark"] .step,
+[data-theme="dark"] .feat,
+[data-theme="dark"] .sec,
+[data-theme="dark"] .data-block,
+[data-theme="dark"] .side-card,
+[data-theme="dark"] .chart-card,
+[data-theme="dark"] .kpi,
+[data-theme="dark"] .table-card,
+[data-theme="dark"] .deal-card { box-shadow:0 1px 2px rgba(0,0,0,.4); }
+[data-theme="dark"] .tbl thead th { background:#211F1C; }
+[data-theme="dark"] .tbl tbody tr[data-id]:hover { background:#241a12; }
+[data-theme="dark"] .filter-btn,
+[data-theme="dark"] .search-input,
+[data-theme="dark"] select,
+[data-theme="dark"] input,
+[data-theme="dark"] textarea { background:var(--surface); }
+
+/* ---------- HEADER CONTROLS ---------- */
+.hdr-link.active { color:#fff; }
+.hdr-link.active::after { content:""; display:block; height:2px; background:var(--accent); margin-top:3px; border-radius:2px; }
+.icon-btn { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.14); color:#fff; width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:15px; line-height:1; transition:background .15s; }
+.icon-btn:hover { background:rgba(255,255,255,.18); }
+
+/* ---------- LANDING EXTRAS ---------- */
+.section-eye { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin:30px 0 14px; }
+.feat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:10px; }
+@media(max-width:780px){ .feat-grid{ grid-template-columns:1fr 1fr; } }
+@media(max-width:460px){ .feat-grid{ grid-template-columns:1fr; } }
+.feat { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:20px; }
+.feat-ico { font-size:26px; margin-bottom:10px; }
+.feat-title { font-weight:600; font-size:14px; margin-bottom:6px; }
+.feat-text { font-size:12.5px; color:var(--muted); line-height:1.5; }
+
+/* ---------- TOASTS ---------- */
+.toasts { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:8px; z-index:1000; width:max-content; max-width:92vw; }
+.toast { display:flex; align-items:center; gap:9px; background:var(--black); color:#fff; padding:11px 16px; border-radius:10px; font-size:13.5px; box-shadow:0 8px 24px rgba(0,0,0,.25); opacity:0; transform:translateY(10px); transition:opacity .25s, transform .25s; border-left:3px solid var(--accent); }
+.toast.in { opacity:1; transform:translateY(0); }
+.toast-ico { font-weight:700; }
+.toast-success { border-left-color:var(--ok); }
+.toast-success .toast-ico { color:#5bd98a; }
+.toast-error { border-left-color:var(--err); }
+.toast-error .toast-ico { color:#ff8a7a; }
+
+/* ---------- CHARTS ---------- */
+.chart-bars { display:grid; gap:9px; }
+.cb-row { display:grid; grid-template-columns:140px 1fr 56px; gap:10px; align-items:center; font-size:12.5px; }
+@media(max-width:520px){ .cb-row{ grid-template-columns:100px 1fr 48px; } }
+.cb-label { color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cb-track { background:var(--border); border-radius:99px; height:10px; overflow:hidden; }
+.cb-fill { height:100%; border-radius:99px; min-width:3px; transition:width .4s; }
+.cb-val { text-align:right; font-weight:600; }
+.donut { display:block; }
+.donut-num { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; fill:var(--text); }
+.donut-sub { font-size:9px; fill:var(--hint); text-transform:uppercase; letter-spacing:.06em; }
+.gauge { display:block; margin:0 auto; }
+.gauge-num { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:24px; fill:var(--text); }
+.gauge-sub { font-size:9px; fill:var(--hint); }
+
+/* ---------- DASHBOARD ---------- */
+.dash-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin:18px 0 14px; }
+@media(max-width:820px){ .dash-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:420px){ .dash-grid{ grid-template-columns:1fr; } }
+.kpi { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:16px; }
+.kpi-val { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:24px; letter-spacing:-.5px; }
+.kpi-label { font-size:12px; color:var(--muted); margin-top:2px; }
+.kpi-sub { font-size:10.5px; color:var(--hint); margin-top:3px; }
+.dash-charts { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px; }
+@media(max-width:720px){ .dash-charts{ grid-template-columns:1fr; } }
+.chart-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:18px; }
+.chart-card-head { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--hint); margin-bottom:14px; }
+.donut-wrap { display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+.legend { display:grid; gap:7px; flex:1; min-width:140px; }
+.legend-row { display:flex; align-items:center; gap:8px; font-size:13px; }
+.legend-dot { width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+.legend-val { margin-left:auto; font-weight:600; }
+
+/* ---------- TOOLBAR / ADMIN TOOLS ---------- */
+.toolbar { display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+.search-input { flex:1; min-width:200px; }
+.toolbar-sort { min-width:170px; }
+.admin-tools { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.no-shadow { box-shadow:none!important; border:none; }
+
+/* ---------- DRAFT BAR ---------- */
+.draft-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:var(--accent-lite); border:1px solid #f3cdb8; border-radius:var(--r); padding:12px 16px; margin-bottom:14px; font-size:13px; }
+[data-theme="dark"] .draft-bar { border-color:#5a3a22; }
+.draft-actions { display:flex; gap:8px; }
+.btn-mini { background:var(--black); color:#fff; border:none; border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; font-family:inherit; }
+.btn-mini.ghost { background:transparent; color:var(--muted); border:1px solid var(--border); }
+
+/* ---------- NOTES & TIMELINE ---------- */
+.note-add { display:grid; gap:8px; margin-bottom:14px; }
+.note-add textarea { min-height:60px; }
+.note-list { display:grid; gap:10px; }
+.note-item { background:var(--bg); border-radius:var(--r-sm); padding:10px 12px; }
+.note-meta { font-size:11px; color:var(--hint); margin-bottom:3px; }
+.note-text { font-size:13px; white-space:pre-wrap; }
+.timeline { display:grid; gap:0; }
+.tl-item { display:flex; gap:10px; padding:0 0 14px; position:relative; }
+.tl-item:not(:last-child)::before { content:""; position:absolute; left:5px; top:13px; bottom:0; width:2px; background:var(--border); }
+.tl-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; margin-top:2px; z-index:1; }
+.tl-status { font-size:13px; font-weight:600; }
+.tl-time { font-size:11px; color:var(--hint); }
+
+/* ---------- REPORT EXTRAS ---------- */
+.overview-card { margin:18px 0; }
+.deal-cardhead { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.deal-sub { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.deal-scorewrap { display:flex; justify-content:center; margin:4px 0 10px; }
+.deal-pricebox { text-align:center; background:var(--bg); border-radius:var(--r-sm); padding:12px; margin-bottom:14px; }
+.price-main { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:var(--accent); }
+.price-sub { font-size:11.5px; color:var(--muted); margin-top:3px; }
+.gap { font-weight:600; }
+.gap.good { color:var(--ok); }
+.gap.bad { color:var(--err); }
+.gap.neutral { color:var(--muted); }
+.reco-border-good { border-top:3px solid var(--ok); }
+.reco-border-ok { border-top:3px solid #2B4FB7; }
+.reco-border-warn { border-top:3px solid var(--warn); }
+.risk-badge.risk-low { background:var(--ok-bg); color:var(--ok); border-color:#b8e0c6; }
+.risk-badge.risk-mid { background:var(--warn-bg); color:var(--warn); border-color:#ecd9ad; }
+.risk-badge.risk-high { background:var(--err-bg); color:var(--err); border-color:#f0c4be; }
+.report-cols { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+@media(max-width:720px){ .report-cols{ grid-template-columns:1fr; } }
+.check-list { list-style:none; display:grid; gap:9px; }
+.check-list li { font-size:13px; padding-left:26px; position:relative; line-height:1.4; }
+.check-list li::before { content:"☐"; position:absolute; left:0; color:var(--accent); font-size:15px; }
+.q-list { padding-left:20px; display:grid; gap:8px; }
+.q-list li { font-size:13px; line-height:1.45; }
+.compare-tbl td { vertical-align:middle; }
+.report-actions-right { display:flex; gap:10px; }
+
+/* ---------- SETTINGS ---------- */
+.segmented { display:inline-flex; border:1.5px solid var(--border); border-radius:8px; overflow:hidden; }
+.seg-btn { background:var(--surface); border:none; padding:9px 20px; font-size:13px; cursor:pointer; font-family:inherit; color:var(--muted); }
+.seg-btn.active { background:var(--black); color:#fff; }
+.settings-text { font-size:13px; color:var(--muted); margin-bottom:14px; }
+.settings-actions { display:flex; flex-wrap:wrap; gap:8px; }
+
+/* ---------- 404 ---------- */
+.notfound { text-align:center; padding:48px 24px; }
+.nf-code { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:60px; color:var(--accent); line-height:1; margin-bottom:8px; }
+
+/* ---------- PRINT (Report als PDF) ---------- */
+@media print {
+  .hdr, footer, .report-actions, .report-note, .icon-btn, .toasts { display:none !important; }
+  body { background:#fff; font-size:12px; }
+  .report-head { background:#fff; border-bottom:2px solid var(--accent); padding:0 0 12px; }
+  .report-head h1, .hero-eye { color:#000 !important; }
+  .report-summary, .report-meta > span { color:#333 !important; background:none !important; border:none !important; padding:0 8px 0 0 !important; }
+  .wrap, .wrap-wide { margin:8px auto; }
+  .chart-card, .deal-card, .table-card { box-shadow:none; border:1px solid #ccc; break-inside:avoid; }
+  .deals { grid-template-columns:1fr 1fr; }
+  .report-cols { grid-template-columns:1fr 1fr; }
+  a { color:#000 !important; text-decoration:none; }
+}
+
+/* ============================================================
+   HYBRID-LOOK & MOTION ("smooth")
+   Warmer, hellerer Auftritt mit Serif-Headlines + sanfter Bewegung.
+   Steht bewusst am Ende -> gewinnt in der Kaskade.
+   ============================================================ */
+
+/* ---- Serif-Headlines ---- */
+.hero h1, .report-head h1, .admin-title, .ok-title, .cta-title {
+  font-family:var(--font-display); font-weight:600; letter-spacing:-.01em;
+}
+.hero h1 { font-weight:600; }
+
+/* ---- Heller, warmer Hero (statt dunkel) ---- */
+.hero {
+  background:linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+}
+.hero h1 { color:var(--text); }
+.hero p { color:var(--muted); }
+.hero-eye { color:var(--accent); }
+.hero-pills { margin-top:26px; }
+.pill { background:var(--surface); border:1px solid var(--border); color:var(--muted); box-shadow:var(--shadow-sm); }
+
+/* ---- Report-Kopf hell & konsistent ---- */
+.report-head {
+  background:linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+  border-bottom:1px solid var(--border);
+}
+.report-head h1 { color:var(--text); }
+.report-summary { color:var(--muted); }
+.report-meta > span { background:var(--surface); border:1px solid var(--border); color:var(--muted); }
+
+/* ---- Weiche Karten-Tiefe ---- */
+.sec, .step, .feat, .kpi, .chart-card, .data-block, .deal-card, .table-card, .side-card {
+  box-shadow:var(--shadow-sm);
+}
+
+/* ---- Micro-Interactions (Hover-Lift) ---- */
+.btn-primary, .btn-submit { transition:background .15s, transform .18s var(--ease), box-shadow .25s var(--ease); }
+.btn-primary:hover, .btn-submit:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+.step, .feat, .deal-card, .kpi, .chart-card { transition:transform .28s var(--ease), box-shadow .28s var(--ease); }
+.step:hover, .feat:hover, .deal-card:hover, .kpi:hover, .chart-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+.btn-ghost { transition:border-color .15s, background .15s, transform .18s var(--ease); }
+.btn-ghost:hover { transform:translateY(-1px); }
+.hdr-link { transition:color .18s, opacity .18s; }
+.filter-btn, .chip-wrap label, .seg-btn, .pkg-card { transition:all .18s var(--ease); }
+
+/* ---- Sticky, verdichtende Kopfzeile mit Backdrop-Blur ---- */
+.hdr {
+  position:sticky; top:0; z-index:100;
+  background:rgba(26,21,18,.82); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  transition:padding .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease);
+}
+.is-scrolled .hdr { padding-top:9px; padding-bottom:9px; box-shadow:0 8px 28px rgba(0,0,0,.22); background:rgba(20,16,13,.9); }
+.logo { transition:opacity .18s; }
+.logo:hover { opacity:.85; }
+/* Animierte Unterstreichung der Nav-Links (Hover) */
+.hdr-nav .hdr-link { position:relative; }
+.hdr-link:not(.active)::after {
+  content:""; position:absolute; left:0; right:100%; bottom:-3px; height:2px;
+  background:var(--accent); border-radius:2px; transition:right .25s var(--ease);
+}
+.hdr-link:not(.active):hover::after { right:0; }
+
+/* ---- Scroll-Reveal ---- */
+.reveal { opacity:0; transform:translateY(14px); transition:opacity .55s var(--ease), transform .55s var(--ease); }
+.reveal.in { opacity:1; transform:none; }
+
+/* ---- Page-In (View-Wechsel) ---- */
+@keyframes pageIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+#app.page-in { animation:pageIn .42s var(--ease) both; }
+
+/* ---- Chart-Animationen ---- */
+.cb-fill { transition:width .85s var(--ease); }
+.gauge-fill { transition:stroke-dasharray .9s var(--ease); }
+@keyframes donutIn { from { opacity:0; transform:rotate(-10deg) scale(.92); } to { opacity:1; transform:none; } }
+.donut { animation:donutIn .7s var(--ease) both; transform-origin:center; }
+
+/* ---- Toasts weicher ---- */
+.toast { transition:opacity .3s var(--ease), transform .35s var(--ease); }
+
+/* ---- Respektiert Nutzer-Einstellung ---- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior:auto; }
+  .reveal { opacity:1 !important; transform:none !important; transition:none !important; }
+  #app.page-in { animation:none !important; }
+  .donut { animation:none !important; }
+  .cb-fill, .gauge-fill { transition:none !important; }
+  .btn-primary:hover, .btn-submit:hover, .step:hover, .feat:hover, .deal-card:hover, .kpi:hover, .chart-card:hover, .btn-ghost:hover { transform:none !important; }
+}
+
+/* ============================================================
+   R3 — Visuelle Politur: Hero-Tiefe & Typo-Feinschliff
+   ============================================================ */
+.hero { position:relative; overflow:hidden; }
+.hero::before {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:
+    radial-gradient(58% 80% at 50% -12%, rgba(232,93,26,.11), transparent 62%),
+    radial-gradient(42% 62% at 88% -6%, rgba(232,93,26,.06), transparent 70%);
+}
+.hero > * { position:relative; z-index:1; }
+.hero h1 { font-size:clamp(30px,5.2vw,46px); line-height:1.08; letter-spacing:-.015em; margin-bottom:16px; }
+.hero p { font-size:clamp(14px,1.6vw,16px); max-width:480px; line-height:1.6; }
+.hero-sm h1 { font-size:clamp(24px,4vw,34px); }
+
+/* Sanftes Hervorheben einzelner Wörter in Headlines (optional via <span class="accentword">) */
+.accentword { color:var(--accent); }
+
+/* Etwas mehr vertikaler Rhythmus & ruhigere Sektionen */
+.section-eye { margin:36px 0 16px; }
+.wrap { margin-top:36px; }
+.feat { padding:22px; }
+.pill { padding:6px 13px; font-size:12px; }
+
+/* Report-Kopf bekommt denselben warmen Schimmer */
+.report-head { position:relative; overflow:hidden; }
+.report-head::before {
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(50% 90% at 12% -20%, rgba(232,93,26,.10), transparent 60%);
+}
+.report-head-inner { position:relative; z-index:1; }
+
+/* CTA-Band: subtiler Verlauf statt Flächenschwarz */
+.cta-band { background:linear-gradient(120deg, #211913 0%, var(--black) 60%); }
+
+/* ============================================================
+   R4 — Vertrauenssignale / Mikrocopy
+   ============================================================ */
+.hero-trust { margin-top:14px; font-size:12.5px; color:var(--hint); }
+
+/* ============================================================
+   R7 — Conversion: Formular-Fortschritt & klebriger Submit (Mobile)
+   ============================================================ */
+.form-progress { margin-bottom:14px; }
+.fp-bar { height:8px; background:var(--border); border-radius:99px; overflow:hidden; }
+.fp-bar > span { display:block; height:100%; width:0; background:linear-gradient(90deg, var(--accent), var(--accent-h)); border-radius:99px; transition:width .45s var(--ease); }
+.fp-label { font-size:11.5px; color:var(--muted); margin-top:6px; text-align:right; }
+
+@media (max-width:560px) {
+  .submit-area {
+    position:sticky; bottom:0; z-index:50;
+    margin:0 -16px; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg, rgba(250,246,240,0) 0%, var(--bg) 28%);
+  }
+  .submit-note { margin-top:8px; }
+}
+[data-theme="dark"] .submit-area { background:linear-gradient(180deg, rgba(18,17,16,0) 0%, var(--bg) 28%); }
+@media (prefers-reduced-motion: reduce) { .fp-bar > span { transition:none; } }
+
+/* ============================================================
+   R9–R13 — Formular-a11y: Fehler-Zusammenfassung & Gruppen
+   ============================================================ */
+.form-errors { background:var(--err-bg); border:1px solid #f0c4be; border-radius:var(--r); padding:14px 16px; margin-bottom:16px; color:var(--err); font-size:13.5px; }
+.form-errors strong { display:block; margin-bottom:6px; }
+.form-errors ul { margin:0; padding-left:18px; display:grid; gap:4px; }
+.form-errors a { color:var(--err); text-decoration:underline; font-weight:500; }
+.form-errors:focus { outline:2px solid var(--err); outline-offset:2px; }
+[data-theme="dark"] .form-errors { border-color:#5a2a24; }
+
+/* ============================================================
+   R14–R18 — Admin: Sortierköpfe, Pagination, Toast-Aktion
+   ============================================================ */
+.th-sort { cursor:pointer; user-select:none; white-space:nowrap; transition:color .15s; }
+.th-sort:hover { color:var(--text); }
+.th-sort.active { color:var(--accent); }
+.th-arrow { font-size:9px; }
+.table-more { padding:12px 16px; text-align:center; border-top:1px solid var(--border); }
+.table-more:empty { display:none; padding:0; border:none; }
+.toast-action { margin-left:8px; background:transparent; border:1px solid rgba(255,255,255,.32); color:#fff; border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; font-family:inherit; transition:background .15s; }
+.toast-action:hover { background:rgba(255,255,255,.16); }
+
+/* ============================================================
+   R19–R23 — Dashboard-Recents, Dichte, Parallax, Press-Feedback
+   ============================================================ */
+.recent-list { display:grid; gap:8px; }
+.recent-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:var(--r-sm); background:var(--bg); transition:background .15s, transform .15s var(--ease); }
+.recent-item:hover { background:var(--accent-lite); transform:translateX(2px); }
+.recent-name { font-size:13px; font-weight:500; }
+.recent-time { margin-left:auto; font-size:11px; color:var(--hint); }
+
+/* Dichte: kompakt */
+[data-density="compact"] .sec,
+[data-density="compact"] .data-block,
+[data-density="compact"] .chart-card,
+[data-density="compact"] .side-card { padding:14px; }
+[data-density="compact"] .sec { margin-bottom:10px; }
+[data-density="compact"] .field { margin-bottom:11px; }
+[data-density="compact"] .kpi { padding:12px; }
+[data-density="compact"] .tbl tbody td { padding:9px 14px; }
+[data-density="compact"] .wrap { margin-top:22px; }
+[data-density="compact"] .dash-grid, [data-density="compact"] .dash-charts { gap:10px; }
+
+/* Hero-Parallax (sehr subtil) */
+.hero::before { transform:translateY(calc(var(--sy, 0) * 0.04px)); }
+
+/* Button-Press-Feedback */
+.btn-primary:active, .btn-submit:active, .btn-ghost:active, .btn-sm:active, .seg-btn:active { transform:translateY(0) scale(.985); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero::before { transform:none !important; }
+  .recent-item:hover { transform:none; }
+}
+
+/* ============================================================
+   R24–R28 — Pricing, FAQ, Print-Header
+   ============================================================ */
+.pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:10px; }
+@media(max-width:680px){ .pricing-grid{ grid-template-columns:1fr; } }
+.price-card { position:relative; background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:22px; display:flex; flex-direction:column; box-shadow:var(--shadow-sm); transition:transform .28s var(--ease), box-shadow .28s var(--ease); }
+.price-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+.price-card-rec { border-color:var(--accent); box-shadow:0 8px 30px rgba(232,93,26,.14); }
+.price-card .pkg-badge { position:absolute; top:14px; right:14px; }
+.price-name { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); }
+.price-amount { font-family:var(--font-display); font-weight:700; font-size:30px; margin:6px 0 2px; }
+.price-sub2 { font-size:12.5px; color:var(--muted); margin-bottom:12px; }
+.price-feats { list-style:none; display:grid; gap:7px; margin-bottom:16px; }
+.price-feats li { font-size:12.5px; color:var(--muted); padding-left:18px; position:relative; }
+.price-feats li::before { content:"✓"; position:absolute; left:0; color:var(--accent); font-weight:700; }
+.price-card .btn-block { margin-top:auto; }
+
+.faq { display:grid; gap:8px; margin-bottom:10px; }
+.faq-item { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:0 18px; box-shadow:var(--shadow-sm); }
+.faq-item summary { cursor:pointer; padding:15px 0; font-weight:500; font-size:14.5px; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.faq-item summary::-webkit-details-marker { display:none; }
+.faq-item summary::after { content:"+"; color:var(--accent); font-size:20px; font-weight:700; transition:transform .2s var(--ease); }
+.faq-item[open] summary::after { transform:rotate(45deg); }
+.faq-a { padding:0 0 16px; font-size:13.5px; color:var(--muted); line-height:1.6; }
+
+.print-only { display:none; }
+@media print {
+  .print-only { display:block; }
+  .print-head { font-family:var(--font-display); font-weight:700; font-size:14px; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom:12px; }
+}
+
+/* ============================================================
+   R29–R33 — Success-Steps, Bestes-Angebot, Kontrast/forced-colors
+   ============================================================ */
+.next-steps { text-align:left; margin:0 auto 18px; max-width:340px; padding-left:20px; display:grid; gap:8px; }
+.next-steps li { font-size:13px; color:var(--muted); line-height:1.5; }
+
+.deal-card.is-best { border-color:var(--accent); box-shadow:0 10px 34px rgba(232,93,26,.16); }
+.best-ribbon { display:inline-block; align-self:flex-start; font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:#fff; background:var(--accent); padding:3px 10px; border-radius:99px; margin-bottom:8px; }
+
+/* Hoher Kontrast / Windows High-Contrast */
+@media (forced-colors: active) {
+  .btn-primary, .btn-submit, .badge, .pill, .pkg-badge, .best-ribbon { border:1px solid currentColor; }
+  .cb-fill, .fp-bar > span, .gauge-fill { forced-color-adjust:none; }
+  .reveal { opacity:1 !important; transform:none !important; }
+}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="route-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<noscript><div style="max-width:560px;margin:64px auto;padding:0 20px;font-family:system-ui,sans-serif;text-align:center"><h1>Töff Deal Scout</h1><p>Diese App braucht JavaScript. Bitte in Edge aktivieren.</p></div></noscript>
+<script>
+/* ===== js/core/events.js ===== */
+/*
+ * core/events.js — winziger globaler EventBus (Publish/Subscribe).
+ * Wird u.a. vom Store genutzt, damit sich Views nach Datenänderungen
+ * selbst aktualisieren können, ohne enge Kopplung.
+ */
+(function (global) {
+  'use strict';
+
+  var listeners = {};
+
+  function on(type, fn) {
+    (listeners[type] = listeners[type] || []).push(fn);
+    return function off() {
+      listeners[type] = (listeners[type] || []).filter(function (f) { return f !== fn; });
+    };
+  }
+
+  function emit(type, payload) {
+    (listeners[type] || []).slice().forEach(function (fn) {
+      try { fn(payload); } catch (e) { console.error('EventBus listener error for "' + type + '"', e); }
+    });
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.events = { on: on, emit: emit };
+})(window);
+
+/* ===== js/core/format.js ===== */
+/*
+ * core/format.js — zentrale Formatierung (Schweiz/DACH-tauglich).
+ * Eine Quelle der Wahrheit für Währung, Zahlen, Kilometer und Datum.
+ */
+(function (global) {
+  'use strict';
+
+  function group(intStr, sep) {
+    return String(intStr).replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+  }
+
+  /** Währung: CHF mit Apostroph-Tausender, EUR mit Punkt. */
+  function money(n, cur) {
+    cur = cur || 'CHF';
+    if (n === null || n === undefined || isNaN(n)) return cur + ' –';
+    var sep = cur === 'CHF' ? "'" : '.';
+    var neg = n < 0;
+    return cur + ' ' + (neg ? '-' : '') + group(Math.round(Math.abs(n)), sep);
+  }
+
+  /** Reine Zahl im CH-Stil (1'234). */
+  function number(n) {
+    if (n === null || n === undefined || isNaN(n)) return '–';
+    return group(Math.round(n), "'");
+  }
+
+  function km(n) {
+    if (n === null || n === undefined || isNaN(n)) return '–';
+    return number(n) + ' km';
+  }
+
+  function pct(n, digits) {
+    if (n === null || n === undefined || isNaN(n)) return '–';
+    return (digits ? n.toFixed(digits) : Math.round(n)) + '%';
+  }
+
+  function pad(x) { return String(x).padStart(2, '0'); }
+
+  /** "16.06.2026, 14:32" */
+  function date(iso) {
+    if (!iso) return '–';
+    var d = new Date(iso);
+    if (isNaN(d)) return '–';
+    return pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + d.getFullYear() +
+      ', ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  /** "16.06.2026" */
+  function dateShort(iso) {
+    if (!iso) return '–';
+    var d = new Date(iso);
+    if (isNaN(d)) return '–';
+    return pad(d.getDate()) + '.' + pad(d.getMonth() + 1) + '.' + d.getFullYear();
+  }
+
+  /** "gerade eben", "vor 3 Min.", "vor 2 Std.", "vor 4 Tagen". */
+  function relative(iso) {
+    if (!iso) return '–';
+    var d = new Date(iso);
+    if (isNaN(d)) return '–';
+    var s = Math.round((Date.now() - d.getTime()) / 1000);
+    if (s < 45) return 'gerade eben';
+    var m = Math.round(s / 60);
+    if (m < 60) return 'vor ' + m + ' Min.';
+    var h = Math.round(m / 60);
+    if (h < 24) return 'vor ' + h + ' Std.';
+    var days = Math.round(h / 24);
+    if (days === 1) return 'gestern';
+    if (days < 31) return 'vor ' + days + ' Tagen';
+    return dateShort(iso);
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.format = {
+    money: money, number: number, km: km, pct: pct,
+    date: date, dateShort: dateShort, relative: relative
+  };
+})(window);
+
+/* ===== js/core/charts.js ===== */
+/*
+ * core/charts.js — abhängigkeitsfreie Mini-Charts als HTML/SVG-Strings.
+ * Bewusst keine externe Lib: bars (CSS), donut & gauge (SVG).
+ */
+(function (global) {
+  'use strict';
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /** Horizontale Balken. items: [{label, value, display?, color?}] */
+  function bars(items, opts) {
+    opts = opts || {};
+    var max = Math.max.apply(null, items.map(function (i) { return i.value; }).concat([1]));
+    return '<div class="chart-bars">' + items.map(function (it) {
+      var w = Math.round((it.value / max) * 100);
+      return '<div class="cb-row">' +
+        '<div class="cb-label">' + esc(it.label) + '</div>' +
+        '<div class="cb-track"><div class="cb-fill" data-w="' + w + '%" style="width:0;background:' + (it.color || 'var(--accent)') + '"></div></div>' +
+        '<div class="cb-val">' + esc(it.display != null ? it.display : it.value) + '</div>' +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
+  /** Donut. segments: [{label, value, color}], opts.center = Mitteltext */
+  function donut(segments, opts) {
+    opts = opts || {};
+    var size = opts.size || 132, sw = opts.stroke || 20;
+    var r = (size - sw) / 2, c = 2 * Math.PI * r, cx = size / 2, cy = size / 2;
+    var total = segments.reduce(function (s, x) { return s + x.value; }, 0) || 1;
+    var off = 0, circ = '';
+    segments.forEach(function (seg) {
+      var len = (seg.value / total) * c;
+      if (len <= 0) return;
+      circ += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + seg.color +
+        '" stroke-width="' + sw + '" stroke-dasharray="' + len.toFixed(2) + ' ' + (c - len).toFixed(2) +
+        '" stroke-dashoffset="' + (-off).toFixed(2) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"/>';
+      off += len;
+    });
+    var center = opts.center != null ?
+      '<text x="' + cx + '" y="' + (cy - 2) + '" text-anchor="middle" class="donut-num">' + esc(opts.center) + '</text>' +
+      (opts.centerSub ? '<text x="' + cx + '" y="' + (cy + 16) + '" text-anchor="middle" class="donut-sub">' + esc(opts.centerSub) + '</text>' : '')
+      : '';
+    return '<svg class="donut" viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" role="img">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--border)" stroke-width="' + sw + '"/>' +
+      circ + center + '</svg>';
+  }
+
+  /** Halbkreis-Gauge 0..max (Deal-Score). */
+  function gauge(value, max, opts) {
+    opts = opts || {};
+    max = max || 10;
+    var size = opts.size || 140, sw = opts.stroke || 14;
+    var r = (size - sw) / 2, cx = size / 2, cy = size / 2;
+    var half = Math.PI * r; // Länge Halbkreis
+    var frac = Math.max(0, Math.min(1, value / max));
+    var col = value >= 7.5 ? 'var(--ok)' : value >= 5.5 ? 'var(--warn)' : 'var(--err)';
+    // Halbkreis von links (180°) nach rechts (0°)
+    function arc() {
+      return 'M ' + sw / 2 + ' ' + cy + ' A ' + r + ' ' + r + ' 0 0 1 ' + (size - sw / 2) + ' ' + cy;
+    }
+    return '<svg class="gauge" viewBox="0 0 ' + size + ' ' + (cy + sw) + '" width="' + size + '" role="img" aria-label="Score ' + value + ' von ' + max + '">' +
+      '<path d="' + arc() + '" fill="none" stroke="var(--border)" stroke-width="' + sw + '" stroke-linecap="round"/>' +
+      '<path class="gauge-fill" d="' + arc() + '" fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linecap="round" ' +
+      'stroke-dasharray="0 ' + half.toFixed(2) + '" data-dash="' + (half * frac).toFixed(2) + ' ' + half.toFixed(2) + '"/>' +
+      '<text x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" class="gauge-num">' + esc(value.toFixed ? value.toFixed(1) : value) + '</text>' +
+      '<text x="' + cx + '" y="' + (cy + 12) + '" text-anchor="middle" class="gauge-sub">von ' + max + '</text>' +
+      '</svg>';
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.charts = { bars: bars, donut: donut, gauge: gauge };
+})(window);
+
+/* ===== js/core/theme.js ===== */
+/*
+ * core/theme.js — Farbschema mit Persistenz.
+ * Modi: 'system' (Standard, folgt OS), 'light', 'dark'.
+ * Setzt data-theme (light|dark) auf <html>; das CSS reagiert über Variablen.
+ */
+(function (global) {
+  'use strict';
+
+  var KEY = 'tds_theme';
+
+  function systemPref() {
+    return (global.matchMedia && global.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  }
+
+  /** Gewählter Modus inkl. 'system'. */
+  function mode() {
+    try { return global.localStorage.getItem(KEY) || 'system'; }
+    catch (e) { return 'system'; }
+  }
+
+  /** Tatsächlich angewandtes Schema (system -> aufgelöst). */
+  function resolved() {
+    var m = mode();
+    return m === 'system' ? systemPref() : m;
+  }
+
+  function apply(t) {
+    if (global.document && global.document.documentElement) {
+      global.document.documentElement.setAttribute('data-theme', t);
+    }
+  }
+
+  function set(m) {
+    try { global.localStorage.setItem(KEY, m); } catch (e) {}
+    apply(resolved());
+    if (global.TDS.events) global.TDS.events.emit('theme:change', resolved());
+  }
+
+  function toggle() { set(resolved() === 'dark' ? 'light' : 'dark'); }
+
+  function init() {
+    apply(resolved());
+    // Bei Modus 'system' auf OS-Wechsel reagieren.
+    if (global.matchMedia) {
+      var mq = global.matchMedia('(prefers-color-scheme: dark)');
+      var onChange = function () { if (mode() === 'system') apply(resolved()); };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    }
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.theme = {
+    init: init,
+    mode: mode,        // 'system' | 'light' | 'dark'
+    current: resolved, // tatsächliches Schema 'light' | 'dark'
+    set: set,
+    toggle: toggle
+  };
+})(window);
+
+/* ===== js/core/toast.js ===== */
+/*
+ * core/toast.js — leichte, nicht-blockierende Benachrichtigungen.
+ * TDS.toast.success('Gespeichert'); TDS.toast.error('Fehler');
+ */
+(function (global) {
+  'use strict';
+
+  function container() {
+    var doc = global.document;
+    var c = doc.getElementById('tds-toasts');
+    if (!c) {
+      c = doc.createElement('div');
+      c.id = 'tds-toasts';
+      c.className = 'toasts';
+      c.setAttribute('role', 'status');
+      c.setAttribute('aria-live', 'polite');
+      doc.body.appendChild(c);
+    }
+    return c;
+  }
+
+  var ICONS = { success: '✓', error: '⚠', info: 'ℹ' };
+
+  /**
+   * @param {string} msg
+   * @param {string} type  success|error|info
+   * @param {number|object} opts  Lebensdauer (ms) ODER { ms, action:{label, fn} }
+   */
+  function show(msg, type, opts) {
+    type = type || 'info';
+    opts = (typeof opts === 'number') ? { ms: opts } : (opts || {});
+    var doc = global.document;
+    var t = doc.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.innerHTML = '<span class="toast-ico">' + (ICONS[type] || '') + '</span><span class="toast-msg">' + String(msg) + '</span>';
+
+    var life = opts.ms || (opts.action ? 6000 : 2800);
+    var dismiss = function () {
+      t.classList.remove('in');
+      setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 260);
+    };
+
+    if (opts.action && opts.action.label) {
+      var btn = doc.createElement('button');
+      btn.className = 'toast-action';
+      btn.type = 'button';
+      btn.textContent = opts.action.label;
+      btn.addEventListener('click', function () {
+        try { opts.action.fn(); } catch (e) { /* noop */ }
+        clearTimeout(timer); dismiss();
+      });
+      t.appendChild(btn);
+    }
+
+    container().appendChild(t);
+    global.requestAnimationFrame(function () { t.classList.add('in'); });
+    var timer = setTimeout(dismiss, life);
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.toast = {
+    show: show,
+    success: function (m, opts) { show(m, 'success', opts); },
+    error: function (m, opts) { show(m, 'error', opts); },
+    info: function (m, opts) { show(m, 'info', opts); }
+  };
+})(window);
+
+/* ===== js/core/motion.js ===== */
+/*
+ * core/motion.js — Bewegungs-Layer ("smooth").
+ *
+ * Zentralisiert alle Animationen, damit Views nichts davon wissen müssen:
+ * layout.render() ruft nach jedem Rendern motion.enter(#app) auf.
+ *  - sanftes Page-In (Cross-Fade/Slide beim View-Wechsel)
+ *  - Scroll-Reveals via IntersectionObserver, leicht gestaffelt
+ *  - Count-up für KPIs ([data-count])
+ *  - Aufziehen von Charts (Balken-Breite, Gauge-Bogen)
+ *
+ * Progressive Enhancement: Ohne JS/Observer bleibt alles sichtbar.
+ * prefers-reduced-motion wird respektiert (keine Bewegung).
+ */
+(function (global) {
+  'use strict';
+
+  function reduced() {
+    return !!(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+  function raf(fn) { (global.requestAnimationFrame || function (f) { setTimeout(f, 16); })(fn); }
+  function now() { return (global.performance && global.performance.now) ? global.performance.now() : Date.now(); }
+  function easeOut(p) { return 1 - Math.pow(1 - p, 3); }
+
+  var REVEAL_SEL = [
+    '.hero-eye', '.hero h1', '.hero p', '.hero .btn-primary', '.hero-pills',
+    '.section-eye', '.step', '.feat', '.sec', '.kpi', '.chart-card', '.deal-card',
+    '.data-block', '.cta-band', '.table-card', '.toolbar', '.filters',
+    '.report-note', '.success', '.report-actions', '.report-cols > *', '.draft-bar'
+  ].join(',');
+
+  var observer = null;
+  function getObserver() {
+    if (observer) return observer;
+    if (!('IntersectionObserver' in global)) return null;
+    observer = new global.IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          // Charts/Zähler erst animieren, wenn sie sichtbar werden (lazy).
+          animateCharts(e.target, false);
+          countUps(e.target, false);
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    return observer;
+  }
+
+  function markAllVisible(container) {
+    var els = container.querySelectorAll('.reveal');
+    Array.prototype.forEach.call(els, function (el) { el.classList.add('in'); });
+  }
+
+  function pageIn(container) {
+    container.classList.remove('page-in');
+    void container.offsetWidth; // Reflow erzwingen -> Animation neu starten
+    if (!reduced()) container.classList.add('page-in');
+  }
+
+  function setupReveals(container) {
+    var nodes = container.querySelectorAll(REVEAL_SEL);
+    Array.prototype.forEach.call(nodes, function (el) {
+      if (el.classList.contains('reveal')) return;
+      el.classList.add('reveal');
+      var parent = el.parentNode || container;
+      parent.__rev = (parent.__rev || 0);
+      var i = parent.__rev++;
+      el.style.transitionDelay = Math.min(i * 70, 350) + 'ms';
+    });
+    var obs = getObserver();
+    if (!obs) { markAllVisible(container); return; }
+    Array.prototype.forEach.call(nodes, function (el) { obs.observe(el); });
+  }
+
+  function countUps(container, instant) {
+    var els = container.querySelectorAll('[data-count]');
+    Array.prototype.forEach.call(els, function (el) {
+      var to = parseFloat(el.getAttribute('data-count')) || 0;
+      if (instant || reduced()) { el.textContent = String(to); return; }
+      var dur = 900, start = now();
+      (function tick() {
+        var p = Math.min((now() - start) / dur, 1);
+        el.textContent = String(Math.round(easeOut(p) * to));
+        if (p < 1) raf(tick);
+      })();
+    });
+  }
+
+  function animateCharts(container, instant) {
+    var bars = container.querySelectorAll('.cb-fill[data-w]');
+    Array.prototype.forEach.call(bars, function (el) {
+      var w = el.getAttribute('data-w');
+      if (instant || reduced()) { el.style.width = w; return; }
+      raf(function () { el.style.width = w; });
+    });
+    var gauges = container.querySelectorAll('.gauge-fill[data-dash]');
+    Array.prototype.forEach.call(gauges, function (el) {
+      var d = el.getAttribute('data-dash');
+      if (instant || reduced()) { el.setAttribute('stroke-dasharray', d); return; }
+      raf(function () { el.setAttribute('stroke-dasharray', d); });
+    });
+  }
+
+  function enter(container) {
+    if (!container) return;
+    pageIn(container);
+    if (reduced()) {
+      markAllVisible(container);
+      countUps(container, true);
+      animateCharts(container, true);
+      return;
+    }
+    setupReveals(container);
+    // Charts/Zähler werden pro Element animiert, sobald es sichtbar wird
+    // (siehe IntersectionObserver). Fallback ohne Observer:
+    if (!('IntersectionObserver' in global)) {
+      animateCharts(container, false);
+      countUps(container, false);
+    }
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.motion = { enter: enter };
+})(window);
+
+/* ===== js/core/dom.js ===== */
+/*
+ * core/dom.js — kleine DOM-Helfer, die mehrfach gebraucht werden.
+ * Zentralisiert u.a. den Datei-Download (Admin/Settings nutzen ihn).
+ */
+(function (global) {
+  'use strict';
+
+  var doc = global.document;
+
+  function byId(id) { return doc.getElementById(id); }
+  function qs(sel, root) { return (root || doc).querySelector(sel); }
+  function qsa(sel, root) { return Array.prototype.slice.call((root || doc).querySelectorAll(sel)); }
+
+  /** Text als Datei herunterladen (Blob + temporärer <a>). */
+  function download(filename, text, mime) {
+    var blob = new global.Blob([text], { type: mime || 'text/plain;charset=utf-8' });
+    var url = global.URL.createObjectURL(blob);
+    var a = doc.createElement('a');
+    a.href = url; a.download = filename;
+    doc.body.appendChild(a); a.click(); doc.body.removeChild(a);
+    setTimeout(function () { global.URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /** Funktion erst nach Ruhephase ausführen (z.B. Sucheingabe). */
+  function debounce(fn, ms) {
+    var t;
+    return function () {
+      var args = arguments, ctx = this;
+      clearTimeout(t);
+      t = setTimeout(function () { fn.apply(ctx, args); }, ms || 120);
+    };
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.dom = { byId: byId, qs: qs, qsa: qsa, download: download, debounce: debounce };
+})(window);
+
+/* ===== js/data/config.js ===== */
+/*
+ * data/config.js — zentrale Konfiguration & statische Stammdaten.
+ * Alles, was sich fachlich ändern könnte (Regionen, Budgets, Pakete,
+ * Status, Stil-Mapping), liegt hier an einem Ort.
+ */
+(function (global) {
+  'use strict';
+
+  var REGIONS = {
+    CH: {
+      label: 'Kanton / Region',
+      hint: 'Wir suchen auf anibis.ch und tutti.ch',
+      sources: ['anibis.ch', 'tutti.ch', 'ricardo.ch'],
+      opts: ['Zürich', 'Bern', 'Basel', 'Luzern', 'St. Gallen', 'Aargau', 'Thurgau', 'Zentralschweiz', 'Ostschweiz', 'Westschweiz (FR/VD/GE)', 'Tessin', 'Ganze Schweiz'],
+      cur: 'CHF',
+      payment: 'TWINT- oder Stripe-Zahlungslink per E-Mail'
+    },
+    DE: {
+      label: 'Bundesland',
+      hint: 'Wir suchen auf mobile.de und ebay-kleinanzeigen.de',
+      sources: ['mobile.de', 'kleinanzeigen.de', 'autoscout24.de'],
+      opts: ['Baden-Württemberg', 'Bayern', 'Berlin', 'Brandenburg', 'Bremen', 'Hamburg', 'Hessen', 'Mecklenburg-Vorpommern', 'Niedersachsen', 'Nordrhein-Westfalen', 'Rheinland-Pfalz', 'Saarland', 'Sachsen', 'Sachsen-Anhalt', 'Schleswig-Holstein', 'Thüringen', 'Ganz Deutschland'],
+      cur: 'EUR',
+      payment: 'Stripe-Zahlungslink per E-Mail (EUR)'
+    },
+    AT: {
+      label: 'Bundesland',
+      hint: 'Wir suchen auf willhaben.at und autoscout24.at',
+      sources: ['willhaben.at', 'autoscout24.at', 'bazar.at'],
+      opts: ['Wien', 'Niederösterreich', 'Oberösterreich', 'Steiermark', 'Tirol', 'Kärnten', 'Salzburg', 'Vorarlberg', 'Burgenland', 'Ganz Österreich'],
+      cur: 'EUR',
+      payment: 'Stripe-Zahlungslink per E-Mail (EUR)'
+    },
+    LI: {
+      label: 'Region',
+      hint: 'Wir suchen auf anibis.ch und lokalen Quellen',
+      sources: ['anibis.ch', 'tutti.ch'],
+      opts: ['Vaduz', 'Schaan', 'Balzers', 'Triesen', 'Eschen', 'Mauren', 'Ruggell', 'Ganz Liechtenstein'],
+      cur: 'CHF',
+      payment: 'TWINT- oder Stripe-Zahlungslink per E-Mail'
+    }
+  };
+
+  var LAND_LABELS = { CH: 'Schweiz', DE: 'Deutschland', AT: 'Österreich', LI: 'Liechtenstein' };
+
+  var BUDGETS = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000, 6000, 7000, 8000, 10000, 12000, 15000, 20000];
+
+  var PACKAGES = [
+    {
+      id: 'Quick-Check', name: 'Quick-Check', badge: '',
+      price: { CHF: '9.90', EUR: '9.90' },
+      sub: 'Schnelle Einschätzung eines Inserats',
+      feats: ['Deal-Score (4 Kriterien)', 'Preisvergleich Markt', 'Lieferung in 12h'],
+      dealCount: 1
+    },
+    {
+      id: 'Scout', name: 'Scout', badge: 'Empfohlen', recommended: true,
+      price: { CHF: '30', EUR: '30' },
+      sub: 'Top-3-Deals mit vollständigem Report',
+      feats: ['Alles aus Quick-Check', 'Top-3-Inserate bewertet', 'Verhandlungsargumente', 'Fragen für Verkäufer'],
+      dealCount: 3
+    },
+    {
+      id: 'Premium', name: 'Premium', badge: '',
+      price: { CHF: '50', EUR: '50' },
+      sub: 'Persönliche Beratung inkl. Call',
+      feats: ['Alles aus Scout', 'Besichtigungs-Checkliste', '30-Min Beratungscall', 'Nachfragen bis zum Kauf'],
+      dealCount: 5
+    }
+  ];
+
+  // Workflow-Reihenfolge & Farbschlüssel (für Badges/Charts).
+  var STATUSES = ['Neu', 'In Prüfung', 'Report erstellt', 'Abgeschlossen'];
+  var STATUS_COLORS = {
+    'Neu': '#E85D1A',
+    'In Prüfung': '#2B4FB7',
+    'Report erstellt': '#1A7A3F',
+    'Abgeschlossen': '#8A8780'
+  };
+  var DEFAULT_STATUS = 'Neu';
+
+  // Mapping Formular-Stil -> interner Stil-Schlüssel (Markt-Datensatz).
+  var STYLE_KEYS = {
+    'Naked Bike': 'naked',
+    'Sportmotorrad': 'sport',
+    'Scrambler / Retro': 'retro',
+    'Enduro / Adventure': 'adventure',
+    'Touring': 'touring',
+    'Egal — bestes P/L': 'any'
+  };
+
+  // Maximale Leistung je Führerausweis (kW) — für A2/A1-Filter.
+  var LICENSE_KW = {
+    'A (unbeschränkt)': Infinity,
+    'A2 (max. 35 kW)': 35,
+    'A1 (max. 11 kW)': 11,
+    'Nur B': 11,
+    'Noch keinen': 35
+  };
+
+  function currencyFor(land) {
+    return (land && REGIONS[land]) ? REGIONS[land].cur : 'CHF';
+  }
+
+  function packageById(id) {
+    return PACKAGES.filter(function (p) { return p.id === id; })[0] || null;
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.config = {
+    REGIONS: REGIONS, LAND_LABELS: LAND_LABELS, BUDGETS: BUDGETS,
+    PACKAGES: PACKAGES, STATUSES: STATUSES, STATUS_COLORS: STATUS_COLORS,
+    DEFAULT_STATUS: DEFAULT_STATUS, STYLE_KEYS: STYLE_KEYS, LICENSE_KW: LICENSE_KW,
+    currencyFor: currencyFor, packageById: packageById
+  };
+})(window);
+
+/* ===== js/data/market.js ===== */
+/*
+ * data/market.js — synthetischer Markt-Datensatz für die Scout-Engine.
+ *
+ * KEINE echten Inserate. Die Werte sind realistische Referenzgrössen,
+ * mit denen die Scout-Engine (services/scout.js) plausible Beispiel-Deals
+ * berechnet: refPrice = typischer Marktpreis (CHF) für ein sauberes
+ * Exemplar mit refYear / refKm. Bei echtem Backend würde dieser Katalog
+ * durch reale Inserate/Preisindizes ersetzt.
+ *
+ * Felder: brand, model, style, kw (Leistung), a2 (A2-tauglich/-drosselbar),
+ *   refYear, refKm, refPrice, depr (jährliche Wertminderung),
+ *   reliability (1–5), parts (Ersatzteilkosten), issues (typische Mängel).
+ */
+(function (global) {
+  'use strict';
+
+  var REF_KM = 20000;
+
+  var MODELS = [
+    // ---- Naked ----
+    { brand: 'Yamaha', model: 'MT-07', style: 'naked', kw: 54, a2: true, refYear: 2021, refPrice: 7200, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Kettensatz auf Verschleiss prüfen', 'Bremsscheiben vorne (Riefen)'] },
+    { brand: 'Yamaha', model: 'MT-09', style: 'naked', kw: 87, a2: false, refYear: 2021, refPrice: 9800, depr: 0.09, reliability: 4, parts: 'mittel', issues: ['Ruckeln im Teillastbereich (Mapping)', 'Kettensatz'] },
+    { brand: 'Kawasaki', model: 'Z650', style: 'naked', kw: 50, a2: true, refYear: 2021, refPrice: 6600, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Bremsbeläge', 'Kettenspannung'] },
+    { brand: 'Kawasaki', model: 'Z900', style: 'naked', kw: 92, a2: false, refYear: 2020, refPrice: 9200, depr: 0.09, reliability: 4, parts: 'mittel', issues: ['Gabeldichtungen', 'Kettensatz'] },
+    { brand: 'KTM', model: '390 Duke', style: 'naked', kw: 32, a2: true, refYear: 2021, refPrice: 5100, depr: 0.10, reliability: 3, parts: 'mittel', issues: ['Wasserpumpen-Wellendichtring', 'Schaltbarkeit/Getriebe'] },
+    { brand: 'KTM', model: '790 Duke', style: 'naked', kw: 77, a2: false, refYear: 2020, refPrice: 8900, depr: 0.10, reliability: 3, parts: 'hoch', issues: ['Nockenwellen (frühe Serie)', 'Software-Updates'] },
+    { brand: 'Honda', model: 'CB500F', style: 'naked', kw: 35, a2: true, refYear: 2021, refPrice: 5600, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Bremsflüssigkeit alt'] },
+    { brand: 'Honda', model: 'CB650R', style: 'naked', kw: 70, a2: true, refYear: 2021, refPrice: 8200, depr: 0.08, reliability: 5, parts: 'mittel', issues: ['Bremsscheiben', 'Kettensatz'] },
+    { brand: 'Suzuki', model: 'SV650', style: 'naked', kw: 56, a2: true, refYear: 2020, refPrice: 6400, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Spannungsregler (ältere Serien)', 'Kettensatz'] },
+
+    // ---- Sport ----
+    { brand: 'Yamaha', model: 'YZF-R3', style: 'sport', kw: 31, a2: true, refYear: 2021, refPrice: 5600, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Sturzschäden (Verkleidung) prüfen', 'Kettensatz'] },
+    { brand: 'Yamaha', model: 'YZF-R6', style: 'sport', kw: 87, a2: false, refYear: 2019, refPrice: 9800, depr: 0.07, reliability: 4, parts: 'mittel', issues: ['Trackday-Historie?', 'Ventilspiel-Service teuer'] },
+    { brand: 'Kawasaki', model: 'Ninja 650', style: 'sport', kw: 50, a2: true, refYear: 2021, refPrice: 6900, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Bremsbeläge'] },
+    { brand: 'Kawasaki', model: 'Ninja 400', style: 'sport', kw: 33, a2: true, refYear: 2021, refPrice: 5500, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Sturzschäden prüfen', 'Kettenspannung'] },
+    { brand: 'Honda', model: 'CBR500R', style: 'sport', kw: 35, a2: true, refYear: 2021, refPrice: 6100, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Bremsscheiben'] },
+    { brand: 'Aprilia', model: 'RS 660', style: 'sport', kw: 73, a2: true, refYear: 2021, refPrice: 9900, depr: 0.10, reliability: 3, parts: 'hoch', issues: ['Elektronik/Sensorik', 'Service-Historie wichtig'] },
+
+    // ---- Retro / Scrambler ----
+    { brand: 'Triumph', model: 'Street Twin 900', style: 'retro', kw: 48, a2: true, refYear: 2020, refPrice: 8400, depr: 0.08, reliability: 4, parts: 'mittel', issues: ['Kupplung (Greifpunkt)', 'Steuerkette'] },
+    { brand: 'Ducati', model: 'Scrambler Icon 800', style: 'retro', kw: 54, a2: true, refYear: 2020, refPrice: 8200, depr: 0.09, reliability: 3, parts: 'hoch', issues: ['Zahnriemen-Service fällig?', 'Kupplung'] },
+    { brand: 'Yamaha', model: 'XSR700', style: 'retro', kw: 54, a2: true, refYear: 2021, refPrice: 7600, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Tank/Lack (Roststellen)'] },
+    { brand: 'Royal Enfield', model: 'Interceptor 650', style: 'retro', kw: 35, a2: true, refYear: 2021, refPrice: 5500, depr: 0.09, reliability: 3, parts: 'mittel', issues: ['Massepunkte/Elektrik', 'Ölnebel/Undichtigkeiten'] },
+    { brand: 'BMW', model: 'R nineT', style: 'retro', kw: 80, a2: false, refYear: 2019, refPrice: 11200, depr: 0.07, reliability: 4, parts: 'hoch', issues: ['Endantrieb prüfen', 'Federbein-Verschleiss'] },
+
+    // ---- Adventure / Enduro ----
+    { brand: 'Suzuki', model: 'V-Strom 650', style: 'adventure', kw: 51, a2: true, refYear: 2020, refPrice: 7600, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Lenkkopflager'] },
+    { brand: 'Honda', model: 'CB500X', style: 'adventure', kw: 35, a2: true, refYear: 2021, refPrice: 6600, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Bremsen vorne'] },
+    { brand: 'KTM', model: '390 Adventure', style: 'adventure', kw: 32, a2: true, refYear: 2021, refPrice: 6200, depr: 0.10, reliability: 3, parts: 'mittel', issues: ['Wasserpumpe', 'Software-Updates'] },
+    { brand: 'Yamaha', model: 'Ténéré 700', style: 'adventure', kw: 54, a2: true, refYear: 2021, refPrice: 11200, depr: 0.06, reliability: 5, parts: 'mittel', issues: ['Sturz-/Geländespuren prüfen', 'Kettensatz'] },
+    { brand: 'BMW', model: 'F750GS', style: 'adventure', kw: 57, a2: true, refYear: 2020, refPrice: 9600, depr: 0.08, reliability: 4, parts: 'hoch', issues: ['Service nur Vertragspartner?', 'Endantrieb'] },
+    { brand: 'BMW', model: 'R1250GS', style: 'adventure', kw: 100, a2: false, refYear: 2020, refPrice: 16500, depr: 0.07, reliability: 4, parts: 'hoch', issues: ['Endantrieb/Kardan', 'Telelever-Lager'] },
+    { brand: 'Kawasaki', model: 'Versys 650', style: 'adventure', kw: 50, a2: true, refYear: 2020, refPrice: 7000, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Windschild-Klappern'] },
+
+    // ---- Touring ----
+    { brand: 'Yamaha', model: 'Tracer 7', style: 'touring', kw: 54, a2: true, refYear: 2021, refPrice: 8200, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Koffer-Halterungen'] },
+    { brand: 'Honda', model: 'NC750X', style: 'touring', kw: 43, a2: true, refYear: 2021, refPrice: 6800, depr: 0.07, reliability: 5, parts: 'tief', issues: ['DCT-Service (falls Automat)', 'Kettensatz'] },
+    { brand: 'Kawasaki', model: 'Versys 1000', style: 'touring', kw: 88, a2: false, refYear: 2020, refPrice: 11500, depr: 0.08, reliability: 4, parts: 'mittel', issues: ['Kettensatz', 'Federbein'] },
+    { brand: 'BMW', model: 'R1250RT', style: 'touring', kw: 100, a2: false, refYear: 2020, refPrice: 18500, depr: 0.08, reliability: 4, parts: 'hoch', issues: ['Endantrieb', 'ESA-Fahrwerk-Elektronik'] }
+  ];
+
+  function all() { return MODELS.slice(); }
+
+  function byStyle(styleKey) {
+    if (!styleKey || styleKey === 'any') return all();
+    return MODELS.filter(function (m) { return m.style === styleKey; });
+  }
+
+  /** Modelle, die zu einem freien Text (Marke/Modell) passen. */
+  function search(text) {
+    if (!text) return [];
+    var q = text.toLowerCase();
+    return MODELS.filter(function (m) {
+      return (m.brand + ' ' + m.model).toLowerCase().indexOf(q) !== -1 ||
+        q.indexOf(m.model.toLowerCase()) !== -1;
+    });
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.data = global.TDS.data || {};
+  global.TDS.data.market = { REF_KM: REF_KM, all: all, byStyle: byStyle, search: search };
+})(window);
+
+/* ===== js/data/demo.js ===== */
+/*
+ * data/demo.js — kanonischer Beispieldatensatz (Demo/Seed).
+ * Eine Quelle der Wahrheit für Admin & Einstellungen.
+ */
+(function (global) {
+  'use strict';
+
+  var SAMPLES = [
+    { vorname: 'Lena', nachname: 'Berger', email: 'lena.berger@example.ch', telefon: '+41 79 222 11 33', land: 'CH', landLabel: 'Schweiz', region: 'Zürich', ausweis: 'A2 (max. 35 kW)', erfahrung: 'Anfänger — erstes Motorrad', stil: ['Naked Bike'], modell: 'Yamaha MT-07', budget_von: '5000', budget_bis: '8000', waehrung: 'CHF', baujahr: '2019', km: "30'000 km", nutzung: 'Pendeln / Alltag', prioritaeten: 'MFK frisch, Serviceheft, privater Verkäufer', paket: 'Scout' },
+    { vorname: 'Marco', nachname: 'Frei', email: 'marco.frei@example.ch', telefon: '', land: 'CH', landLabel: 'Schweiz', region: 'Bern', ausweis: 'A (unbeschränkt)', erfahrung: 'Erfahren', stil: ['Enduro / Adventure', 'Touring'], modell: '', budget_von: '8000', budget_bis: '12000', waehrung: 'CHF', baujahr: '2017', km: "50'000 km", nutzung: 'Längere Touren', prioritaeten: 'Koffersystem, Kettenkit neu', paket: 'Premium' },
+    { vorname: 'Sara', nachname: 'Hofer', email: 'sara.hofer@example.de', telefon: '+49 151 99887766', land: 'DE', landLabel: 'Deutschland', region: 'Bayern', ausweis: 'A1 (max. 11 kW)', erfahrung: 'Einige Jahre', stil: ['Scrambler / Retro'], modell: 'Honda CB125R', budget_von: '2000', budget_bis: '4000', waehrung: 'EUR', baujahr: '2021', km: "10'000 km", nutzung: 'Wochenende / Spass', prioritaeten: 'Optik wichtig, keine Stürze', paket: 'Quick-Check' },
+    { vorname: 'Tobias', nachname: 'Meier', email: 'tobias.meier@example.ch', telefon: '+41 78 555 12 12', land: 'CH', landLabel: 'Schweiz', region: 'Aargau', ausweis: 'A (unbeschränkt)', erfahrung: 'Einige Jahre', stil: ['Sportmotorrad'], modell: '', budget_von: '7000', budget_bis: '10000', waehrung: 'CHF', baujahr: '2019', km: "20'000 km", nutzung: 'Wochenende / Spass', prioritaeten: 'Keine Trackday-Maschine', paket: 'Scout' }
+  ];
+
+  function samples() { return SAMPLES.map(function (s) { return JSON.parse(JSON.stringify(s)); }); }
+
+  global.TDS = global.TDS || {};
+  global.TDS.data = global.TDS.data || {};
+  global.TDS.data.demo = { samples: samples };
+})(window);
+
+/* ===== js/services/store.js ===== */
+/*
+ * services/store.js — Datenzugriffsschicht (Repository-Pattern).
+ *
+ * Kapselt die gesamte Persistenz hinter einer Promise-basierten API.
+ * Heute: LocalStorage über einen austauschbaren Adapter. Für ein echtes
+ * Backend genügt es, einen anderen Adapter zu setzen (z.B. RestAdapter
+ * mit fetch) — die Views bleiben unverändert.
+ *
+ * Zusatzfeatures gegenüber MVP:
+ *  - versioniertes Schema inkl. Migration von v1
+ *  - Status-Historie (Audit-Trail) je Anfrage
+ *  - interne Notizen
+ *  - Events bei Änderungen (data:change) für reaktive Views
+ *  - Export/Import (JSON) und Statistik-Aggregation
+ */
+(function (global) {
+  'use strict';
+
+  var cfg = global.TDS.config;
+  var events = global.TDS.events;
+
+  var KEY = 'tds_db_v2';
+  var LEGACY_KEY = 'tds_requests_v1';
+  var SCHEMA = 2;
+
+  /* ---------------- Adapter ---------------- */
+  function LocalStorageAdapter(key) {
+    return {
+      read: function () {
+        try {
+          var raw = global.localStorage.getItem(key);
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) { console.warn('Store read error', e); return null; }
+      },
+      write: function (db) {
+        global.localStorage.setItem(key, JSON.stringify(db));
+      }
+    };
+  }
+
+  // In-Memory-Adapter (v.a. für Tests).
+  function MemoryAdapter() {
+    var data = null;
+    return {
+      read: function () { return data; },
+      write: function (db) { data = JSON.parse(JSON.stringify(db)); }
+    };
+  }
+
+  var adapter = LocalStorageAdapter(KEY);
+
+  /* ---------------- intern ---------------- */
+  function emptyDb() { return { v: SCHEMA, requests: [] }; }
+
+  function migrateLegacy() {
+    try {
+      var raw = global.localStorage.getItem(LEGACY_KEY);
+      if (!raw) return null;
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return null;
+      var db = emptyDb();
+      db.requests = arr.map(function (r) {
+        return normalize({
+          id: r.id, createdAt: r.createdAt, updatedAt: r.updatedAt || r.createdAt,
+          status: r.status || cfg.DEFAULT_STATUS, values: r.values || {},
+          history: [{ status: r.status || cfg.DEFAULT_STATUS, at: r.createdAt }],
+          notes: []
+        });
+      });
+      return db;
+    } catch (e) { return null; }
+  }
+
+  function normalize(r) {
+    r.history = r.history || [{ status: r.status, at: r.createdAt }];
+    r.notes = r.notes || [];
+    return r;
+  }
+
+  function load() {
+    var db = adapter.read();
+    if (!db) {
+      db = migrateLegacy() || emptyDb();
+      adapter.write(db);
+    }
+    if (db.v !== SCHEMA) { db.v = SCHEMA; } // Platz für künftige Migrationen
+    db.requests = db.requests.map(normalize);
+    return db;
+  }
+
+  function save(db) {
+    adapter.write(db);
+    if (events) events.emit('data:change', { count: db.requests.length });
+  }
+
+  function genId() {
+    var rnd = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return 'TDS-' + rnd;
+  }
+
+  function sortByDate(list) {
+    return list.slice().sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+  }
+
+  /* ---------------- öffentliche API ---------------- */
+  var Store = {
+    /** Adapter wechseln (z.B. Tests oder späteres Backend). */
+    _useAdapter: function (a) { adapter = a; },
+    _memoryAdapter: MemoryAdapter,
+
+    list: function (filter) {
+      var rows = sortByDate(load().requests);
+      if (filter && filter.status && filter.status !== 'Alle') {
+        rows = rows.filter(function (r) { return r.status === filter.status; });
+      }
+      if (filter && filter.q) {
+        var q = filter.q.toLowerCase();
+        rows = rows.filter(function (r) { return matchQuery(r, q); });
+      }
+      return Promise.resolve(rows);
+    },
+
+    get: function (id) {
+      var found = load().requests.filter(function (r) { return r.id === id; })[0] || null;
+      return Promise.resolve(found);
+    },
+
+    create: function (values) {
+      var db = load();
+      var now = new Date().toISOString();
+      var record = normalize({
+        id: genId(), createdAt: now, updatedAt: now,
+        status: cfg.DEFAULT_STATUS, values: values,
+        history: [{ status: cfg.DEFAULT_STATUS, at: now }], notes: []
+      });
+      db.requests.push(record);
+      save(db);
+      return Promise.resolve(record);
+    },
+
+    updateStatus: function (id, status) {
+      var db = load(); var updated = null; var now = new Date().toISOString();
+      db.requests.forEach(function (r) {
+        if (r.id === id && r.status !== status) {
+          r.status = status; r.updatedAt = now;
+          r.history.push({ status: status, at: now });
+          updated = r;
+        }
+      });
+      if (updated) save(db);
+      return Promise.resolve(updated);
+    },
+
+    addNote: function (id, text) {
+      var db = load(); var updated = null; var now = new Date().toISOString();
+      db.requests.forEach(function (r) {
+        if (r.id === id) {
+          r.notes.push({ text: text, at: now });
+          r.updatedAt = now; updated = r;
+        }
+      });
+      if (updated) save(db);
+      return Promise.resolve(updated);
+    },
+
+    /** Löscht eine Anfrage und liefert den gelöschten Datensatz (für Undo) zurück. */
+    remove: function (id) {
+      var db = load();
+      var removed = db.requests.filter(function (r) { return r.id === id; })[0] || null;
+      db.requests = db.requests.filter(function (r) { return r.id !== id; });
+      save(db);
+      return Promise.resolve(removed);
+    },
+
+    /** Stellt einen zuvor gelöschten Datensatz unverändert wieder her (Undo). */
+    restore: function (record) {
+      if (!record || !record.id) return Promise.resolve(null);
+      var db = load();
+      if (!db.requests.some(function (r) { return r.id === record.id; })) {
+        db.requests.push(normalize(record));
+        save(db);
+      }
+      return Promise.resolve(record);
+    },
+
+    /** Leert alle Anfragen und liefert die vorherige Liste (für Undo) zurück. */
+    clear: function () {
+      var prev = load().requests;
+      save(emptyDb());
+      return Promise.resolve(prev);
+    },
+
+    /** Mehrere Datensätze wiederherstellen (Undo von "Alle löschen"). */
+    restoreMany: function (records) {
+      var db = emptyDb();
+      db.requests = (records || []).map(normalize);
+      save(db);
+      return Promise.resolve(db.requests.length);
+    },
+
+    /** Statistik-Aggregation für das Dashboard. */
+    stats: function () {
+      var rows = load().requests;
+      var byStatus = {}; cfg.STATUSES.forEach(function (s) { byStatus[s] = 0; });
+      var byCountry = {}, byPackage = {};
+      var weekAgo = Date.now() - 7 * 864e5;
+      var last7 = 0, budgetSum = 0, budgetN = 0;
+
+      rows.forEach(function (r) {
+        byStatus[r.status] = (byStatus[r.status] || 0) + 1;
+        var land = (r.values.landLabel || r.values.land || '–');
+        byCountry[land] = (byCountry[land] || 0) + 1;
+        var pkg = r.values.paket || '–';
+        byPackage[pkg] = (byPackage[pkg] || 0) + 1;
+        if (new Date(r.createdAt).getTime() >= weekAgo) last7++;
+        var von = parseInt(r.values.budget_von), bis = parseInt(r.values.budget_bis);
+        if (von && bis) { budgetSum += (von + bis) / 2; budgetN++; }
+      });
+
+      var done = (byStatus['Report erstellt'] || 0) + (byStatus['Abgeschlossen'] || 0);
+      return Promise.resolve({
+        total: rows.length,
+        last7: last7,
+        open: (byStatus['Neu'] || 0) + (byStatus['In Prüfung'] || 0),
+        done: done,
+        conversion: rows.length ? Math.round((done / rows.length) * 100) : 0,
+        avgBudget: budgetN ? Math.round(budgetSum / budgetN) : 0,
+        byStatus: byStatus, byCountry: byCountry, byPackage: byPackage
+      });
+    },
+
+    /** Vollständiger Export als JSON-String. */
+    exportJSON: function () {
+      return Promise.resolve(JSON.stringify(load(), null, 2));
+    },
+
+    /**
+     * Import. mode 'replace' ersetzt, 'merge' fügt neue IDs hinzu.
+     * @returns {Promise<{imported:number, skipped:number}>}
+     */
+    importJSON: function (jsonStr, mode) {
+      return new Promise(function (resolve, reject) {
+        try {
+          var incoming = JSON.parse(jsonStr);
+          var list = Array.isArray(incoming) ? incoming : (incoming.requests || []);
+          if (!Array.isArray(list)) throw new Error('Kein gültiges Datenformat.');
+          var db = mode === 'merge' ? load() : emptyDb();
+          var existing = {}; db.requests.forEach(function (r) { existing[r.id] = true; });
+          var imported = 0, skipped = 0;
+          list.forEach(function (r) {
+            if (!r || !r.id) { skipped++; return; }
+            if (existing[r.id]) { skipped++; return; }
+            db.requests.push(normalize(r)); existing[r.id] = true; imported++;
+          });
+          save(db);
+          resolve({ imported: imported, skipped: skipped });
+        } catch (e) { reject(e); }
+      });
+    }
+  };
+
+  function matchQuery(r, q) {
+    var v = r.values;
+    var hay = [r.id, v.vorname, v.nachname, v.email, v.modell, v.region, v.landLabel, v.paket,
+      (Array.isArray(v.stil) ? v.stil.join(' ') : v.stil)].join(' ').toLowerCase();
+    return hay.indexOf(q) !== -1;
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.store = Store;
+})(window);
+
+/* ===== js/services/scout.js ===== */
+/*
+ * services/scout.js — Deal-Generierungs- & Bewertungs-Engine.
+ *
+ * Erzeugt aus einer Anfrage plausible Beispiel-Deals und bewertet sie
+ * (Deal-Score, Risiko, Empfehlung, Verhandlungsargumente). KEINE echten
+ * Inserate — die Listings werden aus dem Markt-Datensatz (data/market.js)
+ * synthetisiert. Deterministisch pro Anfrage-ID (seeded RNG): derselbe
+ * Report ergibt immer dieselben Deals.
+ *
+ * Reine Funktionen ohne DOM → vollständig unit-testbar (siehe tests/).
+ */
+(function (global) {
+  'use strict';
+
+  var cfg = global.TDS.config;
+  var market = global.TDS.data.market;
+  var fmt = global.TDS.format;
+
+  var NOW_YEAR = 2025;
+
+  /* ---------- Seeded RNG (deterministisch) ---------- */
+  function cyrb53(str, seed) {
+    var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+    for (var i = 0, ch; i < str.length; i++) {
+      ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  }
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function makeRng(seedStr) {
+    var seed = cyrb53(seedStr || 'tds', 1);
+    return mulberry32(seed);
+  }
+
+  /* ---------- Helfer ---------- */
+  function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+  function round(n, step) { step = step || 1; return Math.round(n / step) * step; }
+
+  function parseKm(s) {
+    if (!s) return null;
+    var digits = String(s).replace(/[^\d]/g, '');
+    if (!digits) return null; // "Egal", "Keine Präferenz"
+    return parseInt(digits, 10);
+  }
+  function parseYear(s) {
+    var y = parseInt(s, 10);
+    return (y && y > 1990) ? y : null;
+  }
+
+  /* ---------- Constraints aus Anfrage ---------- */
+  function constraints(values) {
+    var styles = (values.stil || []).map(function (label) { return cfg.STYLE_KEYS[label] || 'any'; });
+    var anyStyle = styles.length === 0 || styles.indexOf('any') !== -1;
+    var kwCap = cfg.LICENSE_KW[values.ausweis];
+    if (kwCap === undefined) kwCap = Infinity;
+    var von = parseInt(values.budget_von, 10) || 3000;
+    var bis = parseInt(values.budget_bis, 10) || Math.max(von + 2000, 8000);
+    return {
+      styles: anyStyle ? null : styles,
+      a2required: kwCap <= 35,
+      kwCap: kwCap,
+      budgetVon: von, budgetBis: bis,
+      currency: values.waehrung || cfg.currencyFor(values.land),
+      yearFrom: parseYear(values.baujahr),
+      maxKm: parseKm(values.km),
+      modelPref: (values.modell || '').trim(),
+      region: values.region || '–',
+      land: values.land
+    };
+  }
+
+  /* ---------- Kandidaten wählen ---------- */
+  function candidates(c, count) {
+    var pool = [];
+    var seen = {};
+    function add(list) {
+      list.forEach(function (m) {
+        var key = m.brand + m.model;
+        if (!seen[key]) { seen[key] = true; pool.push(m); }
+      });
+    }
+    if (c.modelPref) add(market.search(c.modelPref));
+    if (c.styles) c.styles.forEach(function (s) { add(market.byStyle(s)); });
+    else add(market.all());
+
+    // A2-Filter: a2-Flag = A2-tauglich bzw. drosselbar (volle kW egal).
+    if (c.a2required) pool = pool.filter(function (m) { return m.a2; });
+
+    // Auffüllen, falls nach Filter zu wenige Kandidaten.
+    if (pool.length < count) {
+      add(c.a2required ? market.all().filter(function (m) { return m.a2; }) : market.all());
+    }
+
+    // Fit-Score: Budget-Nähe + Zuverlässigkeit + Modell-Treffer
+    var mid = (c.budgetVon + c.budgetBis) / 2;
+    pool.forEach(function (m) {
+      var priceDist = Math.abs(m.refPrice - mid) / Math.max(mid, 1);
+      var modelHit = c.modelPref && (m.brand + ' ' + m.model).toLowerCase().indexOf(c.modelPref.toLowerCase()) !== -1;
+      m._fit = (modelHit ? 3 : 0) + (1 - clamp(priceDist, 0, 1)) + m.reliability * 0.15;
+    });
+    pool.sort(function (a, b) { return b._fit - a._fit; });
+    return pool.slice(0, count);
+  }
+
+  /* ---------- ein Listing + Bewertung ---------- */
+  var ASK_RANGES = [[0.88, 0.96], [0.97, 1.05], [1.06, 1.16], [0.94, 1.04], [1.00, 1.12]];
+  var CONDITIONS = [
+    { label: 'sehr gut', w: 3, bonus: 0.8, risk: -6 },
+    { label: 'gut', w: 5, bonus: 0.3, risk: 0 },
+    { label: 'mittel', w: 3, bonus: -0.4, risk: 10 },
+    { label: 'mit Mängeln', w: 1, bonus: -1.2, risk: 22 }
+  ];
+
+  function weighted(rng, items) {
+    var total = items.reduce(function (s, i) { return s + i.w; }, 0);
+    var r = rng() * total;
+    for (var i = 0; i < items.length; i++) { r -= items[i].w; if (r <= 0) return items[i]; }
+    return items[items.length - 1];
+  }
+
+  function buildDeal(model, rank, c, rng) {
+    var cur = c.currency;
+
+    // Jahr (respektiert "Baujahr ab")
+    var minYear = Math.max(c.yearFrom || 2013, 2013, model.refYear - 5);
+    var maxYear = Math.min(2024, model.refYear + 2);
+    if (minYear > maxYear) minYear = maxYear;
+    var year = Math.round(minYear + rng() * (maxYear - minYear));
+
+    var age = Math.max(0, NOW_YEAR - year);
+    var expectedKm = 4000 + age * 5500;
+    var km = round(expectedKm * (0.6 + rng() * 0.9), 500);
+    if (c.maxKm) km = Math.min(km, c.maxKm);
+    km = Math.max(1500, km);
+
+    var cond = weighted(rng, CONDITIONS);
+    var seller = rng() < 0.62 ? 'privat' : 'Händler';
+    var serviceHistory = rng() < (cond.label === 'sehr gut' ? 0.85 : 0.55);
+    var freshMfk = c.land === 'CH' ? rng() < 0.5 : false;
+
+    // Marktwert
+    var yearFactor = Math.pow(1 - model.depr, model.refYear - year);
+    var kmFactor = clamp(1 - (km - market.REF_KM) / 10000 * 0.04, 0.6, 1.2);
+    var marketValue = model.refPrice * yearFactor * kmFactor * (1 + cond.bonus * 0.04);
+
+    // Angebotspreis
+    var rangeIdx = Math.min(rank, ASK_RANGES.length - 1);
+    var rg = ASK_RANGES[rangeIdx];
+    var askMult = rg[0] + rng() * (rg[1] - rg[0]);
+    if (seller === 'Händler') askMult += 0.04; // Gewährleistung -> teurer
+    var asking = marketValue * askMult;
+    // in Budget halten
+    asking = clamp(asking, c.budgetVon, c.budgetBis);
+    asking = round(asking, 50);
+
+    var gap = (marketValue - asking) / marketValue; // >0 = unter Marktwert
+
+    // Deal-Score
+    var kmRel = (km - expectedKm) / expectedKm;
+    var score = 6
+      + gap * 22
+      + cond.bonus
+      + (model.reliability - 3) * 0.4
+      + clamp(-kmRel * 1.5, -1.2, 0.8)
+      + (serviceHistory ? 0.5 : -0.4)
+      + (seller === 'Händler' ? 0.2 : 0);
+    score = clamp(score, 1.5, 9.8);
+    score = Math.round(score * 10) / 10;
+
+    // Risiko
+    var risk = 10
+      + age * 3.2
+      + Math.max(0, kmRel) * 22
+      + cond.risk
+      + (3 - model.reliability) * 7
+      + (model.parts === 'hoch' ? 10 : model.parts === 'mittel' ? 3 : 0)
+      + (serviceHistory ? -6 : 8)
+      + (seller === 'privat' ? 4 : 0)
+      + model.issues.length * 2;
+    risk = Math.round(clamp(risk, 5, 95));
+    var riskLevel = risk < 34 ? 'low' : risk < 64 ? 'mid' : 'high';
+    var riskLabel = riskLevel === 'low' ? 'Niedrig' : riskLevel === 'mid' ? 'Mittel' : 'Höher';
+
+    // Empfehlung
+    var reco;
+    if (score >= 7.5 && riskLevel !== 'high') reco = { level: 'good', text: 'Top-Deal — wenig Risiko, schnell handeln.' };
+    else if (score >= 6 && riskLevel !== 'high') reco = { level: 'ok', text: 'Solide — mit gezielten Fragen nachverhandeln.' };
+    else if (riskLevel === 'high') reco = { level: 'warn', text: 'Erhöhtes Risiko — nur mit MFK/Gutachten kaufen.' };
+    else reco = { level: 'ok', text: 'Brauchbar — Preis vor Ort nachverhandeln.' };
+
+    return {
+      rank: rank,
+      brand: model.brand,
+      model: model.model,
+      title: model.brand + ' ' + model.model,
+      year: year,
+      km: km,
+      condition: cond.label,
+      seller: seller,
+      serviceHistory: serviceHistory,
+      freshMfk: freshMfk,
+      location: c.region,
+      currency: cur,
+      asking: asking,
+      marketValue: Math.round(marketValue),
+      valueGapPct: Math.round(gap * 100),
+      score: score,
+      risk: { score: risk, level: riskLevel, label: riskLabel },
+      recommendation: reco,
+      reliability: model.reliability,
+      parts: model.parts,
+      issues: model.issues.slice(),
+      negotiationArgs: negotiation(model, { asking: asking, marketValue: marketValue, gap: gap, km: km, expectedKm: expectedKm, cond: cond.label, seller: seller, serviceHistory: serviceHistory }, cur),
+      inspectionPoints: inspection(model, cond.label),
+      sellerQuestions: questions(model, seller, serviceHistory)
+    };
+  }
+
+  function negotiation(model, d, cur) {
+    var args = [];
+    var diff = Math.round(Math.abs(d.marketValue - d.asking));
+    if (d.gap < -0.01) args.push('Preis ~' + fmt.money(diff, cur) + ' über Marktwert (Ø ' + fmt.money(d.marketValue, cur) + ') → Nachlass fordern.');
+    else if (d.gap > 0.03) args.push('Bereits ' + fmt.money(diff, cur) + ' unter Marktwert — zügig zusagen, nur kleiner Puffer nötig.');
+    else args.push('Preis nahe Marktwert (Ø ' + fmt.money(d.marketValue, cur) + ') — Spielraum über Mängel/Service holen.');
+    if (d.km > d.expectedKm * 1.15) args.push('Überdurchschnittliche Laufleistung (' + fmt.km(d.km) + ') → Verschleissteile einpreisen.');
+    if (d.cond === 'mittel' || d.cond === 'mit Mängeln') args.push('Sichtbare Mängel → Kostenvoranschlag als Hebel nutzen.');
+    if (!d.serviceHistory) args.push('Kein lückenloses Serviceheft → Abschlag für unklare Wartung.');
+    if (d.seller === 'Händler') args.push('Händler → Gewährleistung & ggf. frische MFK schriftlich sichern.');
+    else args.push('Privatkauf → Probefahrt und Kaltstart-Check vor Zusage vereinbaren.');
+    return args.slice(0, 4);
+  }
+
+  function inspection(model, cond) {
+    var base = ['Rahmen-/Motornummern mit Ausweis abgleichen', 'Reifen-Alter (DOT) & Profil', 'Bremsbeläge & -scheiben', 'Gabel auf Ölverlust', 'Elektrik/Beleuchtung & Kaltstart'];
+    var pts = model.issues.concat(base);
+    if (cond === 'mit Mängeln') pts.unshift('Unfall-/Sturzschäden genau dokumentieren');
+    // Duplikate raus
+    var seen = {}, out = [];
+    pts.forEach(function (p) { if (!seen[p]) { seen[p] = true; out.push(p); } });
+    return out.slice(0, 6);
+  }
+
+  function questions(model, seller, serviceHistory) {
+    var q = ['Warum wird verkauft / wie lange im Besitz?', 'Sturz-, Unfall- oder Trackday-Historie?', 'Letzter Service – wann, wo, was gemacht?'];
+    if (!serviceHistory) q.push('Liegen Servicebelege/Rechnungen vor?');
+    if (seller === 'Händler') q.push('Welche Gewährleistung / Garantie ist inklusive?');
+    else q.push('Ist eine Probefahrt möglich (mit Anzahlung/Ausweis)?');
+    q.push('Bekannte Mängel oder anstehende Arbeiten?');
+    return q.slice(0, 5);
+  }
+
+  /* ---------- öffentliche API ---------- */
+  function generate(record) {
+    var values = record.values || record;
+    var c = constraints(values);
+    var pkg = cfg.packageById(values.paket);
+    var count = clamp(pkg ? pkg.dealCount : 3, 1, 5);
+    var rng = makeRng(record.id || 'preview');
+
+    var picks = candidates(c, count);
+    var deals = picks.map(function (m, i) { return buildDeal(m, i, c, rng); });
+    deals.sort(function (a, b) { return b.score - a.score; });
+    deals.forEach(function (d, i) { d.rank = i; });
+
+    var scores = deals.map(function (d) { return d.score; });
+    var avg = scores.length ? scores.reduce(function (s, x) { return s + x; }, 0) / scores.length : 0;
+    var srcs = (cfg.REGIONS[c.land] && cfg.REGIONS[c.land].sources) || ['anibis.ch', 'tutti.ch'];
+
+    return {
+      deals: deals,
+      summary: {
+        count: deals.length,
+        region: c.region,
+        currency: c.currency,
+        budgetVon: c.budgetVon,
+        budgetBis: c.budgetBis,
+        modelFocus: c.modelPref || (values.stil && values.stil.length ? values.stil.join(', ') : 'verschiedene Stile'),
+        avgScore: Math.round(avg * 10) / 10,
+        bestScore: scores.length ? Math.max.apply(null, scores) : 0,
+        sources: srcs
+      }
+    };
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.scout = { generate: generate, _constraints: constraints, _makeRng: makeRng };
+})(window);
+
+/* ===== js/router.js ===== */
+/*
+ * router.js — minimaler Hash-Router.
+ *
+ * Hash-Routing (#/admin) wurde gewählt, weil die App damit ohne Server
+ * direkt per Doppelklick auf index.html lauffähig ist. Die gewünschten
+ * Pfade entsprechen:
+ *   /          -> #/
+ *   /form      -> #/form
+ *   /admin     -> #/admin
+ *   /report/ID -> #/report/ID
+ *
+ * Bei späterem Backend kann auf History-API-Routing umgestellt werden,
+ * ohne die Views zu ändern.
+ */
+(function (global) {
+  'use strict';
+
+  var routes = [];
+  var notFoundHandler = null;
+
+  function register(pattern, handler) {
+    // pattern z.B. "/report/:id" -> Regex mit benannten Parametern
+    var keys = [];
+    var regexStr = pattern.replace(/:[^/]+/g, function (m) {
+      keys.push(m.slice(1));
+      return '([^/]+)';
+    });
+    routes.push({
+      regex: new RegExp('^' + regexStr + '$'),
+      keys: keys,
+      handler: handler
+    });
+  }
+
+  function currentPath() {
+    var h = global.location.hash || '#/';
+    return h.replace(/^#/, '') || '/';
+  }
+
+  function resolve() {
+    var path = currentPath();
+    for (var i = 0; i < routes.length; i++) {
+      var m = path.match(routes[i].regex);
+      if (m) {
+        var params = {};
+        routes[i].keys.forEach(function (key, idx) {
+          params[key] = decodeURIComponent(m[idx + 1]);
+        });
+        global.scrollTo(0, 0);
+        routes[i].handler(params);
+        return;
+      }
+    }
+    // Keine Route passt
+    global.scrollTo(0, 0);
+    if (notFoundHandler) {
+      notFoundHandler({ path: path });
+    } else {
+      global.location.hash = '#/';
+    }
+  }
+
+  function navigate(path) {
+    global.location.hash = '#' + path;
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.router = {
+    register: register,
+    navigate: navigate,
+    setNotFound: function (handler) { notFoundHandler = handler; },
+    start: function () {
+      global.addEventListener('hashchange', resolve);
+      resolve();
+    }
+  };
+})(window);
+
+/* ===== js/components/layout.js ===== */
+/*
+ * components/layout.js — gemeinsame UI-Bausteine & Helfer.
+ * Header (mit Navigation + Theme-Umschalter) und Footer für alle Views.
+ */
+(function (global) {
+  'use strict';
+
+  var fmt = global.TDS.format;
+
+  function app() { return global.document.getElementById('app'); }
+
+  /**
+   * Rendert eine View. Views liefern nur den Inhalt; Header, <main>-Landmark
+   * und Footer werden hier zentral ergänzt (DRY + saubere Semantik/a11y).
+   */
+  function render(content) {
+    var el = app();
+    el.innerHTML = header() +
+      '<main id="main" class="main" tabindex="-1">' + content + '</main>' +
+      footer();
+    if (global.TDS.motion) global.TDS.motion.enter(el); // Bewegungs-Layer
+  }
+
+  function esc(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function activeKey() {
+    var h = global.location.hash || '#/';
+    if (h.indexOf('#/form') === 0) return 'form';
+    if (h.indexOf('#/admin') === 0) return 'admin';
+    if (h.indexOf('#/settings') === 0) return 'settings';
+    return 'home';
+  }
+
+  function navLink(href, key, label, active) {
+    var on = key === active;
+    return '<a href="' + href + '" class="hdr-link' + (on ? ' active' : '') + '"' +
+      (on ? ' aria-current="page"' : '') + '>' + esc(label) + '</a>';
+  }
+
+  function header() {
+    var active = activeKey();
+    var isDark = global.TDS.theme ? global.TDS.theme.current() === 'dark' : false;
+    return '' +
+      '<a class="skip-link" href="#main">Zum Inhalt springen</a>' +
+      '<header class="hdr">' +
+        '<a class="logo" href="#/" aria-label="Töff Deal Scout — Startseite">Töff<em>Deal</em>Scout</a>' +
+        '<nav class="hdr-nav" aria-label="Hauptnavigation">' +
+          navLink('#/form', 'form', 'Anfrage', active) +
+          navLink('#/admin', 'admin', 'Admin', active) +
+          navLink('#/settings', 'settings', 'Einstellungen', active) +
+          '<button class="icon-btn" data-action="theme-toggle" type="button" ' +
+            'title="Hell/Dunkel umschalten" aria-label="Design umschalten" aria-pressed="' + (isDark ? 'true' : 'false') + '">◐</button>' +
+        '</nav>' +
+      '</header>';
+  }
+
+  function footer() {
+    return '' +
+      '<footer>' +
+        '<div class="footer-inner">' +
+          '<span>&copy; 2025 Töff Deal Scout · Zürich</span>' +
+          '<span><a href="mailto:info@toeffdealscout.ch">info@toeffdealscout.ch</a></span>' +
+          '<span><a href="#/admin">Admin</a> · <a href="#/settings">Einstellungen</a></span>' +
+          '<span class="footer-note">Demo / MVP — Daten nur lokal im Browser (LocalStorage).</span>' +
+        '</div>' +
+      '</footer>';
+  }
+
+  function statusClass(status) {
+    var s = (status || '').toLowerCase()
+      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return 'st-' + s;
+  }
+  function statusBadge(status) {
+    return '<span class="badge ' + statusClass(status) + '">' + esc(status) + '</span>';
+  }
+  function riskBadge(level, label) {
+    return '<span class="badge risk-badge risk-' + level + '">' + esc(label) + '</span>';
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.ui = {
+    render: render,
+    esc: esc,
+    header: header,
+    footer: footer,
+    statusClass: statusClass,
+    statusBadge: statusBadge,
+    riskBadge: riskBadge,
+    // Bequemer Zugriff auf Formatierung
+    fmt: fmt,
+    formatDate: fmt.date
+  };
+})(window);
+
+/* ===== js/components/landing.js ===== */
+/*
+ * components/landing.js — Startseite mit Erklärung, Ablauf und CTA.
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+  var cfg = global.TDS.config;
+
+  function pricingHtml() {
+    return '<div class="pricing-grid">' + cfg.PACKAGES.map(function (p) {
+      var feats = p.feats.map(function (f) { return '<li>' + ui.esc(f) + '</li>'; }).join('');
+      return '<div class="price-card' + (p.recommended ? ' price-card-rec' : '') + '">' +
+        (p.badge ? '<div class="pkg-badge">' + ui.esc(p.badge) + '</div>' : '') +
+        '<div class="price-name">' + ui.esc(p.name) + '</div>' +
+        '<div class="price-amount">CHF ' + ui.esc(p.price.CHF) + '</div>' +
+        '<div class="price-sub2">' + ui.esc(p.sub) + '</div>' +
+        '<ul class="price-feats">' + feats + '</ul>' +
+        '<a class="btn-' + (p.recommended ? 'primary' : 'ghost') + ' btn-block" href="#/form">Wählen</a>' +
+        '</div>';
+    }).join('') + '</div>';
+  }
+
+  function faqHtml() {
+    var qa = [
+      ['Was kostet der Service?', 'Die Anfrage ist kostenlos. Du zahlst erst für den gewählten Report (ab CHF 9.90). Diese Demo speichert alles nur lokal — es wird nichts verrechnet.'],
+      ['Woher kommen die Inserate?', 'In dieser Demo sind die Deals synthetisch (Beispieldaten). Produktiv durchsuchen wir Quellen wie anibis.ch, tutti.ch, mobile.de oder willhaben.at.'],
+      ['Wie schnell bekomme ich den Report?', 'Im Normalbetrieb innerhalb von 24 Stunden nach Eingang. Quick-Check-Einschätzungen schneller.'],
+      ['Berücksichtigt ihr meinen Führerausweis?', 'Ja. Bei A2/A1 filtern wir auf zulässige bzw. drosselbare Modelle, damit die Vorschläge wirklich passen.'],
+      ['Was passiert mit meinen Daten?', 'In dieser Demo bleiben sie ausschliesslich in deinem Browser (LocalStorage). Kein Server, kein Konto, keine Weitergabe.']
+    ];
+    return '<div class="faq">' + qa.map(function (x) {
+      return '<details class="faq-item"><summary>' + ui.esc(x[0]) + '</summary>' +
+        '<div class="faq-a">' + ui.esc(x[1]) + '</div></details>';
+    }).join('') + '</div>';
+  }
+
+  function feature(icon, title, text) {
+    return '<div class="feat"><div class="feat-ico">' + icon + '</div>' +
+      '<div class="feat-title">' + ui.esc(title) + '</div>' +
+      '<div class="feat-text">' + ui.esc(text) + '</div></div>';
+  }
+
+  function step(n, title, text) {
+    return '<div class="step"><div class="step-num">' + n + '</div>' +
+      '<div class="step-title">' + ui.esc(title) + '</div>' +
+      '<div class="step-text">' + ui.esc(text) + '</div></div>';
+  }
+
+  function view() {
+    var html = '' +
+      '<div class="hero">' +
+        '<div class="hero-eye">Motorrad-Kaufberatung · Schweiz &amp; DACH</div>' +
+        '<h1>Den besten Deal finden — ohne Risiko.</h1>' +
+        '<p>Sag uns, welches Töff du suchst. Wir analysieren den Markt und liefern eine klare Einschätzung mit Deal-Score, Risiko und Verhandlungsargumenten.</p>' +
+        '<a class="btn-primary" href="#/form">Suchanfrage starten →</a>' +
+        '<div class="hero-trust">Kostenlos &amp; unverbindlich · ~2 Minuten · kein Konto nötig</div>' +
+        '<div class="hero-pills">' +
+          '<div class="pill">Preis-Check</div>' +
+          '<div class="pill">Risikobewertung</div>' +
+          '<div class="pill">A2-Filter</div>' +
+          '<div class="pill">Verhandlungsskript</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="wrap wrap-wide">' +
+        '<div class="section-eye">So funktioniert\'s</div>' +
+        '<div class="steps">' +
+          step(1, 'Anfrage ausfüllen', 'Budget, Stil, Wunschmodell und Region — in 2 Minuten erledigt.') +
+          step(2, 'Wir scouten den Markt', 'Wir prüfen aktuelle Inserate auf Preis, Zustand und Risiko.') +
+          step(3, 'Report erhalten', 'Top-Deals mit Deal-Score und Verhandlungsargumenten.') +
+        '</div>' +
+
+        '<div class="section-eye">Das steckt im Report</div>' +
+        '<div class="feat-grid">' +
+          feature('📊', 'Deal-Score 0–10', 'Objektive Bewertung aus Preis vs. Marktwert, Zustand, Laufleistung und Zuverlässigkeit.') +
+          feature('🛡️', 'Risiko-Einschätzung', 'Niedrig / Mittel / Höher — basierend auf Alter, km, Service-Historie und modelltypischen Schwächen.') +
+          feature('🤝', 'Verhandlungsargumente', 'Konkrete Hebel und ein realistischer Zielpreis für dein Verkäufergespräch.') +
+          feature('📋', 'Besichtigungs-Checkliste', 'Worauf du bei genau diesem Modell vor Ort achten musst — plus Fragen für den Verkäufer.') +
+        '</div>' +
+
+        '<div class="section-eye">Pakete &amp; Preise</div>' +
+        pricingHtml() +
+
+        '<div class="section-eye">Häufige Fragen</div>' +
+        faqHtml() +
+
+        '<div class="cta-band">' +
+          '<div>' +
+            '<div class="cta-title">Bereit, den besten Deal zu finden?</div>' +
+            '<div class="cta-sub">Kostenlos starten — du zahlst erst für den Report.</div>' +
+          '</div>' +
+          '<a class="btn-primary" href="#/form">Jetzt Anfrage stellen →</a>' +
+        '</div>' +
+      '</div>' +
+
+      '';
+
+    ui.render(html);
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.landing = view;
+})(window);
+
+/* ===== js/components/form.js ===== */
+/*
+ * form.js — Suchanfrage-Formular.
+ * Übernimmt Felder, Design und Validierung aus der Original-HTML und
+ * speichert die Anfrage bei Erfolg über den Store (LocalStorage).
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+  var cfg = global.TDS.config;
+  var store = global.TDS.store;
+  var router = global.TDS.router;
+
+  function packageCardsHtml() {
+    return cfg.PACKAGES.map(function (p) {
+      var feats = p.feats.map(function (f) {
+        return '<li class="pkg-feat">' + ui.esc(f) + '</li>';
+      }).join('');
+      return '' +
+        '<div class="pkg-wrap">' +
+          '<input type="radio" name="paket" id="pkg-' + p.id + '" value="' + ui.esc(p.id) + '"' + (p.recommended ? ' checked' : '') + '>' +
+          '<label class="pkg-card" for="pkg-' + p.id + '">' +
+            (p.badge ? '<div class="pkg-badge">' + ui.esc(p.badge) + '</div>' : '') +
+            '<div class="pkg-name">' + ui.esc(p.name) + '</div>' +
+            '<div class="pkg-price"><sub class="pkg-cur">CHF </sub><span>' + ui.esc(p.price.CHF) + '</span></div>' +
+            '<div class="pkg-sub">' + ui.esc(p.sub) + '</div>' +
+            '<ul class="pkg-feats">' + feats + '</ul>' +
+          '</label>' +
+        '</div>';
+    }).join('');
+  }
+
+  function view() {
+    var html = '' +
+      '<div class="hero hero-sm">' +
+        '<div class="hero-eye">Suchanfrage</div>' +
+        '<h1>Erzähl uns von deinem Wunsch-Töff</h1>' +
+        '<p>Je genauer, desto besser der Report. Dauert ~2 Minuten — kein Konto nötig. Pflichtfelder sind mit <span style="color:var(--accent)">*</span> markiert.</p>' +
+      '</div>' +
+
+      '<div class="wrap">' +
+      '<div id="draft-banner"></div>' +
+      '<div class="form-progress" aria-hidden="true">' +
+        '<div class="fp-bar"><span id="fp-fill" style="width:0"></span></div>' +
+        '<div class="fp-label" id="fp-label">0 % ausgefüllt</div>' +
+      '</div>' +
+      '<form id="frm" novalidate>' +
+
+        '<div id="form-errors" class="form-errors" role="alert" tabindex="-1" hidden></div>' +
+
+        // SEKTION 1: KONTAKT
+        '<div class="sec">' +
+          '<div class="sec-head">Deine Angaben</div>' +
+          '<div class="row2">' +
+            field('vorname', 'Vorname', true, '<input type="text" id="vorname" name="vorname" placeholder="Max" autocomplete="given-name">', 'Bitte Vorname eingeben.') +
+            field('nachname', 'Nachname', true, '<input type="text" id="nachname" name="nachname" placeholder="Muster" autocomplete="family-name">', 'Bitte Nachname eingeben.') +
+          '</div>' +
+          field('email', 'E-Mail', true, '<input type="email" id="email" name="email" placeholder="max@muster.com" autocomplete="email">', 'Bitte eine gültige E-Mail-Adresse eingeben.') +
+          field('telefon', 'Telefon / WhatsApp', false, '<input type="tel" id="telefon" name="telefon" placeholder="+41 79 123 45 67" autocomplete="tel">', '', 'optional') +
+          '<div class="row2">' +
+            field('land', 'Land', true,
+              '<div class="sel-wrap"><select id="land" name="land">' +
+                '<option value="">Land wählen</option>' +
+                '<option value="CH">Schweiz</option>' +
+                '<option value="DE">Deutschland</option>' +
+                '<option value="AT">Österreich</option>' +
+                '<option value="LI">Liechtenstein</option>' +
+              '</select></div>', 'Bitte Land auswählen.') +
+            field('region', 'Region', true,
+              '<div class="sel-wrap"><select id="region" name="region"><option value="">Zuerst Land wählen</option></select></div>',
+              'Bitte Region auswählen.', '', '<div class="hint-text" id="quellen-hint"></div>') +
+          '</div>' +
+        '</div>' +
+
+        // SEKTION 2: FÜHRERSCHEIN
+        '<div class="sec">' +
+          '<div class="sec-head">Führerausweis &amp; Erfahrung</div>' +
+          '<div class="field">' +
+            '<label class="lbl" id="lbl-ausweis">Führerausweis <span class="req">*</span></label>' +
+            '<div class="chips" id="chips-ausweis" role="radiogroup" aria-labelledby="lbl-ausweis">' +
+              chip('radio', 'ausweis', 'A (unbeschränkt)') +
+              chip('radio', 'ausweis', 'A2 (max. 35 kW)') +
+              chip('radio', 'ausweis', 'A1 (max. 11 kW)') +
+              chip('radio', 'ausweis', 'Nur B') +
+              chip('radio', 'ausweis', 'Noch keinen') +
+            '</div>' +
+            '<div class="err-msg" id="e-ausweis">Bitte Führerausweis auswählen.</div>' +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="lbl">Erfahrung <span class="opt">optional</span></label>' +
+            '<div class="chips">' +
+              chip('radio', 'erfahrung', 'Anfänger — erstes Motorrad', 'Anfänger') +
+              chip('radio', 'erfahrung', 'Einige Jahre') +
+              chip('radio', 'erfahrung', 'Erfahren') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        // SEKTION 3: WUNSCH-MOTORRAD
+        '<div class="sec">' +
+          '<div class="sec-head">Dein Wunsch-Motorrad</div>' +
+          '<div class="field">' +
+            '<label class="lbl" id="lbl-stil">Stil <span class="req">*</span> <span class="opt">Mehrfachauswahl möglich</span></label>' +
+            '<div class="chips" id="chips-stil" role="group" aria-labelledby="lbl-stil">' +
+              chip('checkbox', 'stil', 'Naked Bike') +
+              chip('checkbox', 'stil', 'Sportmotorrad') +
+              chip('checkbox', 'stil', 'Scrambler / Retro') +
+              chip('checkbox', 'stil', 'Enduro / Adventure') +
+              chip('checkbox', 'stil', 'Touring') +
+              chip('checkbox', 'stil', 'Egal — bestes P/L') +
+            '</div>' +
+            '<div class="err-msg" id="e-stil">Bitte mindestens einen Stil auswählen.</div>' +
+          '</div>' +
+          field('modell', 'Bestimmtes Modell', false, '<input type="text" id="modell" name="modell" placeholder="z.B. Honda CB500F, Yamaha MT-07 …">', '', 'optional') +
+          '<div class="field">' +
+            '<label class="lbl">Budget <span class="req">*</span></label>' +
+            '<div class="row2">' +
+              '<div><div class="mini-lbl">Von</div><div class="sel-wrap"><select id="budget-von" name="budget_von"></select></div></div>' +
+              '<div><div class="mini-lbl">Bis</div><div class="sel-wrap"><select id="budget-bis" name="budget_bis"></select></div></div>' +
+            '</div>' +
+            '<div class="err-msg" id="e-budget">Bitte Budget auswählen.</div>' +
+          '</div>' +
+          '<div class="row2">' +
+            field('baujahr', 'Baujahr ab', false,
+              '<div class="sel-wrap"><select id="baujahr" name="baujahr">' +
+                '<option value="">Keine Präferenz</option>' +
+                '<option>2023</option><option>2021</option><option>2019</option>' +
+                '<option>2017</option><option>2015</option><option>2012</option>' +
+                '<option>2010</option><option>Egal</option>' +
+              '</select></div>', '', 'optional') +
+            field('km', 'Max. Kilometerstand', false,
+              '<div class="sel-wrap"><select id="km" name="km">' +
+                '<option value="">Keine Präferenz</option>' +
+                "<option>10'000 km</option><option>20'000 km</option>" +
+                "<option>30'000 km</option><option>40'000 km</option>" +
+                "<option>50'000 km</option><option>Egal</option>" +
+              '</select></div>', '', 'optional') +
+          '</div>' +
+          '<div class="field">' +
+            '<label class="lbl">Hauptnutzung <span class="opt">optional</span></label>' +
+            '<div class="chips">' +
+              chip('radio', 'nutzung', 'Pendeln / Alltag') +
+              chip('radio', 'nutzung', 'Wochenende / Spass', 'Wochenende') +
+              chip('radio', 'nutzung', 'Längere Touren', 'Touren') +
+              chip('radio', 'nutzung', 'Gemischt') +
+            '</div>' +
+          '</div>' +
+          field('prioritaeten', 'Worauf legst du am meisten Wert?', false,
+            '<textarea id="prioritaeten" name="prioritaeten" placeholder="z.B. MFK frisch, Serviceheft vorhanden, keine Sturzschäden, privater Verkäufer bevorzugt …"></textarea>', '', 'optional') +
+        '</div>' +
+
+        // SEKTION 4: PAKET
+        '<div class="sec">' +
+          '<div class="sec-head">Paket wählen <span style="font-weight:400;color:var(--err);"> *</span></div>' +
+          '<div class="pkg-grid">' + packageCardsHtml() + '</div>' +
+          '<div class="err-msg" id="e-paket" style="margin-top:8px;">Bitte ein Paket auswählen.</div>' +
+        '</div>' +
+
+        // SUBMIT
+        '<div class="submit-area">' +
+          '<button type="submit" class="btn-submit" id="submit-btn">Anfrage absenden →</button>' +
+          '<div class="submit-note">' +
+            'Nach dem Absenden erhältst du einen <strong id="payment-hint">Zahlungslink</strong> (Demo).<br>' +
+            'Der Report wird innerhalb von 24h nach Zahlungseingang geliefert.<br>' +
+            '<span style="font-size:10px;margin-top:4px;display:block;">Demo: Deine Daten werden nur lokal im Browser gespeichert.</span>' +
+          '</div>' +
+        '</div>' +
+
+      '</form>' +
+      '</div>' +
+      '';
+
+    ui.render(html);
+    wire();
+  }
+
+  // ---- kleine HTML-Helfer ----
+  function field(id, label, required, control, errMsg, optTag, extra) {
+    return '' +
+      '<div class="field">' +
+        '<label class="lbl" for="' + id + '">' + ui.esc(label) +
+          (required ? ' <span class="req">*</span>' : '') +
+          (optTag ? ' <span class="opt">' + ui.esc(optTag) + '</span>' : '') +
+        '</label>' +
+        control +
+        (errMsg ? '<div class="err-msg" id="e-' + id + '">' + ui.esc(errMsg) + '</div>' : '') +
+        (extra || '') +
+      '</div>';
+  }
+
+  function chip(type, name, value, label) {
+    var id = name + '-' + value.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+    return '' +
+      '<div class="chip-wrap">' +
+        '<input type="' + type + '" name="' + name + '" id="' + id + '" value="' + ui.esc(value) + '">' +
+        '<label for="' + id + '">' + ui.esc(label || value) + '</label>' +
+      '</div>';
+  }
+
+  // ---- Verhalten ----
+  function $(id) { return document.getElementById(id); }
+
+  function fillBudgets(cur) {
+    var sep = cur === 'CHF' ? "'" : '.';
+    function fmt(n) {
+      return cur + ' ' + (n >= 1000 ? Math.floor(n / 1000) + sep + String(n % 1000).padStart(3, '0') : n) + (n === 20000 ? '+' : '');
+    }
+    var selVon = $('budget-von'), selBis = $('budget-bis');
+    var oldVon = selVon.value, oldBis = selBis.value;
+    selVon.innerHTML = '<option value="">Von wählen</option>';
+    selBis.innerHTML = '<option value="">Bis wählen</option>';
+    cfg.BUDGETS.forEach(function (v) {
+      var o1 = new Option(fmt(v), v), o2 = new Option(fmt(v), v);
+      if (String(v) === oldVon || (!oldVon && v === 4000)) o1.selected = true;
+      if (String(v) === oldBis || (!oldBis && v === 8000)) o2.selected = true;
+      selVon.add(o1); selBis.add(o2);
+    });
+  }
+
+  function setCurrency(cur) {
+    Array.prototype.forEach.call(document.querySelectorAll('.pkg-cur'), function (el, i) {
+      el.textContent = cur + ' ';
+      // Preis je nach Währung (hier identisch, aber vorbereitet)
+      var span = el.nextElementSibling;
+      if (span && cfg.PACKAGES[i]) span.textContent = cfg.PACKAGES[i].price[cur] || cfg.PACKAGES[i].price.CHF;
+    });
+    var land = $('land').value;
+    $('payment-hint').textContent = (land && cfg.REGIONS[land]) ? cfg.REGIONS[land].payment : 'Zahlungslink';
+    fillBudgets(cur);
+  }
+
+  function clearErr(id) {
+    var el = $('e-' + id); if (el) el.classList.remove('show');
+    var inp = $(id); if (inp) inp.classList.remove('err');
+  }
+
+  function liveCheckBudget() {
+    var vonSel = $('budget-von'), bisSel = $('budget-bis');
+    var von = parseInt(vonSel.value) || 0;
+    var bis = parseInt(bisSel.value) || 0;
+    if (von && bis && von >= bis) {
+      // Sanfte Autokorrektur: nächsthöhere "Bis"-Option wählen
+      var fixed = null;
+      Array.prototype.forEach.call(bisSel.options, function (o) {
+        var ov = parseInt(o.value) || 0;
+        if (fixed === null && ov > von) fixed = o.value;
+      });
+      if (fixed !== null) { bisSel.value = fixed; clearErr('budget'); }
+      else { $('e-budget').textContent = '"Von" muss kleiner sein als "Bis".'; $('e-budget').classList.add('show'); }
+    } else {
+      clearErr('budget');
+    }
+  }
+
+  function validate() {
+    var errs = [];
+    function check(pass, errId, inputId, msg, label) {
+      var errEl = $(errId), inp = $(inputId);
+      if (!pass) {
+        if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
+        if (inp) { inp.classList.add('err'); inp.setAttribute('aria-invalid', 'true'); }
+        errs.push({ id: inputId, label: label || msg });
+      } else {
+        if (errEl) errEl.classList.remove('show');
+        if (inp) { inp.classList.remove('err'); inp.removeAttribute('aria-invalid'); }
+      }
+    }
+
+    check($('vorname').value.trim() !== '', 'e-vorname', 'vorname', 'Bitte Vorname eingeben.', 'Vorname');
+    check($('nachname').value.trim() !== '', 'e-nachname', 'nachname', 'Bitte Nachname eingeben.', 'Nachname');
+    check(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim()), 'e-email', 'email', 'Bitte eine gültige E-Mail-Adresse eingeben.', 'E-Mail');
+    check($('land').value !== '', 'e-land', 'land', 'Bitte Land auswählen.', 'Land');
+    check($('region').value !== '', 'e-region', 'region', 'Bitte Region auswählen.', 'Region');
+
+    chipsGroup('ausweis', 'e-ausweis', 'chips-ausweis', 'Bitte Führerausweis auswählen.', 'Führerausweis', errs);
+    chipsGroup('stil', 'e-stil', 'chips-stil', 'Bitte mindestens einen Stil auswählen.', 'Stil', errs);
+
+    var von = parseInt($('budget-von').value) || 0;
+    var bis = parseInt($('budget-bis').value) || 0;
+    if (!von || !bis) {
+      setErr('e-budget', 'budget-von', 'Bitte Budget Von und Bis auswählen.'); errs.push({ id: 'budget-von', label: 'Budget' });
+    } else if (von >= bis) {
+      setErr('e-budget', 'budget-von', '"Von" muss kleiner sein als "Bis".'); errs.push({ id: 'budget-von', label: 'Budget' });
+    } else { clearErr('budget'); $('budget-von').classList.remove('err'); }
+
+    if (!document.querySelector('input[name="paket"]:checked')) {
+      $('e-paket').classList.add('show'); errs.push({ id: 'pkg-Quick-Check', label: 'Paket' });
+    } else { $('e-paket').classList.remove('show'); }
+
+    if (errs.length > 0) { showErrorSummary(errs); return false; }
+    clearErrorSummary();
+    return true;
+  }
+
+  /** Barrierefreie Fehler-Zusammenfassung oben im Formular. */
+  function showErrorSummary(errs) {
+    var box = $('form-errors');
+    if (!box) return;
+    var links = errs.map(function (e) {
+      return '<li><a href="#' + e.id + '" data-target="' + e.id + '">' + ui.esc(e.label) + '</a></li>';
+    }).join('');
+    box.innerHTML = '<strong>Bitte korrigiere ' + errs.length + (errs.length === 1 ? ' Angabe' : ' Angaben') + ':</strong>' +
+      '<ul>' + links + '</ul>';
+    box.hidden = false;
+    box.focus();
+  }
+
+  function clearErrorSummary() {
+    var box = $('form-errors');
+    if (box) { box.hidden = true; box.innerHTML = ''; }
+  }
+
+  function setErr(errId, inputId, msg) {
+    var errEl = $(errId), inp = $(inputId);
+    if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
+    if (inp) inp.classList.add('err');
+  }
+
+  function chipsGroup(name, errId, wrapId, msg, label, errs) {
+    var ok = document.querySelector('input[name="' + name + '"]:checked') !== null;
+    var errEl = $(errId), wrap = $(wrapId);
+    if (!ok) {
+      if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
+      if (wrap) { wrap.classList.add('err-chips'); wrap.setAttribute('aria-invalid', 'true'); }
+      errs.push({ id: wrapId, label: label });
+    } else {
+      if (errEl) errEl.classList.remove('show');
+      if (wrap) { wrap.classList.remove('err-chips'); wrap.removeAttribute('aria-invalid'); }
+    }
+  }
+
+  /** Formularwerte einsammeln -> flaches Objekt für den Store. */
+  function collect() {
+    var stile = [];
+    document.querySelectorAll('input[name="stil"]:checked').forEach(function (el) { stile.push(el.value); });
+    function radio(name) {
+      var el = document.querySelector('input[name="' + name + '"]:checked');
+      return el ? el.value : '';
+    }
+    var land = $('land').value;
+    return {
+      vorname: $('vorname').value.trim(),
+      nachname: $('nachname').value.trim(),
+      email: $('email').value.trim(),
+      telefon: $('telefon').value.trim(),
+      land: land,
+      landLabel: ({ CH: 'Schweiz', DE: 'Deutschland', AT: 'Österreich', LI: 'Liechtenstein' })[land] || land,
+      region: $('region').value,
+      ausweis: radio('ausweis'),
+      erfahrung: radio('erfahrung'),
+      stil: stile,
+      modell: $('modell').value.trim(),
+      budget_von: $('budget-von').value,
+      budget_bis: $('budget-bis').value,
+      waehrung: cfg.currencyFor(land),
+      baujahr: $('baujahr').value,
+      km: $('km').value,
+      nutzung: radio('nutzung'),
+      prioritaeten: $('prioritaeten').value.trim(),
+      paket: radio('paket')
+    };
+  }
+
+  /* ---------- Entwurf (Autosave/Resume) ---------- */
+  var DRAFT_KEY = 'tds_draft_v1';
+
+  function serializeDraft() {
+    var vals = {};
+    ['vorname', 'nachname', 'email', 'telefon', 'land', 'region', 'modell',
+      'prioritaeten', 'baujahr', 'km', 'budget-von', 'budget-bis'].forEach(function (id) {
+      var el = $(id); if (el) vals[id] = el.value;
+    });
+    var radios = {};
+    ['ausweis', 'erfahrung', 'nutzung', 'paket'].forEach(function (name) {
+      var el = document.querySelector('input[name="' + name + '"]:checked');
+      radios[name] = el ? el.value : '';
+    });
+    var stil = [];
+    document.querySelectorAll('input[name="stil"]:checked').forEach(function (el) { stil.push(el.value); });
+    return { vals: vals, radios: radios, stil: stil };
+  }
+
+  function draftHasContent(d) {
+    return !!(d && d.vals && (d.vals.vorname || d.vals.nachname || d.vals.email || d.vals.modell || (d.stil && d.stil.length)));
+  }
+
+  function saveDraft() {
+    try {
+      var d = serializeDraft();
+      if (draftHasContent(d)) {
+        global.localStorage.setItem(DRAFT_KEY, JSON.stringify({ at: new Date().toISOString(), data: d }));
+      }
+    } catch (e) {}
+  }
+
+  function loadDraft() {
+    try { return JSON.parse(global.localStorage.getItem(DRAFT_KEY) || 'null'); }
+    catch (e) { return null; }
+  }
+
+  function clearDraft() {
+    try { global.localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  }
+
+  function pick(name, value) {
+    if (!value) return;
+    var el = document.querySelector('input[name="' + name + '"][value="' + value.replace(/"/g, '\\"') + '"]');
+    if (el) el.checked = true;
+  }
+
+  function applyDraft(d) {
+    var v = d.vals || {};
+    ['vorname', 'nachname', 'email', 'telefon', 'modell', 'prioritaeten'].forEach(function (id) {
+      if ($(id) && v[id] != null) $(id).value = v[id];
+    });
+    if (v.land) { $('land').value = v.land; $('land').dispatchEvent(new Event('change')); }
+    if (v.region && $('region')) $('region').value = v.region;
+    if (v['budget-von']) $('budget-von').value = v['budget-von'];
+    if (v['budget-bis']) $('budget-bis').value = v['budget-bis'];
+    if (v.baujahr && $('baujahr')) $('baujahr').value = v.baujahr;
+    if (v.km && $('km')) $('km').value = v.km;
+    Object.keys(d.radios || {}).forEach(function (name) { pick(name, d.radios[name]); });
+    (d.stil || []).forEach(function (val) { pick('stil', val); });
+  }
+
+  function showDraftBanner() {
+    var draft = loadDraft();
+    if (!draft || !draftHasContent(draft.data)) return;
+    var banner = $('draft-banner');
+    if (!banner) return;
+    banner.innerHTML = '<div class="draft-bar">' +
+      '<span>📝 Nicht abgeschickter Entwurf von <strong>' + ui.esc(ui.fmt.relative(draft.at)) + '</strong> gefunden.</span>' +
+      '<span class="draft-actions">' +
+        '<button type="button" class="btn-mini" id="draft-restore">Wiederherstellen</button>' +
+        '<button type="button" class="btn-mini ghost" id="draft-discard">Verwerfen</button>' +
+      '</span></div>';
+    $('draft-restore').addEventListener('click', function () {
+      applyDraft(draft.data); banner.innerHTML = '';
+      updateProgress();
+      if (global.TDS.toast) global.TDS.toast.info('Entwurf wiederhergestellt');
+    });
+    $('draft-discard').addEventListener('click', function () {
+      clearDraft(); banner.innerHTML = '';
+    });
+  }
+
+  function progressState() {
+    var checks = [
+      $('vorname').value.trim() !== '',
+      $('nachname').value.trim() !== '',
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim()),
+      $('land').value !== '',
+      $('region').value !== '',
+      !!document.querySelector('input[name="ausweis"]:checked'),
+      !!document.querySelector('input[name="stil"]:checked'),
+      !!($('budget-von').value && $('budget-bis').value),
+      !!document.querySelector('input[name="paket"]:checked')
+    ];
+    var done = checks.filter(Boolean).length;
+    return { done: done, total: checks.length, pct: Math.round(done / checks.length * 100) };
+  }
+
+  function updateProgress() {
+    var p = progressState();
+    var fill = $('fp-fill'); if (fill) fill.style.width = p.pct + '%';
+    var label = $('fp-label'); if (label) label.textContent = p.pct + ' % ausgefüllt' + (p.pct === 100 ? ' — bereit zum Absenden ✓' : '');
+  }
+
+  /* ---------- Letzten Standort merken (Komfort) ---------- */
+  var LOC_KEY = 'tds_last_loc';
+  function saveLastLocation(land, region) {
+    try { global.localStorage.setItem(LOC_KEY, JSON.stringify({ land: land, region: region })); } catch (e) {}
+  }
+  function applyLastLocation() {
+    if ($('land').value) return;
+    var loc;
+    try { loc = JSON.parse(global.localStorage.getItem(LOC_KEY) || 'null'); } catch (e) { loc = null; }
+    if (!loc || !loc.land) return;
+    $('land').value = loc.land;
+    $('land').dispatchEvent(new Event('change'));
+    if (loc.region && $('region')) $('region').value = loc.region;
+  }
+
+  function wire() {
+    fillBudgets('CHF');
+    showDraftBanner();
+    updateProgress();
+
+    // Autosave + Fortschritt bei jeder Eingabe
+    $('frm').addEventListener('input', function () { saveDraft(); updateProgress(); });
+    $('frm').addEventListener('change', function () { saveDraft(); updateProgress(); });
+
+    // Fehler-Zusammenfassung: Klick springt zum Feld
+    $('form-errors').addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[data-target]');
+      if (!a) return;
+      e.preventDefault();
+      var t = $(a.getAttribute('data-target'));
+      if (t) { if (t.focus) t.focus(); if (t.scrollIntoView) t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    });
+
+    $('land').addEventListener('change', function () {
+      var land = this.value;
+      var sel = $('region'), hint = $('quellen-hint');
+      sel.innerHTML = '';
+      if (!land) {
+        sel.add(new Option('Zuerst Land wählen', ''));
+        hint.textContent = '';
+        setCurrency('CHF');
+        $('payment-hint').textContent = 'Zahlungslink';
+        return;
+      }
+      var d = cfg.REGIONS[land];
+      sel.add(new Option('Bitte ' + d.label + ' wählen', ''));
+      d.opts.forEach(function (o) { sel.add(new Option(o, o)); });
+      hint.textContent = d.hint;
+      setCurrency(d.cur);
+      clearErr('land');
+    });
+
+    $('region').addEventListener('change', function () { if (this.value) clearErr('region'); });
+    $('budget-von').addEventListener('change', liveCheckBudget);
+    $('budget-bis').addEventListener('change', liveCheckBudget);
+
+    // Komfort: zuletzt genutztes Land/Region vorbelegen (nur ohne Entwurf)
+    if (!loadDraft()) { applyLastLocation(); updateProgress(); }
+
+    $('frm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!validate()) return;
+
+      var btn = $('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Wird gespeichert …';
+
+      var values = collect();
+      saveLastLocation(values.land, values.region);
+      store.create(values).then(function (record) {
+        clearDraft();
+        if (global.TDS.toast) global.TDS.toast.success('Anfrage gespeichert');
+        router.navigate('/success/' + record.id);
+      }).catch(function (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.textContent = 'Anfrage absenden →';
+        if (global.TDS.toast) global.TDS.toast.error('Speichern fehlgeschlagen. Bitte erneut versuchen.');
+      });
+    });
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.form = view;
+})(window);
+
+/* ===== js/components/success.js ===== */
+/*
+ * success.js — Bestätigungsseite nach dem Absenden.
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+  var cfg = global.TDS.config;
+  var store = global.TDS.store;
+
+  function view(params) {
+    store.get(params.id).then(function (rec) {
+      if (!rec) {
+        ui.render('' +
+          '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
+          '<a class="btn-primary" href="#/form">Neue Anfrage</a></div></div>' + '');
+        return;
+      }
+
+      var v = rec.values;
+      var quellen = (v.land && cfg.REGIONS[v.land]) ? cfg.REGIONS[v.land].hint.replace('Wir suchen', 'Gesucht wird') + '.' : '';
+
+      var html = '' +
+        '<div class="wrap wrap-narrow">' +
+          '<div class="success">' +
+            '<div class="ok-ico">✓</div>' +
+            '<div class="ok-title">Anfrage erhalten!</div>' +
+            '<div class="ok-text">Danke, ' + ui.esc(v.vorname) + '. Wir melden uns innerhalb von 24 Stunden mit deinem persönlichen Deal-Report.</div>' +
+            '<div class="ok-detail">' +
+              '<strong>Was passiert jetzt?</strong>' +
+              'Wir analysieren aktuelle Inserate in deiner Region, bewerten sie nach Preis, Zustand und Risiko und schicken dir deinen Report. ' + ui.esc(quellen) +
+            '</div>' +
+            '<ol class="next-steps">' +
+              '<li>Wir durchsuchen den Markt in deiner Region.</li>' +
+              '<li>Jedes Inserat wird nach Preis, Zustand und Risiko bewertet.</li>' +
+              '<li>Du erhältst deinen Report mit Deal-Score und Verhandlungsargumenten.</li>' +
+            '</ol>' +
+            '<div class="ok-meta">' +
+              '<div><span>Anfrage-Nr.</span><strong id="ref-no">' + ui.esc(rec.id) + '</strong></div>' +
+              '<div><span>Paket</span><strong>' + ui.esc(v.paket) + '</strong></div>' +
+              '<div><span>Status</span>' + ui.statusBadge(rec.status) + '</div>' +
+            '</div>' +
+            '<div class="success-actions">' +
+              '<a class="btn-primary" href="#/report/' + ui.esc(rec.id) + '">Beispiel-Report ansehen →</a>' +
+              '<button class="btn-ghost" id="copy-ref" type="button">Anfrage-Nr. kopieren</button>' +
+              '<a class="btn-ghost" href="#/">Zur Startseite</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '';
+
+      ui.render(html);
+
+      var copyBtn = global.document.getElementById('copy-ref');
+      if (copyBtn) copyBtn.addEventListener('click', function () {
+        var done = function () { if (global.TDS.toast) global.TDS.toast.success('Anfrage-Nr. kopiert: ' + rec.id); };
+        if (global.navigator && global.navigator.clipboard) {
+          global.navigator.clipboard.writeText(rec.id).then(done, done);
+        } else { done(); }
+      });
+    });
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.success = view;
+})(window);
+
+/* ===== js/components/admin.js ===== */
+/*
+ * components/admin.js — Admin-Bereich.
+ *   #/admin       -> Dashboard (KPIs + Charts) + durchsuchbare Liste
+ *   #/admin/:id   -> Detailansicht: Stammdaten, Status, Notizen, Historie
+ *
+ * Hinweis: Kein Login (MVP). Auth-Guard-Stelle ist in app.js markiert.
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+  var cfg = global.TDS.config;
+  var store = global.TDS.store;
+  var router = global.TDS.router;
+  var charts = global.TDS.charts;
+  var fmt = global.TDS.format;
+  var toast = global.TDS.toast;
+
+  // Tabellenzustand (in-memory, persistiert über Sitzungen)
+  var PAGE = 8;
+  var SKEY = 'tds_admin_state';
+  var state = { q: '', status: 'Alle', sort: 'date-desc', limit: PAGE };
+  var allRows = [];
+
+  function $(id) { return global.document.getElementById(id); }
+
+  function loadState() {
+    try {
+      var s = JSON.parse(global.localStorage.getItem(SKEY) || 'null');
+      if (s) { state.q = s.q || ''; state.status = s.status || 'Alle'; state.sort = s.sort || 'date-desc'; }
+    } catch (e) {}
+    state.limit = PAGE;
+  }
+  function saveState() {
+    try { global.localStorage.setItem(SKEY, JSON.stringify({ q: state.q, status: state.status, sort: state.sort })); } catch (e) {}
+  }
+
+  /* ============== LISTE / DASHBOARD ============== */
+  function list() {
+    loadState();
+    Promise.all([store.list(), store.stats()]).then(function (res) {
+      allRows = res[0];
+      var stats = res[1];
+
+      var html = '' +
+        '<div class="admin-bar">' +
+          '<div class="admin-bar-inner">' +
+            '<div><h2 class="admin-title">Dashboard</h2>' +
+            '<div class="admin-sub">' + stats.total + ' Anfragen · lokal gespeichert</div></div>' +
+            '<a class="btn-primary btn-sm" href="#/form">+ Neue Anfrage</a>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="wrap wrap-wide">' +
+          dashboardHtml(stats) +
+
+          '<div class="toolbar">' +
+            '<input type="search" id="search" class="search-input" placeholder="Suche: Name, E-Mail, Modell, ID …" value="' + ui.esc(state.q) + '">' +
+            '<div class="sel-wrap toolbar-sort"><select id="sort">' +
+              sortOpt('date-desc', 'Neueste zuerst') + sortOpt('date-asc', 'Älteste zuerst') +
+              sortOpt('name-asc', 'Name A–Z') + sortOpt('status-asc', 'Status') +
+            '</select></div>' +
+          '</div>' +
+
+          '<div class="filters" id="filters">' + filterBtns(stats) + '</div>' +
+
+          '<div class="table-card">' +
+            '<table class="tbl"><thead><tr>' +
+              '<th scope="col">ID</th>' +
+              th('Datum', 'date') + th('Name', 'name') +
+              '<th scope="col">Region</th><th scope="col">Wunsch</th><th scope="col">Paket</th>' +
+              th('Status', 'status') +
+            '</tr></thead><tbody id="tbody"></tbody></table>' +
+            '<div class="table-more" id="table-more"></div>' +
+          '</div>' +
+
+          '<div class="admin-tools">' +
+            '<button class="btn-ghost btn-sm" id="seed-btn">Beispieldaten laden</button>' +
+            '<button class="btn-ghost btn-sm" id="csv-btn">CSV exportieren</button>' +
+            '<button class="btn-ghost btn-sm" id="json-btn">JSON exportieren</button>' +
+            '<button class="btn-ghost btn-sm" id="import-btn">JSON importieren</button>' +
+            '<button class="btn-ghost btn-sm danger" id="clear-btn">Alle löschen</button>' +
+            '<input type="file" id="import-file" accept="application/json,.json" hidden>' +
+          '</div>' +
+        '</div>' +
+        '';
+
+      ui.render(html);
+      refreshTable();
+      wireList();
+    });
+  }
+
+  function dashboardHtml(s) {
+    var segments = cfg.STATUSES.map(function (st) {
+      return { label: st, value: s.byStatus[st] || 0, color: cfg.STATUS_COLORS[st] };
+    });
+    var legend = segments.map(function (seg) {
+      return '<div class="legend-row"><span class="legend-dot" style="background:' + seg.color + '"></span>' +
+        ui.esc(seg.label) + '<span class="legend-val">' + seg.value + '</span></div>';
+    }).join('');
+
+    var pkgBars = Object.keys(s.byPackage).map(function (k) {
+      return { label: k, value: s.byPackage[k] };
+    });
+    var countryBars = Object.keys(s.byCountry).map(function (k) {
+      return { label: k, value: s.byCountry[k] };
+    }).sort(function (a, b) { return b.value - a.value; });
+
+    return '<div class="dash-grid">' +
+        kpi('Anfragen gesamt', s.total, '') +
+        kpi('Neu (7 Tage)', s.last7, 'frisch') +
+        kpi('Offen', s.open, 'in Bearbeitung') +
+        kpi('Conversion', fmt.pct(s.conversion), 'Report/abgeschlossen') +
+        kpi('Ø Budget', fmt.money(s.avgBudget, 'CHF'), 'Mittelwert') +
+      '</div>' +
+      '<div class="dash-charts">' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Status-Verteilung</div>' +
+          '<div class="donut-wrap">' +
+            charts.donut(segments, { center: s.total, centerSub: 'Anfragen' }) +
+            '<div class="legend">' + legend + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Pakete</div>' +
+          (pkgBars.length ? charts.bars(pkgBars) : '<div class="muted-cell">Noch keine Daten.</div>') +
+        '</div>' +
+      '</div>' +
+      '<div class="dash-charts">' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Länder</div>' +
+          (countryBars.length ? charts.bars(countryBars) : '<div class="muted-cell">Noch keine Daten.</div>') +
+        '</div>' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Letzte Aktivität</div>' +
+          recentHtml() +
+        '</div>' +
+      '</div>';
+  }
+
+  function recentHtml() {
+    if (!allRows.length) return '<div class="muted-cell">Noch keine Anfragen.</div>';
+    return '<div class="recent-list">' + allRows.slice(0, 5).map(function (r) {
+      var v = r.values;
+      return '<a class="recent-item" href="#/admin/' + ui.esc(r.id) + '">' +
+        '<span class="recent-name">' + ui.esc(v.vorname + ' ' + v.nachname) + '</span>' +
+        ui.statusBadge(r.status) +
+        '<span class="recent-time">' + ui.esc(fmt.relative(r.updatedAt || r.createdAt)) + '</span>' +
+        '</a>';
+    }).join('') + '</div>';
+  }
+
+  function kpi(label, value, sub) {
+    var valHtml = (typeof value === 'number')
+      ? '<div class="kpi-val" data-count="' + value + '">0</div>'
+      : '<div class="kpi-val">' + ui.esc(value) + '</div>';
+    return '<div class="kpi">' + valHtml +
+      '<div class="kpi-label">' + ui.esc(label) + '</div>' +
+      (sub ? '<div class="kpi-sub">' + ui.esc(sub) + '</div>' : '') + '</div>';
+  }
+
+  function sortOpt(val, label) {
+    return '<option value="' + val + '"' + (state.sort === val ? ' selected' : '') + '>' + ui.esc(label) + '</option>';
+  }
+
+  // Sortierbarer Spaltenkopf (klickbar, mit aria-sort)
+  function th(label, key) {
+    var parts = state.sort.split('-'), active = parts[0] === key;
+    var aria = active ? (parts[1] === 'asc' ? 'ascending' : 'descending') : 'none';
+    var arrow = active ? (parts[1] === 'asc' ? ' ▲' : ' ▼') : '';
+    return '<th scope="col" class="th-sort' + (active ? ' active' : '') + '" data-key="' + key + '" aria-sort="' + aria + '" tabindex="0" role="button">' +
+      ui.esc(label) + '<span class="th-arrow">' + arrow + '</span></th>';
+  }
+
+  // Spaltenkopf-Klick: gleiche Spalte -> Richtung wechseln, sonst aufsteigend.
+  function setSort(key) {
+    var parts = state.sort.split('-');
+    var dir = (parts[0] === key && parts[1] === 'asc') ? 'desc' : 'asc';
+    state.sort = key + '-' + dir;
+    state.limit = PAGE;
+    saveState();
+    var sel = $('sort'); if (sel) sel.value = state.sort; // falls Option existiert
+    syncSortHeaders();
+    refreshTable();
+  }
+
+  // aria-sort / Pfeile an den aktuellen state.sort angleichen.
+  function syncSortHeaders() {
+    var parts = state.sort.split('-'), key = parts[0], dir = parts[1];
+    Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
+      var on = el.getAttribute('data-key') === key;
+      el.classList.toggle('active', on);
+      el.setAttribute('aria-sort', on ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
+      var a = el.querySelector('.th-arrow'); if (a) a.textContent = on ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
+    });
+  }
+
+  function filterBtns(stats) {
+    var counts = { Alle: stats.total };
+    cfg.STATUSES.forEach(function (s) { counts[s] = stats.byStatus[s] || 0; });
+    return ['Alle'].concat(cfg.STATUSES).map(function (s) {
+      return '<button class="filter-btn' + (state.status === s ? ' active' : '') +
+        '" data-filter="' + ui.esc(s) + '">' + ui.esc(s) +
+        ' <span class="filter-count">' + (counts[s] || 0) + '</span></button>';
+    }).join('');
+  }
+
+  function applyFilters() {
+    var rows = allRows.slice();
+    if (state.status !== 'Alle') rows = rows.filter(function (r) { return r.status === state.status; });
+    if (state.q) {
+      var q = state.q.toLowerCase();
+      rows = rows.filter(function (r) {
+        var v = r.values;
+        return [r.id, v.vorname, v.nachname, v.email, v.modell, v.region, v.paket,
+          (Array.isArray(v.stil) ? v.stil.join(' ') : v.stil)].join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+    }
+    var parts = state.sort.split('-'), key = parts[0], dir = parts[1] === 'desc' ? -1 : 1;
+    rows.sort(function (a, b) {
+      var r;
+      if (key === 'name') r = (a.values.nachname || '').localeCompare(b.values.nachname || '');
+      else if (key === 'status') r = cfg.STATUSES.indexOf(a.status) - cfg.STATUSES.indexOf(b.status);
+      else r = new Date(a.createdAt) - new Date(b.createdAt);
+      return r * dir;
+    });
+    return rows;
+  }
+
+  function refreshTable() {
+    var rows = applyFilters();
+    var tbody = $('tbody');
+    var more = $('table-more');
+    if (more) more.innerHTML = '';
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Keine Treffer. ' +
+        '<a href="#/form">Neue Anfrage erstellen →</a></td></tr>';
+      return;
+    }
+    var shown = rows.slice(0, state.limit);
+    tbody.innerHTML = shown.map(rowHtml).join('');
+    if (more && rows.length > state.limit) {
+      more.innerHTML = '<button class="btn-ghost btn-sm" id="more-btn">Weitere ' +
+        Math.min(PAGE, rows.length - state.limit) + ' von ' + rows.length + ' anzeigen</button>';
+      $('more-btn').addEventListener('click', function () { state.limit += PAGE; refreshTable(); });
+    }
+    // Klicks werden delegiert (siehe wireList) — kein Listener pro Zeile.
+  }
+
+  function rowHtml(r) {
+    var v = r.values;
+    var wunsch = v.modell ? v.modell : (Array.isArray(v.stil) ? v.stil.join(', ') : v.stil || '–');
+    return '<tr data-id="' + ui.esc(r.id) + '">' +
+      '<td class="mono">' + ui.esc(r.id) + '</td>' +
+      '<td>' + ui.esc(fmt.dateShort(r.createdAt)) + '</td>' +
+      '<td>' + ui.esc(v.vorname + ' ' + v.nachname) + '</td>' +
+      '<td class="muted-cell">' + ui.esc(v.region || '–') + '</td>' +
+      '<td class="muted-cell">' + ui.esc(wunsch) + '</td>' +
+      '<td>' + ui.esc(v.paket || '–') + '</td>' +
+      '<td>' + ui.statusBadge(r.status) + '</td>' +
+      '</tr>';
+  }
+
+  function wireList() {
+    var search = $('search');
+    search.addEventListener('input', global.TDS.dom.debounce(function () { state.q = search.value; state.limit = PAGE; saveState(); refreshTable(); }, 140));
+    $('sort').addEventListener('change', function () { state.sort = this.value; state.limit = PAGE; saveState(); syncSortHeaders(); refreshTable(); });
+
+    // Sortierbare Spaltenköpfe (Klick + Tastatur)
+    Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
+      el.addEventListener('click', function () { setSort(this.getAttribute('data-key')); });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSort(this.getAttribute('data-key')); }
+      });
+    });
+
+    // Ein delegierter Klick-Listener für alle (auch künftige) Tabellenzeilen.
+    $('tbody').addEventListener('click', function (e) {
+      var tr = e.target.closest && e.target.closest('tr[data-id]');
+      if (tr) router.navigate('/admin/' + tr.getAttribute('data-id'));
+    });
+
+    Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        state.status = this.getAttribute('data-filter');
+        state.limit = PAGE;
+        saveState();
+        Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (b) {
+          b.classList.toggle('active', b === btn);
+        });
+        refreshTable();
+      });
+    });
+
+    $('seed-btn').addEventListener('click', function () {
+      seedDemo().then(function () { toast.success('Beispieldaten geladen'); list(); });
+    });
+    $('csv-btn').addEventListener('click', exportCsv);
+    $('json-btn').addEventListener('click', function () {
+      store.exportJSON().then(function (json) {
+        global.TDS.dom.download('toeffdealscout-export.json', json, 'application/json');
+        toast.success('JSON exportiert');
+      });
+    });
+    $('import-btn').addEventListener('click', function () { $('import-file').click(); });
+    $('import-file').addEventListener('change', function (e) {
+      var file = e.target.files[0]; if (!file) return;
+      var reader = new global.FileReader();
+      reader.onload = function () {
+        store.importJSON(reader.result, 'merge').then(function (r) {
+          toast.success('Import: ' + r.imported + ' neu, ' + r.skipped + ' übersprungen');
+          list();
+        }).catch(function () { toast.error('Import fehlgeschlagen — ungültige Datei.'); });
+      };
+      reader.readAsText(file);
+    });
+    $('clear-btn').addEventListener('click', function () {
+      if (global.confirm('Wirklich ALLE Anfragen löschen?')) {
+        store.clear().then(function (prev) {
+          state.status = 'Alle'; state.q = '';
+          toast.info((prev.length) + ' Anfragen gelöscht', { action: { label: 'Rückgängig', fn: function () {
+            store.restoreMany(prev).then(function () { toast.success('Wiederhergestellt'); list(); });
+          } } });
+          list();
+        });
+      }
+    });
+  }
+
+  /* ============== DETAIL ============== */
+  function detail(params) {
+    store.get(params.id).then(function (rec) {
+      if (!rec) return notFound();
+      var v = rec.values;
+
+      var statusOpts = cfg.STATUSES.map(function (s) {
+        return '<option value="' + ui.esc(s) + '"' + (s === rec.status ? ' selected' : '') + '>' + ui.esc(s) + '</option>';
+      }).join('');
+      var nextStatus = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1] || null;
+
+      var html = '' +
+        '<div class="admin-bar"><div class="admin-bar-inner">' +
+          '<div><a class="back-link" href="#/admin">← Dashboard</a>' +
+            '<h2 class="admin-title">' + ui.esc(v.vorname + ' ' + v.nachname) + '</h2>' +
+            '<div class="admin-sub mono">' + ui.esc(rec.id) + ' · ' + ui.esc(fmt.date(rec.createdAt)) + '</div></div>' +
+          '<a class="btn-primary btn-sm" href="#/report/' + ui.esc(rec.id) + '">Report ansehen →</a>' +
+        '</div></div>' +
+
+        '<div class="wrap wrap-wide"><div class="detail-grid">' +
+          '<div class="detail-main">' +
+            dataBlock('Kontakt', [
+              ['Vorname', v.vorname], ['Nachname', v.nachname], ['E-Mail', v.email],
+              ['Telefon', v.telefon || '–'], ['Land', v.landLabel || v.land], ['Region', v.region]
+            ]) +
+            dataBlock('Führerausweis & Erfahrung', [
+              ['Führerausweis', v.ausweis], ['Erfahrung', v.erfahrung || '–']
+            ]) +
+            dataBlock('Wunsch-Motorrad', [
+              ['Stil', Array.isArray(v.stil) ? v.stil.join(', ') : v.stil],
+              ['Modell', v.modell || '–'], ['Budget', budgetText(v)],
+              ['Baujahr ab', v.baujahr || '–'], ['Max. km', v.km || '–'],
+              ['Nutzung', v.nutzung || '–'], ['Prioritäten', v.prioritaeten || '–']
+            ]) +
+            notesBlock(rec) +
+          '</div>' +
+
+          '<aside class="detail-side">' +
+            '<div class="side-card">' +
+              '<div class="side-card-head">Status</div>' +
+              '<div class="current-status">' + ui.statusBadge(rec.status) + '</div>' +
+              '<div class="sel-wrap"><select id="status-sel">' + statusOpts + '</select></div>' +
+              (nextStatus ? '<button class="btn-ghost btn-sm btn-block" id="advance-btn" style="margin-top:8px">Weiter zu „' + ui.esc(nextStatus) + '" →</button>' : '') +
+              '<div class="side-saved" id="status-saved">✓ Gespeichert</div>' +
+            '</div>' +
+            '<div class="side-card">' +
+              '<div class="side-card-head">Paket</div>' +
+              '<div class="side-pkg">' + ui.esc(v.paket || '–') + '</div>' +
+            '</div>' +
+            historyBlock(rec) +
+            '<div class="side-card">' +
+              '<div class="side-card-head">Aktionen</div>' +
+              '<a class="btn-ghost btn-block" href="#/report/' + ui.esc(rec.id) + '">Report-Mockup öffnen</a>' +
+              '<a class="btn-ghost btn-block" href="mailto:' + ui.esc(v.email) + '">E-Mail an Kunde</a>' +
+              '<button class="btn-ghost btn-block danger" id="del-btn">Anfrage löschen</button>' +
+            '</div>' +
+          '</aside>' +
+        '</div></div>' +
+        '';
+
+      ui.render(html);
+      wireDetail(rec);
+    });
+  }
+
+  function notesBlock(rec) {
+    var items = (rec.notes || []).slice().reverse().map(function (n) {
+      return '<div class="note-item"><div class="note-meta">' + ui.esc(fmt.relative(n.at)) + '</div>' +
+        '<div class="note-text">' + ui.esc(n.text) + '</div></div>';
+    }).join('');
+    return '<div class="data-block">' +
+      '<div class="data-block-head">Interne Notizen</div>' +
+      '<div class="note-add">' +
+        '<textarea id="note-input" placeholder="Notiz hinzufügen (nur intern sichtbar) …"></textarea>' +
+        '<button class="btn-ghost btn-sm" id="note-btn">Notiz speichern</button>' +
+      '</div>' +
+      '<div class="note-list">' + (items || '<div class="muted-cell">Noch keine Notizen.</div>') + '</div>' +
+      '</div>';
+  }
+
+  function historyBlock(rec) {
+    var items = (rec.history || []).slice().reverse().map(function (h) {
+      return '<div class="tl-item"><span class="tl-dot" style="background:' + (cfg.STATUS_COLORS[h.status] || 'var(--accent)') + '"></span>' +
+        '<div><div class="tl-status">' + ui.esc(h.status) + '</div>' +
+        '<div class="tl-time">' + ui.esc(fmt.date(h.at)) + '</div></div></div>';
+    }).join('');
+    return '<div class="side-card"><div class="side-card-head">Verlauf</div>' +
+      '<div class="timeline">' + items + '</div></div>';
+  }
+
+  function wireDetail(rec) {
+    var sel = $('status-sel');
+    sel.addEventListener('change', function () {
+      store.updateStatus(rec.id, this.value).then(function () {
+        var cur = global.document.querySelector('.current-status');
+        if (cur) cur.innerHTML = ui.statusBadge(sel.value);
+        var saved = $('status-saved');
+        saved.classList.add('show');
+        setTimeout(function () { saved.classList.remove('show'); }, 1600);
+        if (toast) toast.success('Status: ' + sel.value);
+        detail({ id: rec.id }); // Verlauf aktualisieren
+      });
+    });
+    var adv = $('advance-btn');
+    if (adv) adv.addEventListener('click', function () {
+      var next = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1];
+      if (!next) return;
+      store.updateStatus(rec.id, next).then(function () {
+        if (toast) toast.success('Status: ' + next);
+        detail({ id: rec.id });
+      });
+    });
+    $('note-btn').addEventListener('click', function () {
+      var input = $('note-input');
+      var text = (input.value || '').trim();
+      if (!text) { input.focus(); return; }
+      store.addNote(rec.id, text).then(function () {
+        if (toast) toast.success('Notiz gespeichert');
+        detail({ id: rec.id });
+      });
+    });
+    $('del-btn').addEventListener('click', function () {
+      if (global.confirm('Diese Anfrage wirklich löschen?')) {
+        store.remove(rec.id).then(function (removed) {
+          if (toast) toast.info('Anfrage gelöscht', { action: { label: 'Rückgängig', fn: function () {
+            store.restore(removed).then(function () { toast.success('Wiederhergestellt'); detail({ id: removed.id }); });
+          } } });
+          router.navigate('/admin');
+        });
+      }
+    });
+  }
+
+  /* ============== Helfer ============== */
+  function notFound() {
+    ui.render('' + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
+      '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + '');
+  }
+
+  function budgetText(v) {
+    if (!v.budget_von && !v.budget_bis) return '–';
+    var cur = v.waehrung || 'CHF';
+    return fmt.money(v.budget_von, cur) + ' – ' + fmt.money(v.budget_bis, cur);
+  }
+
+  function dataBlock(title, pairs) {
+    var rows = pairs.map(function (p) {
+      return '<div class="dl-row"><dt>' + ui.esc(p[0]) + '</dt><dd>' + ui.esc(p[1]) + '</dd></div>';
+    }).join('');
+    return '<div class="data-block"><div class="data-block-head">' + ui.esc(title) + '</div><dl class="dl">' + rows + '</dl></div>';
+  }
+
+  /* ---- Export / Demo ---- */
+  function csvCell(s) {
+    s = (s == null ? '' : String(s));
+    return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function exportCsv() {
+    var cols = ['ID', 'Datum', 'Vorname', 'Nachname', 'E-Mail', 'Telefon', 'Land', 'Region',
+      'Ausweis', 'Erfahrung', 'Stil', 'Modell', 'Budget von', 'Budget bis', 'Währung',
+      'Baujahr ab', 'Max km', 'Nutzung', 'Prioritäten', 'Paket', 'Status'];
+    var lines = [cols.map(csvCell).join(';')];
+    allRows.forEach(function (r) {
+      var v = r.values;
+      lines.push([r.id, fmt.date(r.createdAt), v.vorname, v.nachname, v.email, v.telefon,
+        v.landLabel || v.land, v.region, v.ausweis, v.erfahrung,
+        (Array.isArray(v.stil) ? v.stil.join(', ') : v.stil), v.modell,
+        v.budget_von, v.budget_bis, v.waehrung, v.baujahr, v.km, v.nutzung,
+        v.prioritaeten, v.paket, r.status].map(csvCell).join(';'));
+    });
+    global.TDS.dom.download('toeffdealscout-anfragen.csv', '﻿' + lines.join('\r\n'), 'text/csv;charset=utf-8');
+    toast.success('CSV exportiert (' + allRows.length + ' Zeilen)');
+  }
+
+  function seedDemo() {
+    var samples = global.TDS.data.demo.samples();
+    return Promise.all(samples.map(function (s) { return store.create(s); }));
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.adminList = list;
+  global.TDS.views.adminDetail = detail;
+})(window);
+
+/* ===== js/components/report.js ===== */
+/*
+ * components/report.js — datengetriebener Deal-Report.
+ * Nutzt die Scout-Engine (services/scout.js), um aus der Anfrage Deals zu
+ * berechnen und darzustellen: Score-Gauge, Risiko, Preisvergleich,
+ * Verhandlungsargumente, Besichtigungs-Checkliste und Verkäuferfragen.
+ * Druckbar (Print/PDF). KEINE echten Inserate — siehe Hinweis im Report.
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+  var store = global.TDS.store;
+  var scout = global.TDS.scout;
+  var charts = global.TDS.charts;
+  var fmt = global.TDS.format;
+
+  function view(params) {
+    store.get(params.id).then(function (rec) {
+      if (!rec) {
+        ui.render('' + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
+          '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + '');
+        return;
+      }
+
+      var v = rec.values;
+      var result = scout.generate(rec);
+      var deals = result.deals;
+      var s = result.summary;
+      var top = deals[0];
+
+      var html = '' +
+        '<div class="print-only print-head">TöffDealScout · Deal-Report · ' + ui.esc(rec.id) + ' · ' + ui.esc(fmt.dateShort(new Date().toISOString())) + '</div>' +
+        '<div class="report-head"><div class="report-head-inner">' +
+          '<div class="hero-eye">Deal-Report · Mockup</div>' +
+          '<h1>Top-Deals für ' + ui.esc(v.vorname) + '</h1>' +
+          '<p class="report-summary">Wir haben den Markt in ' + ui.esc(s.region) + ' nach ' + ui.esc(s.modelFocus) +
+            ' durchsucht und ' + s.count + ' passende Inserate bewertet — sortiert nach Deal-Score.</p>' +
+          '<div class="report-meta">' +
+            '<span class="mono">' + ui.esc(rec.id) + '</span>' +
+            '<span>Budget: ' + ui.esc(fmt.money(s.budgetVon, s.currency) + '–' + fmt.money(s.budgetBis, s.currency)) + '</span>' +
+            '<span>Ø Score: ' + s.avgScore.toFixed(1) + '</span>' +
+            ui.statusBadge(rec.status) +
+          '</div>' +
+        '</div></div>' +
+
+        '<div class="wrap wrap-wide">' +
+          '<div class="report-note">⚠️ Demo-Report mit synthetischen Beispiel-Inseraten. In der finalen Version stehen hier echte, geprüfte Angebote von ' +
+            ui.esc(s.sources.join(', ')) + '.</div>' +
+
+          scoreOverview(deals) +
+
+          '<div class="deals">' + deals.map(cardHtml).join('') + '</div>' +
+
+          comparisonTable(deals) +
+
+          '<div class="report-cols">' +
+            checklistCard(top) +
+            questionsCard(top) +
+          '</div>' +
+
+          '<div class="report-actions">' +
+            '<a class="btn-ghost" href="#/admin/' + ui.esc(rec.id) + '">← Zur Anfrage</a>' +
+            '<div class="report-actions-right">' +
+              '<button class="btn-ghost" id="copy-btn" type="button">Zusammenfassung kopieren</button>' +
+              '<button class="btn-ghost" id="print-btn" type="button">🖨 Drucken / PDF</button>' +
+              '<a class="btn-primary" href="#/">Fertig</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '';
+
+      ui.render(html);
+      var p = global.document.getElementById('print-btn');
+      if (p) p.addEventListener('click', function () { global.print(); });
+      var c = global.document.getElementById('copy-btn');
+      if (c) c.addEventListener('click', function () {
+        var text = summaryText(rec, deals, s);
+        var done = function () { if (global.TDS.toast) global.TDS.toast.success('Report-Zusammenfassung kopiert'); };
+        if (global.navigator && global.navigator.clipboard) global.navigator.clipboard.writeText(text).then(done, done);
+        else done();
+      });
+    });
+  }
+
+  function summaryText(rec, deals, s) {
+    var lines = ['Töff Deal Scout — Report ' + rec.id, 'Region: ' + s.region + ' · Budget: ' +
+      fmt.money(s.budgetVon, s.currency) + '–' + fmt.money(s.budgetBis, s.currency), ''];
+    deals.forEach(function (d, i) {
+      lines.push((i + 1) + '. ' + d.title + ' (' + d.year + ', ' + fmt.km(d.km) + ')');
+      lines.push('   Preis ' + fmt.money(d.asking, d.currency) + ' · Marktwert Ø ' + fmt.money(d.marketValue, d.currency) +
+        ' · Score ' + d.score.toFixed(1) + '/10 · Risiko ' + d.risk.label);
+      lines.push('   Empfehlung: ' + d.recommendation.text);
+    });
+    return lines.join('\n');
+  }
+
+  function scoreOverview(deals) {
+    var bars = deals.map(function (d, i) {
+      var col = d.score >= 7.5 ? 'var(--ok)' : d.score >= 5.5 ? 'var(--warn)' : 'var(--err)';
+      return { label: 'Deal ' + (i + 1) + ' · ' + d.title, value: d.score, display: d.score.toFixed(1), color: col };
+    });
+    return '<div class="chart-card overview-card">' +
+      '<div class="chart-card-head">Deal-Score im Vergleich</div>' +
+      charts.bars(bars) + '</div>';
+  }
+
+  function gapLabel(d) {
+    if (d.valueGapPct > 1) return '<span class="gap good">' + d.valueGapPct + '% unter Markt</span>';
+    if (d.valueGapPct < -1) return '<span class="gap bad">' + Math.abs(d.valueGapPct) + '% über Markt</span>';
+    return '<span class="gap neutral">am Marktwert</span>';
+  }
+
+  function cardHtml(d, i) {
+    var args = d.negotiationArgs.map(function (a) { return '<li>' + ui.esc(a) + '</li>'; }).join('');
+    return '<div class="deal-card reco-border-' + d.recommendation.level + (i === 0 ? ' is-best' : '') + '">' +
+        (i === 0 ? '<div class="best-ribbon">★ Bestes Angebot</div>' : '') +
+        '<div class="deal-cardhead">' +
+          '<span class="deal-rank">Deal ' + (i + 1) + '</span>' +
+          ui.riskBadge(d.risk.level, 'Risiko: ' + d.risk.label) +
+        '</div>' +
+        '<div class="deal-model">' + ui.esc(d.title) + '</div>' +
+        '<div class="deal-sub">' + d.year + ' · ' + ui.esc(fmt.km(d.km)) + ' · ' + ui.esc(d.condition) + ' · ' + ui.esc(d.seller) + '</div>' +
+
+        '<div class="deal-scorewrap">' + charts.gauge(d.score) + '</div>' +
+
+        '<div class="deal-pricebox">' +
+          '<div class="price-main">' + ui.esc(fmt.money(d.asking, d.currency)) + '</div>' +
+          '<div class="price-sub">Marktwert Ø ' + ui.esc(fmt.money(d.marketValue, d.currency)) + ' · ' + gapLabel(d) + '</div>' +
+        '</div>' +
+
+        '<div class="deal-specs">' +
+          spec('Baujahr', d.year) +
+          spec('Kilometer', fmt.number(d.km)) +
+          spec('Zustand', d.condition) +
+          spec('Service', d.serviceHistory ? 'Heft vorhanden' : 'unklar') +
+        '</div>' +
+
+        '<div class="deal-reco reco-' + d.recommendation.level + '"><strong>Empfehlung:</strong> ' + ui.esc(d.recommendation.text) + '</div>' +
+
+        '<div class="deal-args"><div class="deal-args-head">Verhandlungsargumente</div><ul>' + args + '</ul></div>' +
+      '</div>';
+  }
+
+  function spec(label, val) {
+    return '<div class="spec"><span class="spec-label">' + ui.esc(label) + '</span>' +
+      '<span class="spec-val">' + ui.esc(val) + '</span></div>';
+  }
+
+  function comparisonTable(deals) {
+    var rows = deals.map(function (d, i) {
+      return '<tr>' +
+        '<td><strong>Deal ' + (i + 1) + '</strong><br><span class="muted-cell">' + ui.esc(d.title) + '</span></td>' +
+        '<td>' + d.year + '</td>' +
+        '<td>' + ui.esc(fmt.number(d.km)) + '</td>' +
+        '<td>' + ui.esc(fmt.money(d.asking, d.currency)) + '</td>' +
+        '<td>' + ui.esc(fmt.money(d.marketValue, d.currency)) + '</td>' +
+        '<td><strong>' + d.score.toFixed(1) + '</strong></td>' +
+        '<td>' + ui.riskBadge(d.risk.level, d.risk.label) + '</td>' +
+        '</tr>';
+    }).join('');
+    return '<div class="chart-card"><div class="chart-card-head">Vergleich auf einen Blick</div>' +
+      '<div class="table-card no-shadow"><table class="tbl compare-tbl"><thead><tr>' +
+        '<th scope="col">Deal</th><th scope="col">Baujahr</th><th scope="col">km</th><th scope="col">Preis</th><th scope="col">Marktwert</th><th scope="col">Score</th><th scope="col">Risiko</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+  }
+
+  function checklistCard(d) {
+    var items = d.inspectionPoints.map(function (p) { return '<li>' + ui.esc(p) + '</li>'; }).join('');
+    return '<div class="chart-card">' +
+      '<div class="chart-card-head">Besichtigungs-Checkliste · ' + ui.esc(d.title) + '</div>' +
+      '<ul class="check-list">' + items + '</ul></div>';
+  }
+
+  function questionsCard(d) {
+    var items = d.sellerQuestions.map(function (q) { return '<li>' + ui.esc(q) + '</li>'; }).join('');
+    return '<div class="chart-card">' +
+      '<div class="chart-card-head">Fragen an den Verkäufer</div>' +
+      '<ol class="q-list">' + items + '</ol></div>';
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.report = view;
+})(window);
+
+/* ===== js/components/settings.js ===== */
+/*
+ * components/settings.js — Einstellungen: Design, Datenverwaltung, Info.
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+  var store = global.TDS.store;
+  var theme = global.TDS.theme;
+  var toast = global.TDS.toast;
+
+  function $(id) { return global.document.getElementById(id); }
+
+  function view() {
+    store.stats().then(function (s) {
+      var cur = theme.mode();
+      var dens = currentDensity();
+      var html = '' +
+        '<div class="hero hero-sm">' +
+          '<div class="hero-eye">Einstellungen</div>' +
+          '<h1>App-Einstellungen</h1>' +
+          '<p>Design und lokale Daten verwalten. Alles bleibt in diesem Browser.</p>' +
+        '</div>' +
+
+        '<div class="wrap">' +
+          '<div class="sec">' +
+            '<div class="sec-head">Design</div>' +
+            '<div class="field">' +
+              '<label class="lbl">Farbschema</label>' +
+              '<div class="segmented" id="theme-seg">' +
+                segBtn('system', 'System', cur) +
+                segBtn('light', 'Hell', cur) +
+                segBtn('dark', 'Dunkel', cur) +
+              '</div>' +
+              '<div class="hint-text">„System" folgt der Einstellung deines Geräts.</div>' +
+            '</div>' +
+            '<div class="field">' +
+              '<label class="lbl">Dichte</label>' +
+              '<div class="segmented" id="density-seg">' +
+                densBtn('comfortable', 'Komfortabel', dens) +
+                densBtn('compact', 'Kompakt', dens) +
+              '</div>' +
+              '<div class="hint-text">„Kompakt" zeigt mehr auf einmal (engere Abstände).</div>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="sec">' +
+            '<div class="sec-head">Daten (' + s.total + ' Anfragen)</div>' +
+            '<p class="settings-text">Anfragen werden lokal im Browser gespeichert (LocalStorage). Du kannst sie sichern, übertragen oder löschen.</p>' +
+            '<div class="settings-actions">' +
+              '<button class="btn-ghost btn-sm" id="seed-btn">Beispieldaten laden</button>' +
+              '<button class="btn-ghost btn-sm" id="json-btn">Backup exportieren (JSON)</button>' +
+              '<button class="btn-ghost btn-sm" id="import-btn">Backup importieren</button>' +
+              '<button class="btn-ghost btn-sm danger" id="clear-btn">Alle Daten löschen</button>' +
+              '<input type="file" id="import-file" accept="application/json,.json" hidden>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="sec">' +
+            '<div class="sec-head">Über diese App</div>' +
+            aboutRow('Produkt', 'Töff Deal Scout — Motorrad-Kaufberatung') +
+            aboutRow('Version', '0.2.0 · Demo / Frontend-only') +
+            aboutRow('Technik', 'Vanilla JS, Hash-Router, LocalStorage, kein Build') +
+            aboutRow('Geplant', 'Backend-API, Login, Stripe/TWINT — Architektur ist vorbereitet') +
+            '<a class="btn-ghost btn-block" href="#/admin" style="margin-top:12px;">Zum Admin-Dashboard</a>' +
+          '</div>' +
+        '</div>' +
+        '';
+
+      ui.render(html);
+      wire();
+    });
+  }
+
+  function segBtn(val, label, cur) {
+    return '<button class="seg-btn' + (cur === val ? ' active' : '') + '" data-theme="' + val + '">' + ui.esc(label) + '</button>';
+  }
+  function densBtn(val, label, cur) {
+    return '<button class="seg-btn' + (cur === val ? ' active' : '') + '" data-density="' + val + '">' + ui.esc(label) + '</button>';
+  }
+
+  function currentDensity() {
+    try { return global.localStorage.getItem('tds_density') || 'comfortable'; } catch (e) { return 'comfortable'; }
+  }
+  function setDensity(val) {
+    try { global.localStorage.setItem('tds_density', val); } catch (e) {}
+    global.document.documentElement.setAttribute('data-density', val);
+  }
+
+  function aboutRow(k, v) {
+    return '<div class="dl-row"><dt>' + ui.esc(k) + '</dt><dd>' + ui.esc(v) + '</dd></div>';
+  }
+
+  function activate(group, el) {
+    Array.prototype.forEach.call(group.parentNode.querySelectorAll('.seg-btn'), function (b) {
+      b.classList.toggle('active', b === el);
+    });
+  }
+
+  function wire() {
+    Array.prototype.forEach.call(global.document.querySelectorAll('#theme-seg .seg-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        theme.set(this.getAttribute('data-theme'));
+        activate(this, this);
+        var m = theme.mode();
+        toast.info('Farbschema: ' + (m === 'system' ? 'System' : m === 'dark' ? 'Dunkel' : 'Hell'));
+      });
+    });
+    Array.prototype.forEach.call(global.document.querySelectorAll('#density-seg .seg-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        setDensity(this.getAttribute('data-density'));
+        activate(this, this);
+        toast.info('Dichte: ' + (this.getAttribute('data-density') === 'compact' ? 'Kompakt' : 'Komfortabel'));
+      });
+    });
+
+    $('seed-btn').addEventListener('click', function () {
+      var samples = global.TDS.data.demo.samples();
+      Promise.all(samples.map(function (x) { return store.create(x); })).then(function () {
+        toast.success('Beispieldaten geladen'); view();
+      });
+    });
+    $('json-btn').addEventListener('click', function () {
+      store.exportJSON().then(function (json) {
+        global.TDS.dom.download('toeffdealscout-backup.json', json, 'application/json');
+        toast.success('Backup exportiert');
+      });
+    });
+    $('import-btn').addEventListener('click', function () { $('import-file').click(); });
+    $('import-file').addEventListener('change', function (e) {
+      var file = e.target.files[0]; if (!file) return;
+      var reader = new global.FileReader();
+      reader.onload = function () {
+        store.importJSON(reader.result, 'merge').then(function (r) {
+          toast.success('Import: ' + r.imported + ' neu, ' + r.skipped + ' übersprungen'); view();
+        }).catch(function () { toast.error('Import fehlgeschlagen — ungültige Datei.'); });
+      };
+      reader.readAsText(file);
+    });
+    $('clear-btn').addEventListener('click', function () {
+      if (global.confirm('Wirklich ALLE lokalen Daten löschen?')) {
+        store.clear().then(function () { toast.info('Alle Daten gelöscht'); view(); });
+      }
+    });
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.settings = view;
+})(window);
+
+/* ===== js/components/notfound.js ===== */
+/*
+ * notfound.js — Fallback-Seite für unbekannte Routen.
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+
+  function view(ctx) {
+    var path = (ctx && ctx.path) ? ctx.path : '';
+    var html = '' +
+      '<div class="wrap wrap-narrow">' +
+        '<div class="sec notfound">' +
+          '<div class="nf-code">404</div>' +
+          '<div class="ok-title">Seite nicht gefunden</div>' +
+          '<div class="ok-text">Die Route <span class="mono">' + ui.esc(path) + '</span> gibt es nicht.</div>' +
+          '<div class="success-actions">' +
+            '<a class="btn-primary" href="#/">Zur Startseite</a>' +
+            '<a class="btn-ghost" href="#/form">Anfrage stellen</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '';
+    ui.render(html);
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.notFound = view;
+})(window);
+
+/* ===== js/app.js ===== */
+/*
+ * app.js — Bootstrap. Initialisiert Theme, registriert Routen, verdrahtet
+ * globale Interaktionen (Theme-Umschalter) und startet den Router.
+ *
+ * Erweiterung später:
+ *  - Auth/Login: vor adminList/adminDetail/settings einen Guard einsetzen
+ *    (z.B. if (!TDS.auth.isAdmin()) return TDS.views.login();).
+ *  - Backend: nur services/store.js-Adapter austauschen, Views bleiben gleich.
+ *  - Stripe/TWINT: im Submit-Handler (components/form.js) nach store.create()
+ *    einen Checkout-Redirect ergänzen.
+ */
+(function (global) {
+  'use strict';
+
+  var TDS = global.TDS;
+  var router = TDS.router;
+  var views = TDS.views;
+
+  // Theme & Dichte so früh wie möglich anwenden.
+  TDS.theme.init();
+  try {
+    var dens = global.localStorage.getItem('tds_density');
+    if (dens) global.document.documentElement.setAttribute('data-density', dens);
+  } catch (e) {}
+
+  // Routen
+  router.register('/', views.landing);
+  router.register('/form', views.form);
+  router.register('/success/:id', views.success);
+  router.register('/admin', views.adminList);
+  router.register('/admin/:id', views.adminDetail);
+  router.register('/report/:id', views.report);
+  router.register('/settings', views.settings);
+  router.setNotFound(views.notFound);
+
+  // Globale, delegierte Interaktionen (überleben Re-Renders von #app).
+  global.document.addEventListener('click', function (e) {
+    var t = e.target.closest && e.target.closest('[data-action]');
+    if (!t) return;
+    var action = t.getAttribute('data-action');
+    if (action === 'theme-toggle') {
+      TDS.theme.toggle();
+      var dark = TDS.theme.current() === 'dark';
+      t.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      if (TDS.toast) TDS.toast.info('Design: ' + (dark ? 'Dunkel' : 'Hell'));
+    }
+  });
+
+  // Globaler Fehler-Fänger: meldet unerwartete Fehler dezent (gedrosselt).
+  var lastErrToast = 0;
+  function reportError() {
+    var now = Date.now();
+    if (now - lastErrToast < 4000) return;
+    lastErrToast = now;
+    if (TDS.toast) TDS.toast.error('Etwas ist schiefgelaufen — bitte erneut versuchen.');
+  }
+  global.addEventListener('error', reportError);
+  global.addEventListener('unhandledrejection', reportError);
+
+  router.start();
+
+  // Verdichtende, "schwebende" Kopfzeile beim Scrollen.
+  var onScroll = function () {
+    var y = global.scrollY || global.pageYOffset || 0;
+    global.document.documentElement.classList.toggle('is-scrolled', y > 8);
+    // Sanfter Parallax-Wert für den Hero-Glow (CSS nutzt --sy).
+    global.document.documentElement.style.setProperty('--sy', y);
+  };
+  global.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Tastatur-Shortcuts: "/" fokussiert die Admin-Suche, "n" startet eine neue Anfrage.
+  global.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === '/') {
+      var s = global.document.getElementById('search');
+      if (s) { e.preventDefault(); s.focus(); }
+    } else if (e.key === 'n') {
+      router.navigate('/form');
+    }
+  });
+
+  // Höfliche Ansage des Seitenwechsels für Screenreader (ohne Fokus zu stehlen).
+  function announceRoute() {
+    var h = global.location.hash || '#/';
+    var label = 'Startseite';
+    if (h.indexOf('#/form') === 0) label = 'Suchanfrage-Formular';
+    else if (h.indexOf('#/admin') === 0) label = 'Admin-Bereich';
+    else if (h.indexOf('#/settings') === 0) label = 'Einstellungen';
+    else if (h.indexOf('#/report') === 0) label = 'Deal-Report';
+    else if (h.indexOf('#/success') === 0) label = 'Anfrage gesendet';
+    global.document.title = 'Töff Deal Scout — ' + label;
+    var a = global.document.getElementById('route-announcer');
+    if (a) a.textContent = 'Seite: ' + label;
+  }
+  global.addEventListener('hashchange', announceRoute);
+  announceRoute();
+
+  // Service Worker (PWA) — nur über http(s), nicht über file://.
+  if ('serviceWorker' in global.navigator && global.location.protocol.indexOf('http') === 0) {
+    global.addEventListener('load', function () {
+      global.navigator.serviceWorker.register('sw.js').catch(function () { /* offline optional */ });
+    });
+  }
+})(window);
+
+</script>
+</body>
+</html>

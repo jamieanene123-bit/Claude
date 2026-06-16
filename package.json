@@ -8,7 +8,8 @@
     "serve": "python3 -m http.server 8000",
     "test": "node tests/node.js && node tests/smoke.js",
     "test:unit": "node tests/node.js",
-    "smoke": "node tests/smoke.js"
+    "smoke": "node tests/smoke.js",
+    "build:single": "node scripts/build-single.js"
   },
   "keywords": ["motorrad", "deal-scout", "mvp", "vanilla-js", "spa", "pwa"],
   "license": "UNLICENSED"
