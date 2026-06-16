@@ -52,6 +52,22 @@
   global.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
+  // Höfliche Ansage des Seitenwechsels für Screenreader (ohne Fokus zu stehlen).
+  function announceRoute() {
+    var h = global.location.hash || '#/';
+    var label = 'Startseite';
+    if (h.indexOf('#/form') === 0) label = 'Suchanfrage-Formular';
+    else if (h.indexOf('#/admin') === 0) label = 'Admin-Bereich';
+    else if (h.indexOf('#/settings') === 0) label = 'Einstellungen';
+    else if (h.indexOf('#/report') === 0) label = 'Deal-Report';
+    else if (h.indexOf('#/success') === 0) label = 'Anfrage gesendet';
+    global.document.title = 'Töff Deal Scout — ' + label;
+    var a = global.document.getElementById('route-announcer');
+    if (a) a.textContent = 'Seite: ' + label;
+  }
+  global.addEventListener('hashchange', announceRoute);
+  announceRoute();
+
   // Service Worker (PWA) — nur über http(s), nicht über file://.
   if ('serviceWorker' in global.navigator && global.location.protocol.indexOf('http') === 0) {
     global.addEventListener('load', function () {

@@ -46,6 +46,8 @@
       '</div>' +
       '<form id="frm" novalidate>' +
 
+        '<div id="form-errors" class="form-errors" role="alert" tabindex="-1" hidden></div>' +
+
         // SEKTION 1: KONTAKT
         '<div class="sec">' +
           '<div class="sec-head">Deine Angaben</div>' +
@@ -74,8 +76,8 @@
         '<div class="sec">' +
           '<div class="sec-head">Führerausweis &amp; Erfahrung</div>' +
           '<div class="field">' +
-            '<label class="lbl">Führerausweis <span class="req">*</span></label>' +
-            '<div class="chips" id="chips-ausweis">' +
+            '<label class="lbl" id="lbl-ausweis">Führerausweis <span class="req">*</span></label>' +
+            '<div class="chips" id="chips-ausweis" role="radiogroup" aria-labelledby="lbl-ausweis">' +
               chip('radio', 'ausweis', 'A (unbeschränkt)') +
               chip('radio', 'ausweis', 'A2 (max. 35 kW)') +
               chip('radio', 'ausweis', 'A1 (max. 11 kW)') +
@@ -98,8 +100,8 @@
         '<div class="sec">' +
           '<div class="sec-head">Dein Wunsch-Motorrad</div>' +
           '<div class="field">' +
-            '<label class="lbl">Stil <span class="req">*</span> <span class="opt">Mehrfachauswahl möglich</span></label>' +
-            '<div class="chips" id="chips-stil">' +
+            '<label class="lbl" id="lbl-stil">Stil <span class="req">*</span> <span class="opt">Mehrfachauswahl möglich</span></label>' +
+            '<div class="chips" id="chips-stil" role="group" aria-labelledby="lbl-stil">' +
               chip('checkbox', 'stil', 'Naked Bike') +
               chip('checkbox', 'stil', 'Sportmotorrad') +
               chip('checkbox', 'stil', 'Scrambler / Retro') +
@@ -233,57 +235,79 @@
   }
 
   function liveCheckBudget() {
-    var von = parseInt($('budget-von').value) || 0;
-    var bis = parseInt($('budget-bis').value) || 0;
+    var vonSel = $('budget-von'), bisSel = $('budget-bis');
+    var von = parseInt(vonSel.value) || 0;
+    var bis = parseInt(bisSel.value) || 0;
     if (von && bis && von >= bis) {
-      $('e-budget').textContent = '"Von" muss kleiner sein als "Bis".';
-      $('e-budget').classList.add('show');
+      // Sanfte Autokorrektur: nächsthöhere "Bis"-Option wählen
+      var fixed = null;
+      Array.prototype.forEach.call(bisSel.options, function (o) {
+        var ov = parseInt(o.value) || 0;
+        if (fixed === null && ov > von) fixed = o.value;
+      });
+      if (fixed !== null) { bisSel.value = fixed; clearErr('budget'); }
+      else { $('e-budget').textContent = '"Von" muss kleiner sein als "Bis".'; $('e-budget').classList.add('show'); }
     } else {
       clearErr('budget');
     }
   }
 
   function validate() {
-    var errors = [];
-    function check(pass, errId, inputId, msg) {
+    var errs = [];
+    function check(pass, errId, inputId, msg, label) {
       var errEl = $(errId), inp = $(inputId);
       if (!pass) {
         if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
-        if (inp) inp.classList.add('err');
-        errors.push(inputId);
+        if (inp) { inp.classList.add('err'); inp.setAttribute('aria-invalid', 'true'); }
+        errs.push({ id: inputId, label: label || msg });
       } else {
         if (errEl) errEl.classList.remove('show');
-        if (inp) inp.classList.remove('err');
+        if (inp) { inp.classList.remove('err'); inp.removeAttribute('aria-invalid'); }
       }
     }
 
-    check($('vorname').value.trim() !== '', 'e-vorname', 'vorname', 'Bitte Vorname eingeben.');
-    check($('nachname').value.trim() !== '', 'e-nachname', 'nachname', 'Bitte Nachname eingeben.');
-    check(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim()), 'e-email', 'email', 'Bitte eine gültige E-Mail-Adresse eingeben.');
-    check($('land').value !== '', 'e-land', 'land', 'Bitte Land auswählen.');
-    check($('region').value !== '', 'e-region', 'region', 'Bitte Region auswählen.');
+    check($('vorname').value.trim() !== '', 'e-vorname', 'vorname', 'Bitte Vorname eingeben.', 'Vorname');
+    check($('nachname').value.trim() !== '', 'e-nachname', 'nachname', 'Bitte Nachname eingeben.', 'Nachname');
+    check(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim()), 'e-email', 'email', 'Bitte eine gültige E-Mail-Adresse eingeben.', 'E-Mail');
+    check($('land').value !== '', 'e-land', 'land', 'Bitte Land auswählen.', 'Land');
+    check($('region').value !== '', 'e-region', 'region', 'Bitte Region auswählen.', 'Region');
 
-    chipsGroup('ausweis', 'e-ausweis', 'chips-ausweis', 'Bitte Führerausweis auswählen.', errors);
-    chipsGroup('stil', 'e-stil', 'chips-stil', 'Bitte mindestens einen Stil auswählen.', errors);
+    chipsGroup('ausweis', 'e-ausweis', 'chips-ausweis', 'Bitte Führerausweis auswählen.', 'Führerausweis', errs);
+    chipsGroup('stil', 'e-stil', 'chips-stil', 'Bitte mindestens einen Stil auswählen.', 'Stil', errs);
 
     var von = parseInt($('budget-von').value) || 0;
     var bis = parseInt($('budget-bis').value) || 0;
     if (!von || !bis) {
-      setErr('e-budget', 'budget-von', 'Bitte Budget Von und Bis auswählen.'); errors.push('budget-von');
+      setErr('e-budget', 'budget-von', 'Bitte Budget Von und Bis auswählen.'); errs.push({ id: 'budget-von', label: 'Budget' });
     } else if (von >= bis) {
-      setErr('e-budget', 'budget-von', '"Von" muss kleiner sein als "Bis".'); errors.push('budget-von');
+      setErr('e-budget', 'budget-von', '"Von" muss kleiner sein als "Bis".'); errs.push({ id: 'budget-von', label: 'Budget' });
     } else { clearErr('budget'); $('budget-von').classList.remove('err'); }
 
     if (!document.querySelector('input[name="paket"]:checked')) {
-      $('e-paket').classList.add('show'); errors.push('pkg-Quick-Check');
+      $('e-paket').classList.add('show'); errs.push({ id: 'pkg-Quick-Check', label: 'Paket' });
     } else { $('e-paket').classList.remove('show'); }
 
-    if (errors.length > 0) {
-      var firstEl = $(errors[0]) || document.querySelector('.err-msg.show');
-      if (firstEl) firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return false;
-    }
+    if (errs.length > 0) { showErrorSummary(errs); return false; }
+    clearErrorSummary();
     return true;
+  }
+
+  /** Barrierefreie Fehler-Zusammenfassung oben im Formular. */
+  function showErrorSummary(errs) {
+    var box = $('form-errors');
+    if (!box) return;
+    var links = errs.map(function (e) {
+      return '<li><a href="#' + e.id + '" data-target="' + e.id + '">' + ui.esc(e.label) + '</a></li>';
+    }).join('');
+    box.innerHTML = '<strong>Bitte korrigiere ' + errs.length + (errs.length === 1 ? ' Angabe' : ' Angaben') + ':</strong>' +
+      '<ul>' + links + '</ul>';
+    box.hidden = false;
+    box.focus();
+  }
+
+  function clearErrorSummary() {
+    var box = $('form-errors');
+    if (box) { box.hidden = true; box.innerHTML = ''; }
   }
 
   function setErr(errId, inputId, msg) {
@@ -292,16 +316,16 @@
     if (inp) inp.classList.add('err');
   }
 
-  function chipsGroup(name, errId, wrapId, msg, errors) {
+  function chipsGroup(name, errId, wrapId, msg, label, errs) {
     var ok = document.querySelector('input[name="' + name + '"]:checked') !== null;
     var errEl = $(errId), wrap = $(wrapId);
     if (!ok) {
       if (errEl) { errEl.textContent = msg; errEl.classList.add('show'); }
-      if (wrap) wrap.classList.add('err-chips');
-      errors.push(wrapId);
+      if (wrap) { wrap.classList.add('err-chips'); wrap.setAttribute('aria-invalid', 'true'); }
+      errs.push({ id: wrapId, label: label });
     } else {
       if (errEl) errEl.classList.remove('show');
-      if (wrap) wrap.classList.remove('err-chips');
+      if (wrap) { wrap.classList.remove('err-chips'); wrap.removeAttribute('aria-invalid'); }
     }
   }
 
@@ -450,6 +474,15 @@
     // Autosave + Fortschritt bei jeder Eingabe
     $('frm').addEventListener('input', function () { saveDraft(); updateProgress(); });
     $('frm').addEventListener('change', function () { saveDraft(); updateProgress(); });
+
+    // Fehler-Zusammenfassung: Klick springt zum Feld
+    $('form-errors').addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[data-target]');
+      if (!a) return;
+      e.preventDefault();
+      var t = $(a.getAttribute('data-target'));
+      if (t) { if (t.focus) t.focus(); if (t.scrollIntoView) t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    });
 
     $('land').addEventListener('change', function () {
       var land = this.value;

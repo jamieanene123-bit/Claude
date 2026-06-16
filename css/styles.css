@@ -634,3 +634,13 @@ footer a:hover { color:#fff; }
 }
 [data-theme="dark"] .submit-area { background:linear-gradient(180deg, rgba(18,17,16,0) 0%, var(--bg) 28%); }
 @media (prefers-reduced-motion: reduce) { .fp-bar > span { transition:none; } }
+
+/* ============================================================
+   R9–R13 — Formular-a11y: Fehler-Zusammenfassung & Gruppen
+   ============================================================ */
+.form-errors { background:var(--err-bg); border:1px solid #f0c4be; border-radius:var(--r); padding:14px 16px; margin-bottom:16px; color:var(--err); font-size:13.5px; }
+.form-errors strong { display:block; margin-bottom:6px; }
+.form-errors ul { margin:0; padding-left:18px; display:grid; gap:4px; }
+.form-errors a { color:var(--err); text-decoration:underline; font-weight:500; }
+.form-errors:focus { outline:2px solid var(--err); outline-offset:2px; }
+[data-theme="dark"] .form-errors { border-color:#5a2a24; }
