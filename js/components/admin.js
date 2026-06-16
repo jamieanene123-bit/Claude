@@ -17,7 +17,8 @@
   var toast = global.TDS.toast;
 
   // Tabellenzustand (in-memory)
-  var state = { q: '', status: 'Alle', sort: 'date-desc' };
+  var PAGE = 8;
+  var state = { q: '', status: 'Alle', sort: 'date-desc', limit: PAGE };
   var allRows = [];
 
   function $(id) { return global.document.getElementById(id); }
@@ -52,8 +53,12 @@
 
           '<div class="table-card">' +
             '<table class="tbl"><thead><tr>' +
-              '<th scope="col">ID</th><th scope="col">Datum</th><th scope="col">Name</th><th scope="col">Region</th><th scope="col">Wunsch</th><th scope="col">Paket</th><th scope="col">Status</th>' +
+              '<th scope="col">ID</th>' +
+              th('Datum', 'date') + th('Name', 'name') +
+              '<th scope="col">Region</th><th scope="col">Wunsch</th><th scope="col">Paket</th>' +
+              th('Status', 'status') +
             '</tr></thead><tbody id="tbody"></tbody></table>' +
+            '<div class="table-more" id="table-more"></div>' +
           '</div>' +
 
           '<div class="admin-tools">' +
@@ -121,6 +126,37 @@
     return '<option value="' + val + '"' + (state.sort === val ? ' selected' : '') + '>' + ui.esc(label) + '</option>';
   }
 
+  // Sortierbarer Spaltenkopf (klickbar, mit aria-sort)
+  function th(label, key) {
+    var parts = state.sort.split('-'), active = parts[0] === key;
+    var aria = active ? (parts[1] === 'asc' ? 'ascending' : 'descending') : 'none';
+    var arrow = active ? (parts[1] === 'asc' ? ' ▲' : ' ▼') : '';
+    return '<th scope="col" class="th-sort' + (active ? ' active' : '') + '" data-key="' + key + '" aria-sort="' + aria + '" tabindex="0" role="button">' +
+      ui.esc(label) + '<span class="th-arrow">' + arrow + '</span></th>';
+  }
+
+  // Spaltenkopf-Klick: gleiche Spalte -> Richtung wechseln, sonst aufsteigend.
+  function setSort(key) {
+    var parts = state.sort.split('-');
+    var dir = (parts[0] === key && parts[1] === 'asc') ? 'desc' : 'asc';
+    state.sort = key + '-' + dir;
+    state.limit = PAGE;
+    var sel = $('sort'); if (sel) sel.value = state.sort; // falls Option existiert
+    syncSortHeaders();
+    refreshTable();
+  }
+
+  // aria-sort / Pfeile an den aktuellen state.sort angleichen.
+  function syncSortHeaders() {
+    var parts = state.sort.split('-'), key = parts[0], dir = parts[1];
+    Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
+      var on = el.getAttribute('data-key') === key;
+      el.classList.toggle('active', on);
+      el.setAttribute('aria-sort', on ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
+      var a = el.querySelector('.th-arrow'); if (a) a.textContent = on ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
+    });
+  }
+
   function filterBtns(stats) {
     var counts = { Alle: stats.total };
     cfg.STATUSES.forEach(function (s) { counts[s] = stats.byStatus[s] || 0; });
@@ -142,13 +178,13 @@
           (Array.isArray(v.stil) ? v.stil.join(' ') : v.stil)].join(' ').toLowerCase().indexOf(q) !== -1;
       });
     }
+    var parts = state.sort.split('-'), key = parts[0], dir = parts[1] === 'desc' ? -1 : 1;
     rows.sort(function (a, b) {
-      switch (state.sort) {
-        case 'date-asc': return new Date(a.createdAt) - new Date(b.createdAt);
-        case 'name-asc': return (a.values.nachname || '').localeCompare(b.values.nachname || '');
-        case 'status-asc': return cfg.STATUSES.indexOf(a.status) - cfg.STATUSES.indexOf(b.status);
-        default: return new Date(b.createdAt) - new Date(a.createdAt);
-      }
+      var r;
+      if (key === 'name') r = (a.values.nachname || '').localeCompare(b.values.nachname || '');
+      else if (key === 'status') r = cfg.STATUSES.indexOf(a.status) - cfg.STATUSES.indexOf(b.status);
+      else r = new Date(a.createdAt) - new Date(b.createdAt);
+      return r * dir;
     });
     return rows;
   }
@@ -156,12 +192,20 @@
   function refreshTable() {
     var rows = applyFilters();
     var tbody = $('tbody');
+    var more = $('table-more');
+    if (more) more.innerHTML = '';
     if (!rows.length) {
       tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Keine Treffer. ' +
         '<a href="#/form">Neue Anfrage erstellen →</a></td></tr>';
       return;
     }
-    tbody.innerHTML = rows.map(rowHtml).join('');
+    var shown = rows.slice(0, state.limit);
+    tbody.innerHTML = shown.map(rowHtml).join('');
+    if (more && rows.length > state.limit) {
+      more.innerHTML = '<button class="btn-ghost btn-sm" id="more-btn">Weitere ' +
+        Math.min(PAGE, rows.length - state.limit) + ' von ' + rows.length + ' anzeigen</button>';
+      $('more-btn').addEventListener('click', function () { state.limit += PAGE; refreshTable(); });
+    }
     // Klicks werden delegiert (siehe wireList) — kein Listener pro Zeile.
   }
 
@@ -181,8 +225,16 @@
 
   function wireList() {
     var search = $('search');
-    search.addEventListener('input', global.TDS.dom.debounce(function () { state.q = search.value; refreshTable(); }, 140));
-    $('sort').addEventListener('change', function () { state.sort = this.value; refreshTable(); });
+    search.addEventListener('input', global.TDS.dom.debounce(function () { state.q = search.value; state.limit = PAGE; refreshTable(); }, 140));
+    $('sort').addEventListener('change', function () { state.sort = this.value; state.limit = PAGE; syncSortHeaders(); refreshTable(); });
+
+    // Sortierbare Spaltenköpfe (Klick + Tastatur)
+    Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
+      el.addEventListener('click', function () { setSort(this.getAttribute('data-key')); });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSort(this.getAttribute('data-key')); }
+      });
+    });
 
     // Ein delegierter Klick-Listener für alle (auch künftige) Tabellenzeilen.
     $('tbody').addEventListener('click', function (e) {
@@ -193,6 +245,7 @@
     Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (btn) {
       btn.addEventListener('click', function () {
         state.status = this.getAttribute('data-filter');
+        state.limit = PAGE;
         Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (b) {
           b.classList.toggle('active', b === btn);
         });
@@ -206,7 +259,7 @@
     $('csv-btn').addEventListener('click', exportCsv);
     $('json-btn').addEventListener('click', function () {
       store.exportJSON().then(function (json) {
-        download('toeffdealscout-export.json', json, 'application/json');
+        global.TDS.dom.download('toeffdealscout-export.json', json, 'application/json');
         toast.success('JSON exportiert');
       });
     });
@@ -224,7 +277,13 @@
     });
     $('clear-btn').addEventListener('click', function () {
       if (global.confirm('Wirklich ALLE Anfragen löschen?')) {
-        store.clear().then(function () { state.status = 'Alle'; state.q = ''; toast.info('Alle Anfragen gelöscht'); list(); });
+        store.clear().then(function (prev) {
+          state.status = 'Alle'; state.q = '';
+          toast.info((prev.length) + ' Anfragen gelöscht', { action: { label: 'Rückgängig', fn: function () {
+            store.restoreMany(prev).then(function () { toast.success('Wiederhergestellt'); list(); });
+          } } });
+          list();
+        });
       }
     });
   }
@@ -238,6 +297,7 @@
       var statusOpts = cfg.STATUSES.map(function (s) {
         return '<option value="' + ui.esc(s) + '"' + (s === rec.status ? ' selected' : '') + '>' + ui.esc(s) + '</option>';
       }).join('');
+      var nextStatus = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1] || null;
 
       var html = '' +
         '<div class="admin-bar"><div class="admin-bar-inner">' +
@@ -270,6 +330,7 @@
               '<div class="side-card-head">Status</div>' +
               '<div class="current-status">' + ui.statusBadge(rec.status) + '</div>' +
               '<div class="sel-wrap"><select id="status-sel">' + statusOpts + '</select></div>' +
+              (nextStatus ? '<button class="btn-ghost btn-sm btn-block" id="advance-btn" style="margin-top:8px">Weiter zu „' + ui.esc(nextStatus) + '" →</button>' : '') +
               '<div class="side-saved" id="status-saved">✓ Gespeichert</div>' +
             '</div>' +
             '<div class="side-card">' +
@@ -330,6 +391,15 @@
         detail({ id: rec.id }); // Verlauf aktualisieren
       });
     });
+    var adv = $('advance-btn');
+    if (adv) adv.addEventListener('click', function () {
+      var next = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1];
+      if (!next) return;
+      store.updateStatus(rec.id, next).then(function () {
+        if (toast) toast.success('Status: ' + next);
+        detail({ id: rec.id });
+      });
+    });
     $('note-btn').addEventListener('click', function () {
       var input = $('note-input');
       var text = (input.value || '').trim();
@@ -341,7 +411,12 @@
     });
     $('del-btn').addEventListener('click', function () {
       if (global.confirm('Diese Anfrage wirklich löschen?')) {
-        store.remove(rec.id).then(function () { if (toast) toast.info('Anfrage gelöscht'); router.navigate('/admin'); });
+        store.remove(rec.id).then(function (removed) {
+          if (toast) toast.info('Anfrage gelöscht', { action: { label: 'Rückgängig', fn: function () {
+            store.restore(removed).then(function () { toast.success('Wiederhergestellt'); detail({ id: removed.id }); });
+          } } });
+          router.navigate('/admin');
+        });
       }
     });
   }

@@ -21,26 +21,47 @@
 
   var ICONS = { success: '✓', error: '⚠', info: 'ℹ' };
 
-  function show(msg, type, ms) {
+  /**
+   * @param {string} msg
+   * @param {string} type  success|error|info
+   * @param {number|object} opts  Lebensdauer (ms) ODER { ms, action:{label, fn} }
+   */
+  function show(msg, type, opts) {
     type = type || 'info';
+    opts = (typeof opts === 'number') ? { ms: opts } : (opts || {});
     var doc = global.document;
     var t = doc.createElement('div');
     t.className = 'toast toast-' + type;
-    t.innerHTML = '<span class="toast-ico">' + (ICONS[type] || '') + '</span><span>' + String(msg) + '</span>';
-    container().appendChild(t);
-    global.requestAnimationFrame(function () { t.classList.add('in'); });
-    var life = ms || 2800;
-    setTimeout(function () {
+    t.innerHTML = '<span class="toast-ico">' + (ICONS[type] || '') + '</span><span class="toast-msg">' + String(msg) + '</span>';
+
+    var life = opts.ms || (opts.action ? 6000 : 2800);
+    var dismiss = function () {
       t.classList.remove('in');
       setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 260);
-    }, life);
+    };
+
+    if (opts.action && opts.action.label) {
+      var btn = doc.createElement('button');
+      btn.className = 'toast-action';
+      btn.type = 'button';
+      btn.textContent = opts.action.label;
+      btn.addEventListener('click', function () {
+        try { opts.action.fn(); } catch (e) { /* noop */ }
+        clearTimeout(timer); dismiss();
+      });
+      t.appendChild(btn);
+    }
+
+    container().appendChild(t);
+    global.requestAnimationFrame(function () { t.classList.add('in'); });
+    var timer = setTimeout(dismiss, life);
   }
 
   global.TDS = global.TDS || {};
   global.TDS.toast = {
     show: show,
-    success: function (m, ms) { show(m, 'success', ms); },
-    error: function (m, ms) { show(m, 'error', ms); },
-    info: function (m, ms) { show(m, 'info', ms); }
+    success: function (m, opts) { show(m, 'success', opts); },
+    error: function (m, opts) { show(m, 'error', opts); },
+    info: function (m, opts) { show(m, 'info', opts); }
   };
 })(window);

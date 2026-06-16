@@ -163,16 +163,39 @@
       return Promise.resolve(updated);
     },
 
+    /** Löscht eine Anfrage und liefert den gelöschten Datensatz (für Undo) zurück. */
     remove: function (id) {
       var db = load();
+      var removed = db.requests.filter(function (r) { return r.id === id; })[0] || null;
       db.requests = db.requests.filter(function (r) { return r.id !== id; });
       save(db);
-      return Promise.resolve(true);
+      return Promise.resolve(removed);
     },
 
+    /** Stellt einen zuvor gelöschten Datensatz unverändert wieder her (Undo). */
+    restore: function (record) {
+      if (!record || !record.id) return Promise.resolve(null);
+      var db = load();
+      if (!db.requests.some(function (r) { return r.id === record.id; })) {
+        db.requests.push(normalize(record));
+        save(db);
+      }
+      return Promise.resolve(record);
+    },
+
+    /** Leert alle Anfragen und liefert die vorherige Liste (für Undo) zurück. */
     clear: function () {
+      var prev = load().requests;
       save(emptyDb());
-      return Promise.resolve(true);
+      return Promise.resolve(prev);
+    },
+
+    /** Mehrere Datensätze wiederherstellen (Undo von "Alle löschen"). */
+    restoreMany: function (records) {
+      var db = emptyDb();
+      db.requests = (records || []).map(normalize);
+      save(db);
+      return Promise.resolve(db.requests.length);
     },
 
     /** Statistik-Aggregation für das Dashboard. */

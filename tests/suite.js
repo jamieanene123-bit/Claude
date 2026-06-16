@@ -179,5 +179,29 @@
         return TDS.store.remove(rec.id).then(function () { return TDS.store.list(); });
       }).then(function (list) { expect(list.length).toBe(0); });
     });
+    it('remove + restore (Undo) stellt denselben Datensatz wieder her', function () {
+      fresh();
+      var savedId;
+      return TDS.store.create(baseValues).then(function (rec) {
+        savedId = rec.id;
+        return TDS.store.remove(rec.id);
+      }).then(function (removed) {
+        expect(removed.id).toBe(savedId);
+        return TDS.store.restore(removed);
+      }).then(function () { return TDS.store.get(savedId); })
+        .then(function (r) { expect(r.id).toBe(savedId); });
+    });
+    it('clear liefert vorherige Liste, restoreMany stellt sie wieder her', function () {
+      fresh();
+      return TDS.store.create(baseValues)
+        .then(function () { return TDS.store.create(baseValues); })
+        .then(function () { return TDS.store.clear(); })
+        .then(function (prev) {
+          expect(prev.length).toBe(2);
+          return TDS.store.restoreMany(prev);
+        })
+        .then(function () { return TDS.store.list(); })
+        .then(function (list) { expect(list.length).toBe(2); });
+    });
   });
 })(typeof window !== 'undefined' ? window : globalThis);

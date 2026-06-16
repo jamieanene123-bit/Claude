@@ -644,3 +644,15 @@ footer a:hover { color:#fff; }
 .form-errors a { color:var(--err); text-decoration:underline; font-weight:500; }
 .form-errors:focus { outline:2px solid var(--err); outline-offset:2px; }
 [data-theme="dark"] .form-errors { border-color:#5a2a24; }
+
+/* ============================================================
+   R14–R18 — Admin: Sortierköpfe, Pagination, Toast-Aktion
+   ============================================================ */
+.th-sort { cursor:pointer; user-select:none; white-space:nowrap; transition:color .15s; }
+.th-sort:hover { color:var(--text); }
+.th-sort.active { color:var(--accent); }
+.th-arrow { font-size:9px; }
+.table-more { padding:12px 16px; text-align:center; border-top:1px solid var(--border); }
+.table-more:empty { display:none; padding:0; border:none; }
+.toast-action { margin-left:8px; background:transparent; border:1px solid rgba(255,255,255,.32); color:#fff; border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; font-family:inherit; transition:background .15s; }
+.toast-action:hover { background:rgba(255,255,255,.16); }
