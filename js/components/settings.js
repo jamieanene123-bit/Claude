@@ -14,7 +14,7 @@
   function view() {
     store.stats().then(function (s) {
       var cur = theme.current();
-      var html = ui.header() +
+      var html = '' +
         '<div class="hero hero-sm">' +
           '<div class="hero-eye">Einstellungen</div>' +
           '<h1>App-Einstellungen</h1>' +
@@ -55,7 +55,7 @@
             '<a class="btn-ghost btn-block" href="#/admin" style="margin-top:12px;">Zum Admin-Dashboard</a>' +
           '</div>' +
         '</div>' +
-        ui.footer();
+        '';
 
       ui.render(html);
       wire();

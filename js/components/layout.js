@@ -8,9 +8,16 @@
   var fmt = global.TDS.format;
 
   function app() { return global.document.getElementById('app'); }
-  function render(html) {
+
+  /**
+   * Rendert eine View. Views liefern nur den Inhalt; Header, <main>-Landmark
+   * und Footer werden hier zentral ergänzt (DRY + saubere Semantik/a11y).
+   */
+  function render(content) {
     var el = app();
-    el.innerHTML = html;
+    el.innerHTML = header() +
+      '<main id="main" class="main" tabindex="-1">' + content + '</main>' +
+      footer();
     if (global.TDS.motion) global.TDS.motion.enter(el); // Bewegungs-Layer
   }
 
@@ -30,19 +37,24 @@
   }
 
   function navLink(href, key, label, active) {
-    return '<a href="' + href + '" class="hdr-link' + (key === active ? ' active' : '') + '">' + esc(label) + '</a>';
+    var on = key === active;
+    return '<a href="' + href + '" class="hdr-link' + (on ? ' active' : '') + '"' +
+      (on ? ' aria-current="page"' : '') + '>' + esc(label) + '</a>';
   }
 
   function header() {
     var active = activeKey();
+    var isDark = global.TDS.theme ? global.TDS.theme.current() === 'dark' : false;
     return '' +
+      '<a class="skip-link" href="#main">Zum Inhalt springen</a>' +
       '<header class="hdr">' +
-        '<a class="logo" href="#/">Töff<em>Deal</em>Scout</a>' +
-        '<nav class="hdr-nav">' +
+        '<a class="logo" href="#/" aria-label="Töff Deal Scout — Startseite">Töff<em>Deal</em>Scout</a>' +
+        '<nav class="hdr-nav" aria-label="Hauptnavigation">' +
           navLink('#/form', 'form', 'Anfrage', active) +
           navLink('#/admin', 'admin', 'Admin', active) +
           navLink('#/settings', 'settings', 'Einstellungen', active) +
-          '<button class="icon-btn" data-action="theme-toggle" title="Hell/Dunkel umschalten" aria-label="Design umschalten">◐</button>' +
+          '<button class="icon-btn" data-action="theme-toggle" type="button" ' +
+            'title="Hell/Dunkel umschalten" aria-label="Design umschalten" aria-pressed="' + (isDark ? 'true' : 'false') + '">◐</button>' +
         '</nav>' +
       '</header>';
   }

@@ -36,7 +36,9 @@
     var action = t.getAttribute('data-action');
     if (action === 'theme-toggle') {
       TDS.theme.toggle();
-      if (TDS.toast) TDS.toast.info('Design: ' + (TDS.theme.current() === 'dark' ? 'Dunkel' : 'Hell'));
+      var dark = TDS.theme.current() === 'dark';
+      t.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      if (TDS.toast) TDS.toast.info('Design: ' + (dark ? 'Dunkel' : 'Hell'));
     }
   });
 

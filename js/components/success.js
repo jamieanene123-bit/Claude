@@ -11,16 +11,16 @@
   function view(params) {
     store.get(params.id).then(function (rec) {
       if (!rec) {
-        ui.render(ui.header() +
+        ui.render('' +
           '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
-          '<a class="btn-primary" href="#/form">Neue Anfrage</a></div></div>' + ui.footer());
+          '<a class="btn-primary" href="#/form">Neue Anfrage</a></div></div>' + '');
         return;
       }
 
       var v = rec.values;
       var quellen = (v.land && cfg.REGIONS[v.land]) ? cfg.REGIONS[v.land].hint.replace('Wir suchen', 'Gesucht wird') + '.' : '';
 
-      var html = ui.header() +
+      var html = '' +
         '<div class="wrap wrap-narrow">' +
           '<div class="success">' +
             '<div class="ok-ico">✓</div>' +
@@ -41,7 +41,7 @@
             '</div>' +
           '</div>' +
         '</div>' +
-        ui.footer();
+        '';
 
       ui.render(html);
     });

@@ -31,7 +31,7 @@
   }
 
   function view() {
-    var html = ui.header() +
+    var html = '' +
       '<div class="hero hero-sm">' +
         '<div class="hero-eye">Suchanfrage</div>' +
         '<h1>Erzähl uns von deinem Wunsch-Töff</h1>' +
@@ -162,7 +162,7 @@
 
       '</form>' +
       '</div>' +
-      ui.footer();
+      '';
 
     ui.render(html);
     wire();

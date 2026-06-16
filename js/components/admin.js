@@ -28,7 +28,7 @@
       allRows = res[0];
       var stats = res[1];
 
-      var html = ui.header() +
+      var html = '' +
         '<div class="admin-bar">' +
           '<div class="admin-bar-inner">' +
             '<div><h2 class="admin-title">Dashboard</h2>' +
@@ -52,7 +52,7 @@
 
           '<div class="table-card">' +
             '<table class="tbl"><thead><tr>' +
-              '<th>ID</th><th>Datum</th><th>Name</th><th>Region</th><th>Wunsch</th><th>Paket</th><th>Status</th>' +
+              '<th scope="col">ID</th><th scope="col">Datum</th><th scope="col">Name</th><th scope="col">Region</th><th scope="col">Wunsch</th><th scope="col">Paket</th><th scope="col">Status</th>' +
             '</tr></thead><tbody id="tbody"></tbody></table>' +
           '</div>' +
 
@@ -65,7 +65,7 @@
             '<input type="file" id="import-file" accept="application/json,.json" hidden>' +
           '</div>' +
         '</div>' +
-        ui.footer();
+        '';
 
       ui.render(html);
       refreshTable();
@@ -235,7 +235,7 @@
         return '<option value="' + ui.esc(s) + '"' + (s === rec.status ? ' selected' : '') + '>' + ui.esc(s) + '</option>';
       }).join('');
 
-      var html = ui.header() +
+      var html = '' +
         '<div class="admin-bar"><div class="admin-bar-inner">' +
           '<div><a class="back-link" href="#/admin">← Dashboard</a>' +
             '<h2 class="admin-title">' + ui.esc(v.vorname + ' ' + v.nachname) + '</h2>' +
@@ -281,7 +281,7 @@
             '</div>' +
           '</aside>' +
         '</div></div>' +
-        ui.footer();
+        '';
 
       ui.render(html);
       wireDetail(rec);
@@ -344,8 +344,8 @@
 
   /* ============== Helfer ============== */
   function notFound() {
-    ui.render(ui.header() + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
-      '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + ui.footer());
+    ui.render('' + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
+      '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + '');
   }
 
   function budgetText(v) {

@@ -8,7 +8,7 @@
 
   function view(ctx) {
     var path = (ctx && ctx.path) ? ctx.path : '';
-    var html = ui.header() +
+    var html = '' +
       '<div class="wrap wrap-narrow">' +
         '<div class="sec notfound">' +
           '<div class="nf-code">404</div>' +
@@ -20,7 +20,7 @@
           '</div>' +
         '</div>' +
       '</div>' +
-      ui.footer();
+      '';
     ui.render(html);
   }
 

@@ -17,8 +17,8 @@
   function view(params) {
     store.get(params.id).then(function (rec) {
       if (!rec) {
-        ui.render(ui.header() + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
-          '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + ui.footer());
+        ui.render('' + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
+          '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + '');
         return;
       }
 
@@ -28,7 +28,7 @@
       var s = result.summary;
       var top = deals[0];
 
-      var html = ui.header() +
+      var html = '' +
         '<div class="report-head"><div class="report-head-inner">' +
           '<div class="hero-eye">Deal-Report · Mockup</div>' +
           '<h1>Top-Deals für ' + ui.esc(v.vorname) + '</h1>' +
@@ -65,7 +65,7 @@
             '</div>' +
           '</div>' +
         '</div>' +
-        ui.footer();
+        '';
 
       ui.render(html);
       var p = global.document.getElementById('print-btn');
@@ -138,7 +138,7 @@
     }).join('');
     return '<div class="chart-card"><div class="chart-card-head">Vergleich auf einen Blick</div>' +
       '<div class="table-card no-shadow"><table class="tbl compare-tbl"><thead><tr>' +
-        '<th>Deal</th><th>Baujahr</th><th>km</th><th>Preis</th><th>Marktwert</th><th>Score</th><th>Risiko</th>' +
+        '<th scope="col">Deal</th><th scope="col">Baujahr</th><th scope="col">km</th><th scope="col">Preis</th><th scope="col">Marktwert</th><th scope="col">Score</th><th scope="col">Risiko</th>' +
       '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
   }
 

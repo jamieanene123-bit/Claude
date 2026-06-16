@@ -19,7 +19,7 @@
   }
 
   function view() {
-    var html = ui.header() +
+    var html = '' +
       '<div class="hero">' +
         '<div class="hero-eye">Motorrad-Kaufberatung · Schweiz &amp; DACH</div>' +
         '<h1>Den besten Deal finden — ohne Risiko.</h1>' +
@@ -58,7 +58,7 @@
         '</div>' +
       '</div>' +
 
-      ui.footer();
+      '';
 
     ui.render(html);
   }
