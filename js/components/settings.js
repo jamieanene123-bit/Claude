@@ -82,14 +82,14 @@
     });
 
     $('seed-btn').addEventListener('click', function () {
-      var samples = demoSamples();
+      var samples = global.TDS.data.demo.samples();
       Promise.all(samples.map(function (x) { return store.create(x); })).then(function () {
         toast.success('Beispieldaten geladen'); view();
       });
     });
     $('json-btn').addEventListener('click', function () {
       store.exportJSON().then(function (json) {
-        download('toeffdealscout-backup.json', json, 'application/json');
+        global.TDS.dom.download('toeffdealscout-backup.json', json, 'application/json');
         toast.success('Backup exportiert');
       });
     });
@@ -109,22 +109,6 @@
         store.clear().then(function () { toast.info('Alle Daten gelöscht'); view(); });
       }
     });
-  }
-
-  function download(filename, text, mime) {
-    var blob = new global.Blob([text], { type: mime || 'text/plain' });
-    var url = global.URL.createObjectURL(blob);
-    var a = global.document.createElement('a');
-    a.href = url; a.download = filename;
-    global.document.body.appendChild(a); a.click(); global.document.body.removeChild(a);
-    setTimeout(function () { global.URL.revokeObjectURL(url); }, 1000);
-  }
-
-  function demoSamples() {
-    return [
-      { vorname: 'Lena', nachname: 'Berger', email: 'lena.berger@example.ch', telefon: '+41 79 222 11 33', land: 'CH', landLabel: 'Schweiz', region: 'Zürich', ausweis: 'A2 (max. 35 kW)', erfahrung: 'Anfänger — erstes Motorrad', stil: ['Naked Bike'], modell: 'Yamaha MT-07', budget_von: '5000', budget_bis: '8000', waehrung: 'CHF', baujahr: '2019', km: "30'000 km", nutzung: 'Pendeln / Alltag', prioritaeten: 'MFK frisch, Serviceheft', paket: 'Scout' },
-      { vorname: 'Marco', nachname: 'Frei', email: 'marco.frei@example.ch', telefon: '', land: 'CH', landLabel: 'Schweiz', region: 'Bern', ausweis: 'A (unbeschränkt)', erfahrung: 'Erfahren', stil: ['Enduro / Adventure', 'Touring'], modell: '', budget_von: '8000', budget_bis: '12000', waehrung: 'CHF', baujahr: '2017', km: "50'000 km", nutzung: 'Längere Touren', prioritaeten: 'Koffersystem', paket: 'Premium' }
-    ];
   }
 
   global.TDS = global.TDS || {};

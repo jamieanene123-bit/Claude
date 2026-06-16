@@ -105,6 +105,21 @@
     });
   });
 
+  /* ---------- Demo-Daten ---------- */
+  describe('demo', function () {
+    it('liefert mehrere Beispieldatensätze', function () {
+      expect(TDS.data.demo.samples().length).toBeGreaterThanOrEqual(4);
+    });
+    it('jeder Datensatz hat ein Paket', function () {
+      var ok = TDS.data.demo.samples().every(function (s) { return !!s.paket; });
+      expect(ok).toBeTruthy();
+    });
+    it('liefert frische Kopien (keine geteilte Referenz)', function () {
+      var a = TDS.data.demo.samples(); a[0].vorname = 'XXX';
+      expect(TDS.data.demo.samples()[0].vorname).toBe('Lena');
+    });
+  });
+
   /* ---------- Store ---------- */
   describe('store', function () {
     function fresh() { TDS.store._useAdapter(TDS.store._memoryAdapter()); }

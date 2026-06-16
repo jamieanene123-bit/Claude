@@ -23,7 +23,7 @@ function load(f) { new Function(fs.readFileSync(path.join(ROOT, f), 'utf8')).cal
 
 [
   'js/core/events.js', 'js/core/format.js', 'js/core/charts.js',
-  'js/data/config.js', 'js/data/market.js',
+  'js/data/config.js', 'js/data/market.js', 'js/data/demo.js',
   'js/services/store.js', 'js/services/scout.js',
   'tests/framework.js', 'tests/suite.js'
 ].forEach(load);
