@@ -48,8 +48,14 @@
           '<div class="report-meta">' +
             '<span class="mono">' + ui.esc(rec.id) + '</span>' +
             '<span>Budget: ' + ui.esc(fmt.money(s.budgetVon, s.currency) + '–' + fmt.money(s.budgetBis, s.currency)) + '</span>' +
-            '<span>Ø Score: ' + s.avgScore.toFixed(1) + '</span>' +
+            '<span>' + ui.esc(s.region) + '</span>' +
             ui.statusBadge(rec.status) +
+          '</div>' +
+          '<div class="report-kpis">' +
+            '<div class="report-kpi"><b>' + s.count + '</b><span>Deals geprüft</span></div>' +
+            '<div class="report-kpi"><b>' + s.avgScore.toFixed(1) + '</b><span>Ø Deal-Score</span></div>' +
+            '<div class="report-kpi"><b>' + s.bestScore.toFixed(1) + '</b><span>Bester Score</span></div>' +
+            '<div class="report-kpi"><b>' + ui.esc(fmt.money(top.asking, top.currency)) + '</b><span>Bester Preis</span></div>' +
           '</div>' +
         '</div></div>' +
 

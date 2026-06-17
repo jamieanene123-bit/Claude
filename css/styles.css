@@ -878,3 +878,32 @@ footer a:hover { color:#fff; }
   .hero2::before { transform:none !important; }
   .step2:hover, .testi:hover { transform:none; }
 }
+
+/* ============================================================
+   R50–R56 — Token-/Elevation-/Politur-Refinements
+   ============================================================ */
+:root { --shadow-lg:0 24px 60px rgba(40,30,20,.16); }
+.hv-card-main { box-shadow:var(--shadow-lg); }
+
+/* Empfohlenes Paket hervorheben (Shopify-typisch) */
+.pricing-grid { align-items:stretch; }
+.price-card-rec { transform:translateY(-8px); }
+.price-card-rec:hover { transform:translateY(-11px); }
+@media(max-width:680px){ .price-card-rec{ transform:none; } .price-card-rec:hover{ transform:translateY(-3px); } }
+
+/* Anker-Offset wegen Sticky-Header */
+section[id], .section-head { scroll-margin-top:80px; }
+
+/* Dark-Mode-Feinschliff für neue Sektionen */
+[data-theme="dark"] .trust-logo { opacity:.9; }
+[data-theme="dark"] .hero2, [data-theme="dark"] .trust-strip { border-color:#2C2A26; }
+[data-theme="dark"] .newsletter input { background:rgba(255,255,255,.05); }
+[data-theme="dark"] .illu { filter:drop-shadow(0 12px 30px rgba(0,0,0,.4)); }
+
+/* Report-KPIs (Produktseiten-Gefühl) */
+.report-kpis { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.report-kpi { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 14px; box-shadow:var(--shadow-sm); }
+.report-kpi b { font-family:'Space Grotesk',sans-serif; font-size:18px; display:block; }
+.report-kpi span { font-size:11px; color:var(--hint); text-transform:uppercase; letter-spacing:.05em; }
+
+@media (prefers-reduced-motion: reduce) { .price-card-rec, .price-card-rec:hover { transform:none; } }
