@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Töff Deal Scout — Demo (Single-Page-App, Hash-Routing)
+# Sitemap: https://toeffdealscout.ch/sitemap.xml

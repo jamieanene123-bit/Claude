@@ -47,6 +47,8 @@ var html = '<!DOCTYPE html>\n<html lang="de">\n<head>\n' +
   '</head>\n<body>\n' +
   '<div id="app"></div>\n' +
   '<div id="route-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>\n' +
+  '<button id="to-top" class="to-top" type="button" aria-label="Nach oben scrollen" hidden>↑</button>\n' +
+  '<button id="install-btn" class="install-btn" type="button" hidden>App installieren</button>\n' +
   '<noscript><div style="max-width:560px;margin:64px auto;padding:0 20px;font-family:system-ui,sans-serif;text-align:center">' +
   '<h1>Töff Deal Scout</h1><p>Diese App braucht JavaScript. Bitte in Edge aktivieren.</p></div></noscript>\n' +
   '<script>\n' + js + '\n</' + 'script>\n' +

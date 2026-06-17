@@ -16,5 +16,10 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
+  ],
+  "shortcuts": [
+    { "name": "Anfrage stellen", "url": "./index.html#/form" },
+    { "name": "Admin-Dashboard", "url": "./index.html#/admin" },
+    { "name": "Pakete & Preise", "url": "./index.html#/preise" }
   ]
 }

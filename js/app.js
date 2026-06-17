@@ -75,6 +75,33 @@
   global.addEventListener('error', reportError);
   global.addEventListener('unhandledrejection', reportError);
 
+  // Scroll-to-Top-Button
+  var toTop = global.document.getElementById('to-top');
+  if (toTop) {
+    toTop.addEventListener('click', function () { global.scrollTo({ top: 0, behavior: 'smooth' }); });
+  }
+
+  // Online/Offline-Hinweis
+  global.addEventListener('offline', function () { if (TDS.toast) TDS.toast.info('Offline — App läuft weiter, Daten bleiben lokal.'); });
+  global.addEventListener('online', function () { if (TDS.toast) TDS.toast.success('Wieder online.'); });
+
+  // PWA: Installations-Angebot
+  var deferredPrompt = null;
+  var installBtn = global.document.getElementById('install-btn');
+  global.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); deferredPrompt = e;
+    if (installBtn) installBtn.hidden = false;
+  });
+  if (installBtn) installBtn.addEventListener('click', function () {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function () { deferredPrompt = null; installBtn.hidden = true; });
+  });
+  global.addEventListener('appinstalled', function () {
+    if (installBtn) installBtn.hidden = true;
+    if (TDS.toast) TDS.toast.success('App installiert — viel Spass!');
+  });
+
   router.start();
 
   // Verdichtende, "schwebende" Kopfzeile beim Scrollen.
@@ -82,6 +109,8 @@
   var onScroll = function () {
     var y = global.scrollY || global.pageYOffset || 0;
     global.document.documentElement.classList.toggle('is-scrolled', y > 8);
+    var tt = global.document.getElementById('to-top');
+    if (tt) tt.hidden = y < 600;
     // Parallax-Wert nur einmal pro Frame setzen (RAF-Debounce, weniger Recalcs).
     if (!rafPending) {
       rafPending = true;

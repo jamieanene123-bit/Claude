@@ -1073,3 +1073,16 @@ select.row-status.st-abgeschlossen { color:var(--muted); background:#EEEDEA; }
 .pager-pos { font-size:12px; color:#cdc6bc; }
 .btn-ghost.is-disabled { opacity:.4; pointer-events:none; }
 @media(max-width:560px){ .admin-bar-actions{ width:100%; } .detail-pager{ flex:1; justify-content:space-between; } }
+
+/* ============================================================
+   R99–R105 — Plattform-Controls (Scroll-Top, Install, 404-Links)
+   ============================================================ */
+.to-top, .install-btn { position:fixed; z-index:90; border:none; cursor:pointer; box-shadow:var(--shadow); transition:transform .2s var(--ease), opacity .2s var(--ease), background .15s; }
+.to-top { right:18px; bottom:18px; width:44px; height:44px; border-radius:50%; background:var(--black); color:#fff; font-size:18px; }
+.to-top:hover { transform:translateY(-3px); background:var(--accent); }
+.install-btn { left:18px; bottom:18px; padding:11px 16px; border-radius:99px; background:var(--accent); color:#fff; font-family:inherit; font-size:13px; font-weight:600; }
+.install-btn:hover { transform:translateY(-2px); background:var(--accent-h); }
+.nf-links { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:18px; font-size:13px; }
+.nf-links a { color:var(--accent); }
+@media print { .to-top, .install-btn { display:none !important; } }
+@media (prefers-reduced-motion: reduce) { .to-top:hover, .install-btn:hover { transform:none; } }

@@ -18,6 +18,10 @@
             '<a class="btn-primary" href="#/">Zur Startseite</a>' +
             '<a class="btn-ghost" href="#/form">Anfrage stellen</a>' +
           '</div>' +
+          '<div class="nf-links">' +
+            '<a href="#/preise">Preise</a><a href="#/ratgeber">Ratgeber</a>' +
+            '<a href="#/report/demo">Beispiel-Report</a><a href="#/kontakt">Kontakt</a>' +
+          '</div>' +
         '</div>' +
       '</div>' +
       '';
