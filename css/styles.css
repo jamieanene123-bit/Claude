@@ -1042,3 +1042,16 @@ input.is-ok { border-color:var(--ok); background-image:url("data:image/svg+xml,%
 @keyframes tdsShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
 .form-errors.shake { animation:tdsShake .4s var(--ease); }
 @media (prefers-reduced-motion: reduce) { .form-errors.shake { animation:none; } }
+
+/* ============================================================
+   R84–R90 — Report-Erweiterungen
+   ============================================================ */
+.score-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; font-size:11.5px; color:var(--muted); }
+.score-legend .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; }
+.dot-ok { background:var(--ok); } .dot-warn { background:var(--warn); } .dot-err { background:var(--err); }
+.pmeter { margin-top:12px; }
+.pmeter-track { position:relative; height:6px; background:linear-gradient(90deg, var(--ok-bg), var(--warn-bg), var(--err-bg)); border:1px solid var(--border); border-radius:99px; }
+.pmeter-mid { position:absolute; left:50%; top:-3px; bottom:-3px; width:2px; background:var(--hint); transform:translateX(-50%); }
+.pmeter-dot { position:absolute; top:50%; width:12px; height:12px; border-radius:50%; transform:translate(-50%,-50%); border:2px solid var(--surface); box-shadow:var(--shadow-sm); }
+.pmeter-labels { display:flex; justify-content:space-between; font-size:9.5px; color:var(--hint); margin-top:4px; text-transform:uppercase; letter-spacing:.04em; }
+@media print { .deal-card { break-inside:avoid; } .report-cols > * { break-inside:avoid; } .pmeter { display:none; } }

@@ -80,6 +80,7 @@
               : '<a class="btn-ghost" href="#/admin/' + ui.esc(rec.id) + '">← Zur Anfrage</a>') +
             '<div class="report-actions-right">' +
               '<button class="btn-ghost" id="share-report" type="button">Report-Link kopieren</button>' +
+              '<button class="btn-ghost" id="dl-btn" type="button">Als Text speichern</button>' +
               '<button class="btn-ghost" id="copy-btn" type="button">Zusammenfassung kopieren</button>' +
               '<button class="btn-ghost" id="print-btn" type="button">🖨 Drucken / PDF</button>' +
               '<a class="btn-primary" href="#/">Fertig</a>' +
@@ -99,6 +100,11 @@
             if (global.TDS.toast) global.TDS.toast.success('Link kopiert');
           }, function () { if (global.TDS.toast) global.TDS.toast.info('Link: ' + url); });
         } else if (global.TDS.toast) { global.TDS.toast.info('Link: ' + url); }
+      });
+      var dl = global.document.getElementById('dl-btn');
+      if (dl) dl.addEventListener('click', function () {
+        global.TDS.dom.download('toeffdealscout-report-' + rec.id + '.txt', summaryText(rec, deals, s), 'text/plain;charset=utf-8');
+        if (global.TDS.toast) global.TDS.toast.success('Report gespeichert');
       });
       var c = global.document.getElementById('copy-btn');
       if (c) c.addEventListener('click', function () {
@@ -128,7 +134,12 @@
     });
     return '<div class="chart-card overview-card">' +
       '<div class="chart-card-head">Deal-Score im Vergleich</div>' +
-      charts.bars(bars) + '</div>';
+      charts.bars(bars) +
+      '<div class="score-legend">' +
+        '<span><i class="dot dot-ok"></i> 7.5–10 Top-Deal</span>' +
+        '<span><i class="dot dot-warn"></i> 5.5–7.4 solide</span>' +
+        '<span><i class="dot dot-err"></i> &lt; 5.5 Vorsicht</span>' +
+      '</div></div>';
   }
 
   function gapLabel(d) {
@@ -153,6 +164,7 @@
         '<div class="deal-pricebox">' +
           '<div class="price-main">' + ui.esc(fmt.money(d.asking, d.currency)) + '</div>' +
           '<div class="price-sub">Marktwert Ø ' + ui.esc(fmt.money(d.marketValue, d.currency)) + ' · ' + gapLabel(d) + '</div>' +
+          priceMeter(d) +
         '</div>' +
 
         '<div class="deal-specs">' +
@@ -166,6 +178,18 @@
 
         '<div class="deal-args"><div class="deal-args-head">Verhandlungsargumente</div><ul>' + args + '</ul></div>' +
       '</div>';
+  }
+
+  // Mini-Balken: Angebot relativ zum Marktwert (links günstig, rechts teuer).
+  function priceMeter(d) {
+    var ratio = d.marketValue ? d.asking / d.marketValue : 1;
+    var pos = Math.max(4, Math.min(96, Math.round(ratio * 50))); // 50% = Marktwert
+    var col = d.valueGapPct > 1 ? 'var(--ok)' : d.valueGapPct < -1 ? 'var(--err)' : 'var(--warn)';
+    return '<div class="pmeter" title="Angebot vs. Marktwert">' +
+      '<div class="pmeter-track"><span class="pmeter-mid"></span>' +
+        '<span class="pmeter-dot" style="left:' + pos + '%;background:' + col + '"></span></div>' +
+      '<div class="pmeter-labels"><span>günstig</span><span>Markt</span><span>teuer</span></div>' +
+    '</div>';
   }
 
   function spec(label, val) {
