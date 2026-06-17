@@ -114,6 +114,30 @@
       var deals = TDS.scout.generate(req({ id: 'B', values: { budget_von: '500', budget_bis: '1000', stil: [] } })).deals;
       expect(deals.every(function (d) { return d.asking >= 500 && d.asking <= 1000; })).toBeTruthy();
     });
+    it('A1-Lizenz liefert 125er-Modelle', function () {
+      var deals = TDS.scout.generate(req({ id: 'A1', values: { ausweis: 'A1 (max. 11 kW)', stil: [], budget_von: '2000', budget_bis: '6000' } })).deals;
+      var ok = deals.every(function (d) {
+        var m = TDS.data.market.all().filter(function (x) { return x.model === d.model; })[0];
+        return m && m.a1;
+      });
+      expect(ok).toBeTruthy();
+    });
+    it('liefert Einschätzungs-Sicherheit im gültigen Bereich', function () {
+      TDS.scout.generate(req()).deals.forEach(function (d) {
+        expect(d.confidence).toBeGreaterThanOrEqual(40);
+        expect(d.confidence).toBeLessThanOrEqual(96);
+      });
+    });
+  });
+
+  describe('market (A1)', function () {
+    it('enthält A1-taugliche 125er', function () {
+      var a1 = TDS.data.market.all().filter(function (m) { return m.a1; });
+      expect(a1.length).toBeGreaterThanOrEqual(3);
+    });
+    it('hat jetzt mindestens 35 Modelle', function () {
+      expect(TDS.data.market.all().length).toBeGreaterThanOrEqual(35);
+    });
   });
 
   /* ---------- Demo-Daten ---------- */

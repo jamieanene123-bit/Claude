@@ -56,7 +56,18 @@
     { brand: 'Yamaha', model: 'Tracer 7', style: 'touring', kw: 54, a2: true, refYear: 2021, refPrice: 8200, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Koffer-Halterungen'] },
     { brand: 'Honda', model: 'NC750X', style: 'touring', kw: 43, a2: true, refYear: 2021, refPrice: 6800, depr: 0.07, reliability: 5, parts: 'tief', issues: ['DCT-Service (falls Automat)', 'Kettensatz'] },
     { brand: 'Kawasaki', model: 'Versys 1000', style: 'touring', kw: 88, a2: false, refYear: 2020, refPrice: 11500, depr: 0.08, reliability: 4, parts: 'mittel', issues: ['Kettensatz', 'Federbein'] },
-    { brand: 'BMW', model: 'R1250RT', style: 'touring', kw: 100, a2: false, refYear: 2020, refPrice: 18500, depr: 0.08, reliability: 4, parts: 'hoch', issues: ['Endantrieb', 'ESA-Fahrwerk-Elektronik'] }
+    { brand: 'BMW', model: 'R1250RT', style: 'touring', kw: 100, a2: false, refYear: 2020, refPrice: 18500, depr: 0.08, reliability: 4, parts: 'hoch', issues: ['Endantrieb', 'ESA-Fahrwerk-Elektronik'] },
+
+    // ---- A1 / 125 cc (Einsteiger) ----
+    { brand: 'Honda', model: 'CB125R', style: 'naked', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 4200, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Bremsbeläge'] },
+    { brand: 'KTM', model: '125 Duke', style: 'naked', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 4000, depr: 0.10, reliability: 3, parts: 'mittel', issues: ['Wasserpumpe', 'Software-Updates'] },
+    { brand: 'Yamaha', model: 'YZF-R125', style: 'sport', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 4800, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Sturzschäden prüfen', 'Kettensatz'] },
+    { brand: 'Aprilia', model: 'RS 125', style: 'sport', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 5000, depr: 0.09, reliability: 3, parts: 'hoch', issues: ['Elektronik', 'Service-Historie wichtig'] },
+    { brand: 'Yamaha', model: 'MT-125', style: 'naked', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 4600, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Reifenalter (DOT)'] },
+
+    // ---- weitere Modelle ----
+    { brand: 'Triumph', model: 'Trident 660', style: 'naked', kw: 60, a2: true, refYear: 2021, refPrice: 8200, depr: 0.08, reliability: 4, parts: 'mittel', issues: ['Kettensatz', 'Software-Update (Quickshifter)'] },
+    { brand: 'Honda', model: 'CRF1100 Africa Twin', style: 'adventure', kw: 75, a2: false, refYear: 2020, refPrice: 13500, depr: 0.07, reliability: 5, parts: 'hoch', issues: ['Sturz-/Geländespuren', 'DCT-Service (falls Automat)'] }
   ];
 
   function all() { return MODELS.slice(); }

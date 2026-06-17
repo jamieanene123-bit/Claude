@@ -69,6 +69,7 @@
     return {
       styles: anyStyle ? null : styles,
       a2required: kwCap <= 35,
+      a1required: kwCap <= 11,
       kwCap: kwCap,
       budgetVon: von, budgetBis: bis,
       currency: values.waehrung || cfg.currencyFor(values.land),
@@ -94,12 +95,15 @@
     if (c.styles) c.styles.forEach(function (s) { add(market.byStyle(s)); });
     else add(market.all());
 
-    // A2-Filter: a2-Flag = A2-tauglich bzw. drosselbar (volle kW egal).
-    if (c.a2required) pool = pool.filter(function (m) { return m.a2; });
+    // Lizenz-Filter: A1 (≤11 kW / 125er) ist strenger als A2 (drosselbar).
+    var licenseOk = c.a1required
+      ? function (m) { return m.a1; }
+      : (c.a2required ? function (m) { return m.a2; } : function () { return true; });
+    pool = pool.filter(licenseOk);
 
     // Auffüllen, falls nach Filter zu wenige Kandidaten.
     if (pool.length < count) {
-      add(c.a2required ? market.all().filter(function (m) { return m.a2; }) : market.all());
+      add(market.all().filter(licenseOk));
     }
 
     // Fit-Score: Budget-Nähe + Zuverlässigkeit + Modell-Treffer
@@ -199,7 +203,17 @@
     else if (riskLevel === 'high') reco = { level: 'warn', text: 'Erhöhtes Risiko — nur mit MFK/Gutachten kaufen.' };
     else reco = { level: 'ok', text: 'Brauchbar — Preis vor Ort nachverhandeln.' };
 
+    // Einschätzungs-Sicherheit (wie belastbar ist die Bewertung?)
+    var confidence = 62
+      + (serviceHistory ? 14 : 0)
+      + (model.reliability - 3) * 5
+      + (seller === 'Händler' ? 8 : 0)
+      - (cond.label === 'mit Mängeln' ? 12 : 0)
+      - (model.parts === 'hoch' ? 4 : 0);
+    confidence = Math.round(clamp(confidence, 40, 96));
+
     return {
+      confidence: confidence,
       rank: rank,
       brand: model.brand,
       model: model.model,

@@ -175,6 +175,7 @@
         '</div>' +
 
         '<div class="deal-reco reco-' + d.recommendation.level + '"><strong>Empfehlung:</strong> ' + ui.esc(d.recommendation.text) + '</div>' +
+        '<div class="deal-confidence" title="Wie belastbar ist diese Einschätzung?">Einschätzungs-Sicherheit: <b>' + d.confidence + '%</b></div>' +
 
         '<div class="deal-args"><div class="deal-args-head">Verhandlungsargumente</div><ul>' + args + '</ul></div>' +
       '</div>';
