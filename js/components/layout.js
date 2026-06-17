@@ -58,7 +58,10 @@
       announce() +
       '<header class="hdr">' +
         '<a class="logo" href="#/" aria-label="Töff Deal Scout — Startseite">Töff<em>Deal</em>Scout</a>' +
-        '<nav class="hdr-nav" aria-label="Hauptnavigation">' +
+        '<button class="nav-toggle" data-action="nav-toggle" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="primary-nav">' +
+          '<span class="nav-toggle-bars" aria-hidden="true"></span>' +
+        '</button>' +
+        '<nav class="hdr-nav" id="primary-nav" aria-label="Hauptnavigation">' +
           navLink('#/preise', 'preise', 'Preise', active) +
           navLink('#/form', 'form', 'Anfrage', active) +
           navLink('#/admin', 'admin', 'Admin', active) +

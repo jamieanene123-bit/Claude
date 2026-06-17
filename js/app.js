@@ -56,6 +56,11 @@
       var okMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
       if (TDS.toast) TDS.toast[okMail ? 'success' : 'info'](okMail ? 'Danke! Eingetragen (Demo).' : 'Bitte gültige E-Mail eingeben.');
       if (okMail && input) input.value = '';
+    } else if (action === 'nav-toggle') {
+      var openNow = !global.document.documentElement.classList.contains('nav-open');
+      global.document.documentElement.classList.toggle('nav-open', openNow);
+      t.setAttribute('aria-expanded', openNow ? 'true' : 'false');
+      t.setAttribute('aria-label', openNow ? 'Menü schliessen' : 'Menü öffnen');
     }
   });
 
@@ -92,6 +97,12 @@
   // Tastatur-Shortcuts: "/" fokussiert die Admin-Suche, "n" startet eine neue Anfrage.
   global.addEventListener('keydown', function (e) {
     var tag = (e.target && e.target.tagName || '').toLowerCase();
+    if (e.key === 'Escape' && global.document.documentElement.classList.contains('nav-open')) {
+      global.document.documentElement.classList.remove('nav-open');
+      var nt = global.document.querySelector('.nav-toggle');
+      if (nt) { nt.setAttribute('aria-expanded', 'false'); nt.setAttribute('aria-label', 'Menü öffnen'); nt.focus(); }
+      return;
+    }
     if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.key === '/') {
       var s = global.document.getElementById('search');
@@ -103,6 +114,10 @@
 
   // Höfliche Ansage des Seitenwechsels für Screenreader (ohne Fokus zu stehlen).
   function announceRoute() {
+    // Mobile-Menü bei jeder Navigation schliessen.
+    global.document.documentElement.classList.remove('nav-open');
+    var tgl = global.document.querySelector('.nav-toggle');
+    if (tgl) { tgl.setAttribute('aria-expanded', 'false'); tgl.setAttribute('aria-label', 'Menü öffnen'); }
     var h = global.location.hash || '#/';
     var label = 'Startseite';
     if (h.indexOf('#/form') === 0) label = 'Suchanfrage-Formular';

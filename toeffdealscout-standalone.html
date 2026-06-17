@@ -1007,6 +1007,41 @@ section[id], .section-head { scroll-margin-top:80px; }
 
 @media (prefers-reduced-motion: reduce) { .value-card:hover, .guide-card:hover { transform:none; } }
 
+/* ============================================================
+   R75 — Mobile-Navigation (Burger-Menü)
+   ============================================================ */
+.nav-toggle { display:none; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.16); width:40px; height:40px; border-radius:9px; cursor:pointer; position:relative; }
+.nav-toggle-bars, .nav-toggle-bars::before, .nav-toggle-bars::after { content:""; position:absolute; left:50%; width:18px; height:2px; background:#fff; border-radius:2px; transform:translateX(-50%); transition:transform .25s var(--ease), opacity .2s var(--ease); }
+.nav-toggle-bars { top:50%; margin-top:-1px; }
+.nav-toggle-bars::before { top:-6px; }
+.nav-toggle-bars::after { top:6px; }
+/* Burger -> X, wenn offen */
+.nav-open .nav-toggle-bars { background:transparent; }
+.nav-open .nav-toggle-bars::before { top:0; transform:translateX(-50%) rotate(45deg); }
+.nav-open .nav-toggle-bars::after { top:0; transform:translateX(-50%) rotate(-45deg); }
+
+@media (max-width:640px) {
+  .hdr { position:sticky; }
+  .nav-toggle { display:inline-flex; align-items:center; justify-content:center; }
+  .hdr-nav {
+    position:absolute; top:100%; left:0; right:0;
+    background:rgba(20,16,13,.97); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    flex-direction:column; align-items:stretch; gap:0;
+    padding:0 16px; max-height:0; overflow:hidden; opacity:0;
+    box-shadow:0 14px 30px rgba(0,0,0,.28);
+    transition:max-height .3s var(--ease), opacity .25s var(--ease), padding .3s var(--ease);
+  }
+  .nav-open .hdr-nav { max-height:340px; opacity:1; padding:8px 16px 16px; }
+  .hdr-nav .hdr-link { padding:13px 6px; font-size:15px; border-bottom:1px solid rgba(255,255,255,.08); }
+  .hdr-nav .hdr-link.active::after { display:none; }
+  .hdr-nav .hdr-link:not(.active)::after { display:none; }
+  .hdr-nav .icon-btn { margin-top:12px; align-self:flex-start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hdr-nav, .nav-toggle-bars, .nav-toggle-bars::before, .nav-toggle-bars::after { transition:none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -2432,7 +2467,10 @@ section[id], .section-head { scroll-margin-top:80px; }
       announce() +
       '<header class="hdr">' +
         '<a class="logo" href="#/" aria-label="Töff Deal Scout — Startseite">Töff<em>Deal</em>Scout</a>' +
-        '<nav class="hdr-nav" aria-label="Hauptnavigation">' +
+        '<button class="nav-toggle" data-action="nav-toggle" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="primary-nav">' +
+          '<span class="nav-toggle-bars" aria-hidden="true"></span>' +
+        '</button>' +
+        '<nav class="hdr-nav" id="primary-nav" aria-label="Hauptnavigation">' +
           navLink('#/preise', 'preise', 'Preise', active) +
           navLink('#/form', 'form', 'Anfrage', active) +
           navLink('#/admin', 'admin', 'Admin', active) +
@@ -4795,6 +4833,11 @@ section[id], .section-head { scroll-margin-top:80px; }
       var okMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
       if (TDS.toast) TDS.toast[okMail ? 'success' : 'info'](okMail ? 'Danke! Eingetragen (Demo).' : 'Bitte gültige E-Mail eingeben.');
       if (okMail && input) input.value = '';
+    } else if (action === 'nav-toggle') {
+      var openNow = !global.document.documentElement.classList.contains('nav-open');
+      global.document.documentElement.classList.toggle('nav-open', openNow);
+      t.setAttribute('aria-expanded', openNow ? 'true' : 'false');
+      t.setAttribute('aria-label', openNow ? 'Menü schliessen' : 'Menü öffnen');
     }
   });
 
@@ -4831,6 +4874,12 @@ section[id], .section-head { scroll-margin-top:80px; }
   // Tastatur-Shortcuts: "/" fokussiert die Admin-Suche, "n" startet eine neue Anfrage.
   global.addEventListener('keydown', function (e) {
     var tag = (e.target && e.target.tagName || '').toLowerCase();
+    if (e.key === 'Escape' && global.document.documentElement.classList.contains('nav-open')) {
+      global.document.documentElement.classList.remove('nav-open');
+      var nt = global.document.querySelector('.nav-toggle');
+      if (nt) { nt.setAttribute('aria-expanded', 'false'); nt.setAttribute('aria-label', 'Menü öffnen'); nt.focus(); }
+      return;
+    }
     if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.key === '/') {
       var s = global.document.getElementById('search');
@@ -4842,6 +4891,10 @@ section[id], .section-head { scroll-margin-top:80px; }
 
   // Höfliche Ansage des Seitenwechsels für Screenreader (ohne Fokus zu stehlen).
   function announceRoute() {
+    // Mobile-Menü bei jeder Navigation schliessen.
+    global.document.documentElement.classList.remove('nav-open');
+    var tgl = global.document.querySelector('.nav-toggle');
+    if (tgl) { tgl.setAttribute('aria-expanded', 'false'); tgl.setAttribute('aria-label', 'Menü öffnen'); }
     var h = global.location.hash || '#/';
     var label = 'Startseite';
     if (h.indexOf('#/form') === 0) label = 'Suchanfrage-Formular';
