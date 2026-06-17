@@ -79,6 +79,7 @@
               ? '<a class="btn-ghost" href="#/">← Zur Startseite</a>'
               : '<a class="btn-ghost" href="#/admin/' + ui.esc(rec.id) + '">← Zur Anfrage</a>') +
             '<div class="report-actions-right">' +
+              '<button class="btn-ghost" id="share-report" type="button">Report-Link kopieren</button>' +
               '<button class="btn-ghost" id="copy-btn" type="button">Zusammenfassung kopieren</button>' +
               '<button class="btn-ghost" id="print-btn" type="button">🖨 Drucken / PDF</button>' +
               '<a class="btn-primary" href="#/">Fertig</a>' +
@@ -90,6 +91,15 @@
       ui.render(html);
       var p = global.document.getElementById('print-btn');
       if (p) p.addEventListener('click', function () { global.print(); });
+      var shareBtn = global.document.getElementById('share-report');
+      if (shareBtn) shareBtn.addEventListener('click', function () {
+        var url = global.location.href;
+        if (global.navigator && global.navigator.clipboard) {
+          global.navigator.clipboard.writeText(url).then(function () {
+            if (global.TDS.toast) global.TDS.toast.success('Link kopiert');
+          }, function () { if (global.TDS.toast) global.TDS.toast.info('Link: ' + url); });
+        } else if (global.TDS.toast) { global.TDS.toast.info('Link: ' + url); }
+      });
       var c = global.document.getElementById('copy-btn');
       if (c) c.addEventListener('click', function () {
         var text = summaryText(rec, deals, s);

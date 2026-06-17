@@ -9,9 +9,14 @@
 
   var ui = global.TDS.ui;
   var cfg = global.TDS.config;
+  var scout = global.TDS.scout;
+  var fmt = global.TDS.format;
+
+  // Feste Demo-Anfrage für den Live-Hero (deterministisch via Scout-Engine).
+  var DEMO_REQUEST = { id: 'demo-hero', values: { land: 'CH', region: 'Zürich', ausweis: 'A (unbeschränkt)', stil: ['Naked Bike'], budget_von: 4000, budget_bis: 9000, waehrung: 'CHF', paket: 'Scout' } };
 
   /* ---------- Hero ---------- */
-  function heroVisual() {
+  function staticHeroCard() {
     // Dekoratives "Deal-Vorschau"-Kärtchen (rein visuell).
     return '<div class="hero-visual" aria-hidden="true">' +
       '<div class="hv-card hv-card-main">' +
@@ -27,18 +32,53 @@
     '</div>';
   }
 
+  // Live: ruft die echte Scout-Engine auf und zeigt das beste Beispiel-Angebot.
+  function heroVisual() {
+    var result = scout && scout.generate(DEMO_REQUEST);
+    var best = result && result.deals && result.deals[0];
+    if (!best) return staticHeroCard();
+    var cur = best.currency || 'CHF';
+    var scoreWidth = Math.round(best.score / 10 * 100);
+    var gapLabel = best.valueGapPct > 0
+      ? best.valueGapPct + '% unter Markt'
+      : (best.valueGapPct < 0 ? Math.abs(best.valueGapPct) + '% über Markt' : 'am Marktwert');
+    var savingAbs = Math.round(Math.abs(best.marketValue - best.asking));
+    return '<div class="hero-visual" aria-label="Beispiel Deal-Report (Live-Demo)">' +
+      '<div class="hv-card hv-card-main">' +
+        '<div class="hv-row">' +
+          '<span class="hv-rank">Bestes Angebot</span>' +
+          '<span class="hv-risk hv-risk-' + best.risk.level + '">Risiko: ' + ui.esc(best.risk.label) + '</span>' +
+        '</div>' +
+        '<div class="hv-model">' + ui.esc(best.brand + ' ' + best.model) + '</div>' +
+        '<div class="hv-meta">' + ui.esc(best.year + ' · ' + fmt.km(best.km) + ' · ' + best.seller) + '</div>' +
+        '<div class="hv-score">' +
+          '<div class="hv-gauge"><span>' + best.score.toFixed(1) + '</span></div>' +
+          '<div class="hv-price">' +
+            '<div class="hv-amount">' + ui.esc(fmt.money(best.asking, cur)) + '</div>' +
+            '<div class="hv-sub">' + ui.esc(gapLabel) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="hv-bar"><i style="width:' + scoreWidth + '%"></i></div>' +
+      '</div>' +
+      '<div class="hv-card hv-card-float hv-f1">Deal-Score ' + best.score.toFixed(1) + '</div>' +
+      '<div class="hv-card hv-card-float hv-f2">' +
+        (best.valueGapPct > 0 ? ui.esc(fmt.money(savingAbs, cur)) + ' Sparpotenzial' : 'Preis nahe Marktwert') +
+      '</div>' +
+    '</div>';
+  }
+
   function hero() {
     return '<section class="hero2">' +
       '<div class="hero2-inner">' +
         '<div class="hero2-text">' +
-          '<div class="hero-eye">Motorrad-Kaufberatung · Schweiz &amp; DACH</div>' +
+          '<div class="hero-eye">Motorrad-Kaufberatung · Schweiz &amp; DACH · Live-Demo</div>' +
           '<h1>Das beste Töff zum besten Preis — <span class="accentword">ohne Risiko</span>.</h1>' +
           '<p class="hero2-sub">Sag uns, welches Motorrad du suchst. Wir scannen den Markt und liefern einen klaren Report mit Deal-Score, Risiko-Check und Verhandlungsargumenten.</p>' +
           '<div class="hero2-cta">' +
             '<a class="btn-primary btn-lg" href="#/form">Kostenlos starten →</a>' +
             '<a class="btn-secondary btn-lg" href="#/report/demo">Beispiel-Report ansehen</a>' +
           '</div>' +
-          '<div class="hero2-trust"><span class="stars">★★★★★</span> 4.8/5 · Beta · kostenlos &amp; unverbindlich</div>' +
+          '<div class="hero2-trust"><span class="stars">★★★★★</span> Beta · kostenlos &amp; unverbindlich · keine Echtzahlungen</div>' +
         '</div>' +
         heroVisual() +
       '</div>' +
@@ -66,7 +106,9 @@
       ['4', 'Länder', 'CH · DE · AT · LI']
     ];
     return '<section class="stats-band" aria-label="Kennzahlen"><div class="wrap wrap-wide">' +
-      '<h2 class="sr-only">Kennzahlen</h2><div class="stats-grid">' +
+      '<h2 class="sr-only">Kennzahlen</h2>' +
+      '<div class="stats-demo-label">Beispielwerte · Demo</div>' +
+      '<div class="stats-grid">' +
       items.map(function (s) {
         return '<div class="stat"><div class="stat-num">' + ui.esc(s[0]) + '</div>' +
           '<div class="stat-label">' + ui.esc(s[1]) + '</div>' +
@@ -144,7 +186,7 @@
     ];
     return '<section class="wrap wrap-wide">' +
       '<div class="section-head"><div class="section-eye">Stimmen (Beispiel)</div>' +
-      '<h2 class="section-title">Käufer:innen, die sicher entschieden haben</h2></div>' +
+      '<h2 class="section-title">Was Käufer:innen sagen könnten (Beispielzitate)</h2></div>' +
       '<div class="testi-grid">' + data.map(function (t) {
         return '<figure class="testi"><div class="testi-stars">★★★★★</div>' +
           '<blockquote>' + ui.esc(t[0]) + '</blockquote>' +
@@ -202,9 +244,59 @@
     '</div></section>';
   }
 
+  /* ---------- Schnell-Score-Widget ---------- */
+  function quickScore() {
+    return '<section class="quick-score-section wrap wrap-narrow">' +
+      '<div class="sec qs-card">' +
+        '<div class="sec-head">Schnell-Check — passt der Preis?</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label class="lbl" for="qs-model">Modell</label>' +
+            '<input type="text" id="qs-model" placeholder="z.B. Yamaha MT-07"></div>' +
+          '<div class="field"><label class="lbl" for="qs-price">Angebotspreis (CHF)</label>' +
+            '<input type="text" id="qs-price" placeholder="z.B. 7200" inputmode="numeric"></div>' +
+        '</div>' +
+        '<button class="btn-primary" id="qs-btn" type="button">Score schätzen →</button>' +
+        '<div id="qs-result" class="qs-result" role="status"></div>' +
+      '</div>' +
+    '</section>';
+  }
+
+  function wireQuickScore() {
+    var btn = global.document.getElementById('qs-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var model = (global.document.getElementById('qs-model').value || '').trim();
+      var price = parseInt((global.document.getElementById('qs-price').value || '').replace(/[^\d]/g, ''), 10);
+      var res = global.document.getElementById('qs-result');
+      if (!model || !price) {
+        res.innerHTML = '<div class="qs-hint">Bitte Modell und Preis eingeben.</div>';
+        return;
+      }
+      var match = global.TDS.data.market.search(model)[0];
+      var values = { land: 'CH', region: 'Zürich', ausweis: 'A (unbeschränkt)', stil: [], modell: model,
+        budget_von: price, budget_bis: price, waehrung: 'CHF', paket: 'Quick-Check' };
+      var out = scout.generate({ id: 'qs-' + model + '-' + price, values: values });
+      var best = out.deals && out.deals[0];
+      if (!best) { res.innerHTML = '<div class="qs-hint">Keine Einschätzung möglich.</div>'; return; }
+      var col = best.score >= 7.5 ? 'var(--ok)' : best.score >= 5.5 ? 'var(--warn)' : 'var(--err)';
+      var gap = best.valueGapPct > 0 ? best.valueGapPct + '% unter Markt'
+        : (best.valueGapPct < 0 ? Math.abs(best.valueGapPct) + '% über Markt' : 'am Marktwert');
+      res.innerHTML = '<div class="qs-out">' +
+        '<div class="qs-badge" style="background:' + col + '">' + best.score.toFixed(1) + '</div>' +
+        '<div class="qs-info"><div class="qs-title">' + ui.esc(best.brand + ' ' + best.model) + '</div>' +
+          '<div class="qs-sub">Angebot ' + ui.esc(fmt.money(price, 'CHF')) + ' · Marktwert Ø ' +
+            ui.esc(fmt.money(best.marketValue, 'CHF')) + ' · ' + ui.esc(gap) + '</div>' +
+          (match ? '' : '<div class="qs-hint">Modell nicht im Demo-Katalog — grobe Schätzung.</div>') +
+        '</div>' +
+        '<a class="btn-primary" href="#/form">Vollständige Analyse →</a>' +
+      '</div>';
+    });
+  }
+
   function view() {
     var html =
       hero() +
+      quickScore() +
       trust() +
       stats() +
       featureBlock('score', 'Deal-Score', 'Objektiv erkennen, ob der Preis stimmt',
@@ -223,6 +315,7 @@
       finalCta();
 
     ui.render(html);
+    wireQuickScore();
   }
 
   global.TDS = global.TDS || {};

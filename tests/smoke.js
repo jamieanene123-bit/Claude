@@ -60,7 +60,7 @@ var core = coreFirst.concat(dir('js/core').filter(function (f) { return coreFirs
 var dataFirst = ['js/data/config.js', 'js/data/market.js'];
 var data = dataFirst.concat(dir('js/data').filter(function (f) { return dataFirst.indexOf(f) < 0; }));
 var services = dir('js/services');
-var comps = ['layout', 'landing', 'form', 'success', 'admin', 'report', 'settings', 'notfound'].map(function (n) { return 'js/components/' + n + '.js'; });
+var comps = ['layout', 'landing', 'form', 'success', 'admin', 'report', 'settings', 'datenschutz', 'agb', 'impressum', 'notfound'].map(function (n) { return 'js/components/' + n + '.js'; });
 var files = core.concat(data, services, ['js/router.js'], comps, ['js/app.js']);
 
 files.forEach(function (f) {
@@ -76,7 +76,10 @@ T.store.create({ vorname: 'A', nachname: 'B', email: 'a@e.ch', land: 'CH', landL
   [['landing', function () { T.views.landing(); }], ['form', function () { T.views.form(); }],
    ['success', function () { T.views.success({ id: id }); }], ['adminList', function () { T.views.adminList(); }],
    ['adminDetail', function () { T.views.adminDetail({ id: id }); }], ['report', function () { T.views.report({ id: id }); }],
-   ['settings', function () { T.views.settings(); }], ['notFound', function () { T.views.notFound({ path: '/x' }); }]]
+   ['settings', function () { T.views.settings(); }],
+   ['datenschutz', function () { T.views.datenschutz(); }], ['agb', function () { T.views.agb(); }], ['impressum', function () { T.views.impressum(); }],
+   ['report-demo', function () { T.views.report({ id: 'demo' }); }],
+   ['notFound', function () { T.views.notFound({ path: '/x' }); }]]
     .forEach(function (p) { try { p[1](); } catch (e) { errors.push(p[0] + ': ' + e.message); } });
   setTimeout(function () {
     var h = app.innerHTML;

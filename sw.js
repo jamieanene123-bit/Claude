@@ -3,7 +3,7 @@
  * Aktiv nur, wenn die App über http(s) ausgeliefert wird (nicht file://).
  * Strategie: cache-first für eigene Assets, Netzwerk als Fallback.
  */
-var CACHE = 'tds-shell-v2';
+var CACHE = 'tds-shell-v3';
 var ASSETS = [
   './',
   'index.html',
@@ -30,6 +30,9 @@ var ASSETS = [
   'js/components/admin.js',
   'js/components/report.js',
   'js/components/settings.js',
+  'js/components/datenschutz.js',
+  'js/components/agb.js',
+  'js/components/impressum.js',
   'js/components/notfound.js',
   'js/app.js'
 ];

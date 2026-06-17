@@ -156,6 +156,19 @@
           '<div class="err-msg" id="e-paket" style="margin-top:8px;">Bitte ein Paket auswählen.</div>' +
         '</div>' +
 
+        // DATENSCHUTZ (DSG)
+        '<div class="sec">' +
+          '<div class="field">' +
+            '<div class="chip-wrap chip-check" id="dsg-wrap">' +
+              '<input type="checkbox" id="dsg" name="dsg" value="1">' +
+              '<label for="dsg">Ich habe die <a href="#/datenschutz">Datenschutzerklärung</a> ' +
+                'gelesen und akzeptiere die Verarbeitung meiner Daten ausschliesslich lokal in ' +
+                'meinem Browser. <span class="req">*</span></label>' +
+            '</div>' +
+            '<div class="err-msg" id="e-dsg">Bitte Datenschutz bestätigen.</div>' +
+          '</div>' +
+        '</div>' +
+
         // SUBMIT
         '<div class="submit-area">' +
           '<button type="submit" class="btn-submit" id="submit-btn">Anfrage absenden →</button>' +
@@ -287,6 +300,13 @@
       $('e-paket').classList.add('show'); errs.push({ id: 'pkg-Quick-Check', label: 'Paket' });
     } else { $('e-paket').classList.remove('show'); }
 
+    var dsg = $('dsg');
+    if (!dsg || !dsg.checked) {
+      $('e-dsg').classList.add('show');
+      if (dsg) dsg.setAttribute('aria-invalid', 'true');
+      errs.push({ id: 'dsg', label: 'Datenschutz' });
+    } else { $('e-dsg').classList.remove('show'); dsg.removeAttribute('aria-invalid'); }
+
     if (errs.length > 0) { showErrorSummary(errs); return false; }
     clearErrorSummary();
     return true;
@@ -363,6 +383,7 @@
 
   /* ---------- Entwurf (Autosave/Resume) ---------- */
   var DRAFT_KEY = 'tds_draft_v1';
+  var draftTimer = null;
 
   function serializeDraft() {
     var vals = {};
@@ -489,6 +510,10 @@
     // Autosave + Fortschritt bei jeder Eingabe
     $('frm').addEventListener('input', function () { saveDraft(); updateProgress(); });
     $('frm').addEventListener('change', function () { saveDraft(); updateProgress(); });
+
+    // Zusätzliches Intervall-Autosave (alle 30 s); altes Intervall vermeiden.
+    if (draftTimer) clearInterval(draftTimer);
+    draftTimer = setInterval(saveDraft, 30000);
 
     // Fehler-Zusammenfassung: Klick springt zum Feld
     $('form-errors').addEventListener('click', function (e) {

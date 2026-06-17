@@ -31,6 +31,9 @@
   router.register('/admin/:id', views.adminDetail);
   router.register('/report/:id', views.report);
   router.register('/settings', views.settings);
+  router.register('/datenschutz', views.datenschutz);
+  router.register('/agb', views.agb);
+  router.register('/impressum', views.impressum);
   router.setNotFound(views.notFound);
 
   // Globale, delegierte Interaktionen (überleben Re-Renders von #app).
@@ -66,11 +69,18 @@
   router.start();
 
   // Verdichtende, "schwebende" Kopfzeile beim Scrollen.
+  var rafPending = false;
   var onScroll = function () {
     var y = global.scrollY || global.pageYOffset || 0;
     global.document.documentElement.classList.toggle('is-scrolled', y > 8);
-    // Sanfter Parallax-Wert für den Hero-Glow (CSS nutzt --sy).
-    global.document.documentElement.style.setProperty('--sy', y);
+    // Parallax-Wert nur einmal pro Frame setzen (RAF-Debounce, weniger Recalcs).
+    if (!rafPending) {
+      rafPending = true;
+      global.requestAnimationFrame(function () {
+        global.document.documentElement.style.setProperty('--sy', y);
+        rafPending = false;
+      });
+    }
   };
   global.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -96,6 +106,9 @@
     else if (h.indexOf('#/settings') === 0) label = 'Einstellungen';
     else if (h.indexOf('#/report') === 0) label = 'Deal-Report';
     else if (h.indexOf('#/success') === 0) label = 'Anfrage gesendet';
+    else if (h.indexOf('#/datenschutz') === 0) label = 'Datenschutzerklärung';
+    else if (h.indexOf('#/agb') === 0) label = 'AGB';
+    else if (h.indexOf('#/impressum') === 0) label = 'Impressum';
     global.document.title = 'Töff Deal Scout — ' + label;
     var a = global.document.getElementById('route-announcer');
     if (a) a.textContent = 'Seite: ' + label;

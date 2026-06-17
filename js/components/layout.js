@@ -44,7 +44,7 @@
 
   function announce() {
     return '<div class="annc">' +
-      '<span class="annc-text">🏍️ Beta · Schweiz &amp; DACH — die ganze Anfrage ist kostenlos.</span>' +
+      '<span class="annc-text">🏍️ Demo-Version · Keine echten Zahlungen · Daten nur lokal im Browser.</span>' +
       '<a class="annc-link" href="#/form">Jetzt starten →</a>' +
       '</div>';
   }
@@ -89,11 +89,11 @@
           '<div class="foot-cols">' +
             footCol('Produkt', [['Anfrage stellen', '#/form'], ['Beispiel-Report', '#/report/demo'], ['Pakete &amp; Preise', '#/']]) +
             footCol('Unternehmen', [['Über uns', '#/'], ['Admin', '#/admin'], ['Einstellungen', '#/settings']]) +
-            footCol('Rechtliches', [['Datenschutz (DSG)', '#/'], ['AGB', '#/'], ['Impressum', '#/']]) +
+            footCol('Rechtliches', [['Datenschutz (DSG)', '#/datenschutz'], ['AGB', '#/agb'], ['Impressum', '#/impressum']]) +
           '</div>' +
         '</div>' +
         '<div class="footer-bottom">' +
-          '<span>&copy; 2025 Töff Deal Scout · Zürich</span>' +
+          '<span>&copy; 2026 Töff Deal Scout · Zürich</span>' +
           '<span class="footer-note">Demo / MVP — Daten nur lokal im Browser (LocalStorage).</span>' +
           '<span class="foot-social"><a href="mailto:info@toeffdealscout.ch" aria-label="E-Mail">✉</a>' +
             '<a href="#/" aria-label="Instagram">◎</a><a href="#/" aria-label="X">✕</a></span>' +
