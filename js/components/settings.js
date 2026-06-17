@@ -59,7 +59,8 @@
           '<div class="sec">' +
             '<div class="sec-head">Über diese App</div>' +
             aboutRow('Produkt', 'Töff Deal Scout — Motorrad-Kaufberatung') +
-            aboutRow('Version', '0.3.0 · Demo / Frontend-only') +
+            aboutRow('Version', '0.4.0 · Demo / Frontend-only') +
+            aboutRow('Shortcuts', '„/" Suche · „n" neue Anfrage · „Esc" Menü schliessen') +
             aboutRow('Technik', 'Vanilla JS, Hash-Router, LocalStorage, kein Build') +
             aboutRow('Geplant', 'Backend-API, Login, Stripe/TWINT — Architektur ist vorbereitet') +
             '<a class="btn-ghost btn-block" href="#/admin" style="margin-top:12px;">Zum Admin-Dashboard</a>' +

@@ -1107,3 +1107,8 @@ select.row-status.st-abgeschlossen { color:var(--muted); background:#EEEDEA; }
    ============================================================ */
 .deal-confidence { font-size:11.5px; color:var(--muted); margin-bottom:12px; }
 .deal-confidence b { color:var(--text); }
+
+/* ============================================================
+   R120–R125 — Release-Politur
+   ============================================================ */
+.foot-top-link { font-size:11.5px; margin-right:6px; }

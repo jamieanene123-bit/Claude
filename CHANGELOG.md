@@ -2,6 +2,22 @@
 
 Alle nennenswerten Änderungen an Töff Deal Scout.
 
+## 0.4.0 — Council-Runden R75–R125
+
+- **Mobile-Navigation** (Burger-Menü, a11y-konform, Esc/Navigation schliessen)
+- **Formular:** Zeichenzähler, Live-Validierung (Häkchen), Zurücksetzen, dynamisches
+  Submit-Label (Paket + Preis), Telefon-Platzhalter je Land, Shake bei Fehlern
+- **Report:** Text-Download, Score-Legende, Preis-Meter (Angebot vs. Markt),
+  Druck-Umbrüche, Einschätzungs-Sicherheit je Deal
+- **Admin:** Inline-Statuswechsel, „neu seit letztem Besuch", Detail-Blättern,
+  E-Mail(s) kopieren, gefilterter CSV-Export, relative Datums-Tooltips
+- **Plattform:** Scroll-to-Top, Online/Offline-Hinweis, PWA-Installieren,
+  404-Quicklinks, Manifest-Shortcuts, robots.txt + sitemap.xml
+- **A11y/Design:** Scroll-Reveal für alle Marketing-/Unterseiten, Fortschritts-
+  `aria-live`, `prefers-contrast`-Modus, einheitlicher Tastatur-Fokus
+- **Engine:** A1/125er-Unterstützung (Lizenz-Filter), 7 neue Modelle (jetzt 38),
+  Einschätzungs-Sicherheit; Testabdeckung auf 35 Tests erhöht
+
 ## 0.3.0 — Council-Runden R39–R58 (Shopify-Style Redesign)
 
 Die Startseite wurde zu einer vollwertigen Marketing-Landingpage ausgebaut.

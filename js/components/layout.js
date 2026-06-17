@@ -101,7 +101,9 @@
         '<div class="footer-bottom">' +
           '<span>&copy; 2026 Töff Deal Scout · Zürich</span>' +
           '<span class="footer-note">Demo / MVP — Daten nur lokal im Browser (LocalStorage).</span>' +
-          '<span class="foot-social"><a href="mailto:info@toeffdealscout.ch" aria-label="E-Mail">✉</a>' +
+          '<span class="foot-social">' +
+            '<a href="#main" class="foot-top-link" aria-label="Nach oben">↑ Nach oben</a>' +
+            '<a href="mailto:info@toeffdealscout.ch" aria-label="E-Mail">✉</a>' +
             '<a href="#/" aria-label="Instagram">◎</a><a href="#/" aria-label="X">✕</a></span>' +
         '</div>' +
       '</footer>';

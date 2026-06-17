@@ -1042,11 +1042,97 @@ section[id], .section-head { scroll-margin-top:80px; }
   .hdr-nav, .nav-toggle-bars, .nav-toggle-bars::before, .nav-toggle-bars::after { transition:none !important; }
 }
 
+/* ============================================================
+   R76–R83 — Formular-Feinschliff
+   ============================================================ */
+.char-count { text-align:right; font-size:11px; color:var(--hint); margin-top:4px; }
+.btn-reset { display:block; width:100%; margin-top:10px; background:none; border:none; color:var(--muted); font:inherit; font-size:13px; cursor:pointer; padding:6px; border-radius:8px; transition:color .15s, background .15s; }
+.btn-reset:hover { color:var(--err); background:var(--err-bg); }
+/* Live-Valid: grünes Häkchen rechts im Feld */
+input.is-ok { border-color:var(--ok); background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%231A7A3F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3 8.5l3 3 7-7'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 11px center; padding-right:34px; }
+[data-theme="dark"] input.is-ok { background-color:var(--surface); }
+/* Shake bei Validierungsfehler */
+@keyframes tdsShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
+.form-errors.shake { animation:tdsShake .4s var(--ease); }
+@media (prefers-reduced-motion: reduce) { .form-errors.shake { animation:none; } }
+
+/* ============================================================
+   R84–R90 — Report-Erweiterungen
+   ============================================================ */
+.score-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; font-size:11.5px; color:var(--muted); }
+.score-legend .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; }
+.dot-ok { background:var(--ok); } .dot-warn { background:var(--warn); } .dot-err { background:var(--err); }
+.pmeter { margin-top:12px; }
+.pmeter-track { position:relative; height:6px; background:linear-gradient(90deg, var(--ok-bg), var(--warn-bg), var(--err-bg)); border:1px solid var(--border); border-radius:99px; }
+.pmeter-mid { position:absolute; left:50%; top:-3px; bottom:-3px; width:2px; background:var(--hint); transform:translateX(-50%); }
+.pmeter-dot { position:absolute; top:50%; width:12px; height:12px; border-radius:50%; transform:translate(-50%,-50%); border:2px solid var(--surface); box-shadow:var(--shadow-sm); }
+.pmeter-labels { display:flex; justify-content:space-between; font-size:9.5px; color:var(--hint); margin-top:4px; text-transform:uppercase; letter-spacing:.04em; }
+@media print { .deal-card { break-inside:avoid; } .report-cols > * { break-inside:avoid; } .pmeter { display:none; } }
+
+/* ============================================================
+   R91–R98 — Admin-Power (Inline-Status, neu-Markierung, Blättern)
+   ============================================================ */
+.row-status-wrap { margin:0; }
+.row-status-wrap::after { right:8px; font-size:10px; }
+select.row-status { padding:5px 24px 5px 10px; font-size:12px; font-weight:600; border-radius:99px; border-width:1px; cursor:pointer; min-width:130px; }
+select.row-status.st-neu { color:var(--accent-h); background:var(--accent-lite); }
+select.row-status.st-in-pruefung { color:#2B4FB7; background:#EEF2FB; }
+select.row-status.st-report-erstellt { color:var(--ok); background:var(--ok-bg); }
+select.row-status.st-abgeschlossen { color:var(--muted); background:#EEEDEA; }
+[data-theme="dark"] select.row-status { background:var(--surface); }
+.new-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent); margin-right:6px; vertical-align:middle; box-shadow:0 0 0 3px var(--accent-lite); }
+.admin-bar-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.detail-pager { display:inline-flex; align-items:center; gap:8px; }
+.pager-pos { font-size:12px; color:#cdc6bc; }
+.btn-ghost.is-disabled { opacity:.4; pointer-events:none; }
+@media(max-width:560px){ .admin-bar-actions{ width:100%; } .detail-pager{ flex:1; justify-content:space-between; } }
+
+/* ============================================================
+   R99–R105 — Plattform-Controls (Scroll-Top, Install, 404-Links)
+   ============================================================ */
+.to-top, .install-btn { position:fixed; z-index:90; border:none; cursor:pointer; box-shadow:var(--shadow); transition:transform .2s var(--ease), opacity .2s var(--ease), background .15s; }
+.to-top { right:18px; bottom:18px; width:44px; height:44px; border-radius:50%; background:var(--black); color:#fff; font-size:18px; }
+.to-top:hover { transform:translateY(-3px); background:var(--accent); }
+.install-btn { left:18px; bottom:18px; padding:11px 16px; border-radius:99px; background:var(--accent); color:#fff; font-family:inherit; font-size:13px; font-weight:600; }
+.install-btn:hover { transform:translateY(-2px); background:var(--accent-h); }
+.nf-links { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:18px; font-size:13px; }
+.nf-links a { color:var(--accent); }
+@media print { .to-top, .install-btn { display:none !important; } }
+@media (prefers-reduced-motion: reduce) { .to-top:hover, .install-btn:hover { transform:none; } }
+
+/* ============================================================
+   R106–R112 — Kontrast & Fokus-Konsistenz
+   ============================================================ */
+/* Höherer Kontrast, wenn vom System gewünscht */
+@media (prefers-contrast: more) {
+  :root { --border:#C9BEAD; --muted:#534C43; --hint:#6E655B; }
+  .hdr-link { color:#fff; }
+  .price-feats li, .fb-list li, .step2-text, .feat-text { color:var(--text); }
+}
+/* Einheitlicher Tastatur-Fokus auch auf neuen Controls */
+.to-top:focus-visible, .install-btn:focus-visible, .row-status:focus-visible,
+.faq-item summary:focus-visible, .seg-btn:focus-visible, .nav-toggle:focus-visible,
+.th-sort:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.faq-item summary:focus-visible { border-radius:6px; }
+
+/* ============================================================
+   R113–R119 — Engine: Einschätzungs-Sicherheit
+   ============================================================ */
+.deal-confidence { font-size:11.5px; color:var(--muted); margin-bottom:12px; }
+.deal-confidence b { color:var(--text); }
+
+/* ============================================================
+   R120–R125 — Release-Politur
+   ============================================================ */
+.foot-top-link { font-size:11.5px; margin-right:6px; }
+
 </style>
 </head>
 <body>
 <div id="app"></div>
 <div id="route-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+<button id="to-top" class="to-top" type="button" aria-label="Nach oben scrollen" hidden>↑</button>
+<button id="install-btn" class="install-btn" type="button" hidden>App installieren</button>
 <noscript><div style="max-width:560px;margin:64px auto;padding:0 20px;font-family:system-ui,sans-serif;text-align:center"><h1>Töff Deal Scout</h1><p>Diese App braucht JavaScript. Bitte in Edge aktivieren.</p></div></noscript>
 <script>
 /* ===== js/core/events.js ===== */
@@ -1392,9 +1478,12 @@ section[id], .section-head { scroll-margin-top:80px; }
 
   var REVEAL_SEL = [
     '.hero-eye', '.hero h1', '.hero p', '.hero .btn-primary', '.hero-pills',
-    '.section-eye', '.step', '.feat', '.sec', '.kpi', '.chart-card', '.deal-card',
+    '.section-eye', '.section-head', '.step', '.feat', '.sec', '.kpi', '.chart-card', '.deal-card',
     '.data-block', '.cta-band', '.table-card', '.toolbar', '.filters',
-    '.report-note', '.success', '.report-actions', '.report-cols > *', '.draft-bar'
+    '.report-note', '.success', '.report-actions', '.report-cols > *', '.draft-bar',
+    // Marketing-/Unterseiten
+    '.feature-block', '.step2', '.testi', '.price-card', '.value-card', '.guide-card',
+    '.stats-band', '.trust-strip', '.cta-hero', '.quick-score-section', '.report-kpis'
   ].join(',');
 
   var observer = null;
@@ -1707,7 +1796,18 @@ section[id], .section-head { scroll-margin-top:80px; }
     { brand: 'Yamaha', model: 'Tracer 7', style: 'touring', kw: 54, a2: true, refYear: 2021, refPrice: 8200, depr: 0.07, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Koffer-Halterungen'] },
     { brand: 'Honda', model: 'NC750X', style: 'touring', kw: 43, a2: true, refYear: 2021, refPrice: 6800, depr: 0.07, reliability: 5, parts: 'tief', issues: ['DCT-Service (falls Automat)', 'Kettensatz'] },
     { brand: 'Kawasaki', model: 'Versys 1000', style: 'touring', kw: 88, a2: false, refYear: 2020, refPrice: 11500, depr: 0.08, reliability: 4, parts: 'mittel', issues: ['Kettensatz', 'Federbein'] },
-    { brand: 'BMW', model: 'R1250RT', style: 'touring', kw: 100, a2: false, refYear: 2020, refPrice: 18500, depr: 0.08, reliability: 4, parts: 'hoch', issues: ['Endantrieb', 'ESA-Fahrwerk-Elektronik'] }
+    { brand: 'BMW', model: 'R1250RT', style: 'touring', kw: 100, a2: false, refYear: 2020, refPrice: 18500, depr: 0.08, reliability: 4, parts: 'hoch', issues: ['Endantrieb', 'ESA-Fahrwerk-Elektronik'] },
+
+    // ---- A1 / 125 cc (Einsteiger) ----
+    { brand: 'Honda', model: 'CB125R', style: 'naked', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 4200, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Bremsbeläge'] },
+    { brand: 'KTM', model: '125 Duke', style: 'naked', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 4000, depr: 0.10, reliability: 3, parts: 'mittel', issues: ['Wasserpumpe', 'Software-Updates'] },
+    { brand: 'Yamaha', model: 'YZF-R125', style: 'sport', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 4800, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Sturzschäden prüfen', 'Kettensatz'] },
+    { brand: 'Aprilia', model: 'RS 125', style: 'sport', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 5000, depr: 0.09, reliability: 3, parts: 'hoch', issues: ['Elektronik', 'Service-Historie wichtig'] },
+    { brand: 'Yamaha', model: 'MT-125', style: 'naked', kw: 11, a2: true, a1: true, refYear: 2021, refPrice: 4600, depr: 0.08, reliability: 5, parts: 'tief', issues: ['Kettensatz', 'Reifenalter (DOT)'] },
+
+    // ---- weitere Modelle ----
+    { brand: 'Triumph', model: 'Trident 660', style: 'naked', kw: 60, a2: true, refYear: 2021, refPrice: 8200, depr: 0.08, reliability: 4, parts: 'mittel', issues: ['Kettensatz', 'Software-Update (Quickshifter)'] },
+    { brand: 'Honda', model: 'CRF1100 Africa Twin', style: 'adventure', kw: 75, a2: false, refYear: 2020, refPrice: 13500, depr: 0.07, reliability: 5, parts: 'hoch', issues: ['Sturz-/Geländespuren', 'DCT-Service (falls Automat)'] }
   ];
 
   function all() { return MODELS.slice(); }
@@ -2099,6 +2199,7 @@ section[id], .section-head { scroll-margin-top:80px; }
     return {
       styles: anyStyle ? null : styles,
       a2required: kwCap <= 35,
+      a1required: kwCap <= 11,
       kwCap: kwCap,
       budgetVon: von, budgetBis: bis,
       currency: values.waehrung || cfg.currencyFor(values.land),
@@ -2124,12 +2225,15 @@ section[id], .section-head { scroll-margin-top:80px; }
     if (c.styles) c.styles.forEach(function (s) { add(market.byStyle(s)); });
     else add(market.all());
 
-    // A2-Filter: a2-Flag = A2-tauglich bzw. drosselbar (volle kW egal).
-    if (c.a2required) pool = pool.filter(function (m) { return m.a2; });
+    // Lizenz-Filter: A1 (≤11 kW / 125er) ist strenger als A2 (drosselbar).
+    var licenseOk = c.a1required
+      ? function (m) { return m.a1; }
+      : (c.a2required ? function (m) { return m.a2; } : function () { return true; });
+    pool = pool.filter(licenseOk);
 
     // Auffüllen, falls nach Filter zu wenige Kandidaten.
     if (pool.length < count) {
-      add(c.a2required ? market.all().filter(function (m) { return m.a2; }) : market.all());
+      add(market.all().filter(licenseOk));
     }
 
     // Fit-Score: Budget-Nähe + Zuverlässigkeit + Modell-Treffer
@@ -2229,7 +2333,17 @@ section[id], .section-head { scroll-margin-top:80px; }
     else if (riskLevel === 'high') reco = { level: 'warn', text: 'Erhöhtes Risiko — nur mit MFK/Gutachten kaufen.' };
     else reco = { level: 'ok', text: 'Brauchbar — Preis vor Ort nachverhandeln.' };
 
+    // Einschätzungs-Sicherheit (wie belastbar ist die Bewertung?)
+    var confidence = 62
+      + (serviceHistory ? 14 : 0)
+      + (model.reliability - 3) * 5
+      + (seller === 'Händler' ? 8 : 0)
+      - (cond.label === 'mit Mängeln' ? 12 : 0)
+      - (model.parts === 'hoch' ? 4 : 0);
+    confidence = Math.round(clamp(confidence, 40, 96));
+
     return {
+      confidence: confidence,
       rank: rank,
       brand: model.brand,
       model: model.model,
@@ -2510,7 +2624,9 @@ section[id], .section-head { scroll-margin-top:80px; }
         '<div class="footer-bottom">' +
           '<span>&copy; 2026 Töff Deal Scout · Zürich</span>' +
           '<span class="footer-note">Demo / MVP — Daten nur lokal im Browser (LocalStorage).</span>' +
-          '<span class="foot-social"><a href="mailto:info@toeffdealscout.ch" aria-label="E-Mail">✉</a>' +
+          '<span class="foot-social">' +
+            '<a href="#main" class="foot-top-link" aria-label="Nach oben">↑ Nach oben</a>' +
+            '<a href="mailto:info@toeffdealscout.ch" aria-label="E-Mail">✉</a>' +
             '<a href="#/" aria-label="Instagram">◎</a><a href="#/" aria-label="X">✕</a></span>' +
         '</div>' +
       '</footer>';
@@ -2568,6 +2684,8 @@ section[id], .section-head { scroll-margin-top:80px; }
   var SKEY = 'tds_admin_state';
   var state = { q: '', status: 'Alle', sort: 'date-desc', limit: PAGE };
   var allRows = [];
+  var seenTs = 0;       // Zeitpunkt des letzten Besuchs (für "neu"-Markierung)
+  var lastOrder = [];   // ID-Reihenfolge der aktuellen Tabelle (für Blättern im Detail)
 
   function $(id) { return global.document.getElementById(id); }
 
@@ -2585,6 +2703,7 @@ section[id], .section-head { scroll-margin-top:80px; }
   /* ============== LISTE / DASHBOARD ============== */
   function list() {
     loadState();
+    try { seenTs = parseInt(global.localStorage.getItem('tds_admin_seen'), 10) || 0; } catch (e) { seenTs = 0; }
     Promise.all([store.list(), store.stats()]).then(function (res) {
       allRows = res[0];
       var stats = res[1];
@@ -2623,6 +2742,7 @@ section[id], .section-head { scroll-margin-top:80px; }
 
           '<div class="admin-tools">' +
             '<button class="btn-ghost btn-sm" id="seed-btn">Beispieldaten laden</button>' +
+            '<button class="btn-ghost btn-sm" id="emails-btn">E-Mails kopieren</button>' +
             '<button class="btn-ghost btn-sm" id="csv-btn">CSV exportieren</button>' +
             '<button class="btn-ghost btn-sm" id="json-btn">JSON exportieren</button>' +
             '<button class="btn-ghost btn-sm" id="import-btn">JSON importieren</button>' +
@@ -2635,6 +2755,8 @@ section[id], .section-head { scroll-margin-top:80px; }
       ui.render(html);
       refreshTable();
       wireList();
+      // "Neu seit letztem Besuch" zurücksetzen (nach dem Markieren).
+      try { global.localStorage.setItem('tds_admin_seen', String(Date.now())); } catch (e) {}
     });
   }
 
@@ -2777,6 +2899,7 @@ section[id], .section-head { scroll-margin-top:80px; }
 
   function refreshTable() {
     var rows = applyFilters();
+    lastOrder = rows.map(function (r) { return r.id; }); // für Blättern im Detail
     var tbody = $('tbody');
     var more = $('table-more');
     if (more) more.innerHTML = '';
@@ -2795,17 +2918,27 @@ section[id], .section-head { scroll-margin-top:80px; }
     // Klicks werden delegiert (siehe wireList) — kein Listener pro Zeile.
   }
 
+  function statusSelect(r) {
+    var opts = cfg.STATUSES.map(function (s) {
+      return '<option value="' + ui.esc(s) + '"' + (s === r.status ? ' selected' : '') + '>' + ui.esc(s) + '</option>';
+    }).join('');
+    return '<div class="sel-wrap row-status-wrap"><select class="row-status ' + ui.statusClass(r.status) +
+      '" data-id="' + ui.esc(r.id) + '" aria-label="Status ändern">' + opts + '</select></div>';
+  }
+
+  function isNew(r) { return seenTs && new Date(r.createdAt).getTime() > seenTs; }
+
   function rowHtml(r) {
     var v = r.values;
     var wunsch = v.modell ? v.modell : (Array.isArray(v.stil) ? v.stil.join(', ') : v.stil || '–');
     return '<tr data-id="' + ui.esc(r.id) + '">' +
-      '<td class="mono">' + ui.esc(r.id) + '</td>' +
-      '<td>' + ui.esc(fmt.dateShort(r.createdAt)) + '</td>' +
+      '<td class="mono">' + (isNew(r) ? '<span class="new-dot" title="Neu seit deinem letzten Besuch"></span>' : '') + ui.esc(r.id) + '</td>' +
+      '<td title="' + ui.esc(fmt.relative(r.createdAt)) + '">' + ui.esc(fmt.dateShort(r.createdAt)) + '</td>' +
       '<td>' + ui.esc(v.vorname + ' ' + v.nachname) + '</td>' +
       '<td class="muted-cell">' + ui.esc(v.region || '–') + '</td>' +
       '<td class="muted-cell">' + ui.esc(wunsch) + '</td>' +
       '<td>' + ui.esc(v.paket || '–') + '</td>' +
-      '<td>' + ui.statusBadge(r.status) + '</td>' +
+      '<td>' + statusSelect(r) + '</td>' +
       '</tr>';
   }
 
@@ -2824,8 +2957,22 @@ section[id], .section-head { scroll-margin-top:80px; }
 
     // Ein delegierter Klick-Listener für alle (auch künftige) Tabellenzeilen.
     $('tbody').addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('.row-status-wrap')) return; // Inline-Status nicht navigieren
       var tr = e.target.closest && e.target.closest('tr[data-id]');
       if (tr) router.navigate('/admin/' + tr.getAttribute('data-id'));
+    });
+
+    // Inline-Statuswechsel direkt in der Tabelle.
+    $('tbody').addEventListener('change', function (e) {
+      var selEl = e.target.closest && e.target.closest('.row-status');
+      if (!selEl) return;
+      var id = selEl.getAttribute('data-id'), val = selEl.value;
+      store.updateStatus(id, val).then(function () {
+        allRows.forEach(function (r) { if (r.id === id) r.status = val; });
+        selEl.className = 'row-status ' + ui.statusClass(val);
+        if (toast) toast.success('Status: ' + val);
+        refreshTable();
+      });
     });
 
     Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (btn) {
@@ -2842,6 +2989,16 @@ section[id], .section-head { scroll-margin-top:80px; }
 
     $('seed-btn').addEventListener('click', function () {
       seedDemo().then(function () { toast.success('Beispieldaten geladen'); list(); });
+    });
+    $('emails-btn').addEventListener('click', function () {
+      var rows = applyFilters();
+      var mails = rows.map(function (r) { return r.values.email; }).filter(Boolean);
+      var unique = mails.filter(function (m, i) { return mails.indexOf(m) === i; });
+      var text = unique.join(', ');
+      var done = function () { toast.success(unique.length + ' E-Mail(s) kopiert'); };
+      if (!unique.length) { toast.info('Keine E-Mails vorhanden'); return; }
+      if (global.navigator && global.navigator.clipboard) global.navigator.clipboard.writeText(text).then(done, done);
+      else done();
     });
     $('csv-btn').addEventListener('click', exportCsv);
     $('json-btn').addEventListener('click', function () {
@@ -2886,12 +3043,24 @@ section[id], .section-head { scroll-margin-top:80px; }
       }).join('');
       var nextStatus = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1] || null;
 
+      var idx = lastOrder.indexOf(rec.id);
+      var prevId = idx > 0 ? lastOrder[idx - 1] : null;
+      var nextId = (idx >= 0 && idx < lastOrder.length - 1) ? lastOrder[idx + 1] : null;
+      var pager = (prevId || nextId)
+        ? '<div class="detail-pager">' +
+            (prevId ? '<a class="btn-ghost btn-sm" href="#/admin/' + ui.esc(prevId) + '">← Vorherige</a>' : '<span class="btn-ghost btn-sm is-disabled">← Vorherige</span>') +
+            '<span class="pager-pos">' + (idx + 1) + ' / ' + lastOrder.length + '</span>' +
+            (nextId ? '<a class="btn-ghost btn-sm" href="#/admin/' + ui.esc(nextId) + '">Nächste →</a>' : '<span class="btn-ghost btn-sm is-disabled">Nächste →</span>') +
+          '</div>'
+        : '';
+
       var html = '' +
         '<div class="admin-bar"><div class="admin-bar-inner">' +
           '<div><a class="back-link" href="#/admin">← Dashboard</a>' +
             '<h2 class="admin-title">' + ui.esc(v.vorname + ' ' + v.nachname) + '</h2>' +
             '<div class="admin-sub mono">' + ui.esc(rec.id) + ' · ' + ui.esc(fmt.date(rec.createdAt)) + '</div></div>' +
-          '<a class="btn-primary btn-sm" href="#/report/' + ui.esc(rec.id) + '">Report ansehen →</a>' +
+          '<div class="admin-bar-actions">' + pager +
+            '<a class="btn-primary btn-sm" href="#/report/' + ui.esc(rec.id) + '">Report ansehen →</a></div>' +
         '</div></div>' +
 
         '<div class="wrap wrap-wide"><div class="detail-grid">' +
@@ -2929,6 +3098,7 @@ section[id], .section-head { scroll-margin-top:80px; }
               '<div class="side-card-head">Aktionen</div>' +
               '<a class="btn-ghost btn-block" href="#/report/' + ui.esc(rec.id) + '">Report-Mockup öffnen</a>' +
               '<a class="btn-ghost btn-block" href="mailto:' + ui.esc(v.email) + '">E-Mail an Kunde</a>' +
+              '<button class="btn-ghost btn-block" id="copy-mail-btn" type="button">E-Mail-Adresse kopieren</button>' +
               '<button class="btn-ghost btn-block danger" id="del-btn">Anfrage löschen</button>' +
             '</div>' +
           '</aside>' +
@@ -2996,6 +3166,12 @@ section[id], .section-head { scroll-margin-top:80px; }
         detail({ id: rec.id });
       });
     });
+    var cm = $('copy-mail-btn');
+    if (cm) cm.addEventListener('click', function () {
+      var done = function () { if (toast) toast.success('E-Mail kopiert: ' + rec.values.email); };
+      if (global.navigator && global.navigator.clipboard) global.navigator.clipboard.writeText(rec.values.email).then(done, done);
+      else done();
+    });
     $('del-btn').addEventListener('click', function () {
       if (global.confirm('Diese Anfrage wirklich löschen?')) {
         store.remove(rec.id).then(function (removed) {
@@ -3038,7 +3214,8 @@ section[id], .section-head { scroll-margin-top:80px; }
       'Ausweis', 'Erfahrung', 'Stil', 'Modell', 'Budget von', 'Budget bis', 'Währung',
       'Baujahr ab', 'Max km', 'Nutzung', 'Prioritäten', 'Paket', 'Status'];
     var lines = [cols.map(csvCell).join(';')];
-    allRows.forEach(function (r) {
+    var rows = applyFilters(); // nur die aktuell gefilterten/gesuchten Zeilen
+    rows.forEach(function (r) {
       var v = r.values;
       lines.push([r.id, fmt.date(r.createdAt), v.vorname, v.nachname, v.email, v.telefon,
         v.landLabel || v.land, v.region, v.ausweis, v.erfahrung,
@@ -3047,7 +3224,7 @@ section[id], .section-head { scroll-margin-top:80px; }
         v.prioritaeten, v.paket, r.status].map(csvCell).join(';'));
     });
     global.TDS.dom.download('toeffdealscout-anfragen.csv', '﻿' + lines.join('\r\n'), 'text/csv;charset=utf-8');
-    toast.success('CSV exportiert (' + allRows.length + ' Zeilen)');
+    toast.success('CSV exportiert (' + rows.length + ' Zeilen)');
   }
 
   function seedDemo() {
@@ -3188,9 +3365,9 @@ section[id], .section-head { scroll-margin-top:80px; }
 
       '<div class="wrap">' +
       '<div id="draft-banner"></div>' +
-      '<div class="form-progress" aria-hidden="true">' +
-        '<div class="fp-bar"><span id="fp-fill" style="width:0"></span></div>' +
-        '<div class="fp-label" id="fp-label">0 % ausgefüllt</div>' +
+      '<div class="form-progress">' +
+        '<div class="fp-bar" aria-hidden="true"><span id="fp-fill" style="width:0"></span></div>' +
+        '<div class="fp-label" id="fp-label" aria-live="polite">0 % ausgefüllt</div>' +
       '</div>' +
       '<form id="frm" novalidate>' +
 
@@ -3294,7 +3471,8 @@ section[id], .section-head { scroll-margin-top:80px; }
             '</div>' +
           '</div>' +
           field('prioritaeten', 'Worauf legst du am meisten Wert?', false,
-            '<textarea id="prioritaeten" name="prioritaeten" placeholder="z.B. MFK frisch, Serviceheft vorhanden, keine Sturzschäden, privater Verkäufer bevorzugt …"></textarea>', '', 'optional') +
+            '<textarea id="prioritaeten" name="prioritaeten" maxlength="500" placeholder="z.B. MFK frisch, Serviceheft vorhanden, keine Sturzschäden, privater Verkäufer bevorzugt …"></textarea>' +
+            '<div class="char-count" id="prio-count" aria-live="polite">0 / 500</div>', '', 'optional') +
         '</div>' +
 
         // SEKTION 4: PAKET
@@ -3320,6 +3498,7 @@ section[id], .section-head { scroll-margin-top:80px; }
         // SUBMIT
         '<div class="submit-area">' +
           '<button type="submit" class="btn-submit" id="submit-btn">Anfrage absenden →</button>' +
+          '<button type="button" class="btn-reset" id="reset-btn">Formular zurücksetzen</button>' +
           '<div class="submit-note">' +
             'Nach dem Absenden erhältst du einen <strong id="payment-hint">Zahlungslink</strong> (Demo).<br>' +
             'Der Report wird innerhalb von 24h nach Zahlungseingang geliefert.<br>' +
@@ -3470,6 +3649,7 @@ section[id], .section-head { scroll-margin-top:80px; }
     box.innerHTML = '<strong>Bitte korrigiere ' + errs.length + (errs.length === 1 ? ' Angabe' : ' Angaben') + ':</strong>' +
       '<ul>' + links + '</ul>';
     box.hidden = false;
+    box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
     box.focus();
   }
 
@@ -3663,6 +3843,52 @@ section[id], .section-head { scroll-margin-top:80px; }
     if (draftTimer) clearInterval(draftTimer);
     draftTimer = setInterval(saveDraft, 30000);
 
+    // Zeichenzähler für die Prioritäten
+    function updPrioCount() {
+      var prio = $('prioritaeten'); if (!prio) return;
+      $('prio-count').textContent = (prio.value || '').length + ' / 500';
+    }
+    $('prioritaeten').addEventListener('input', updPrioCount);
+    updPrioCount();
+
+    // Live-Validierung (grünes Häkchen bei Verlassen, wenn gültig)
+    function liveValid(id, fn) {
+      var el = $(id); if (!el) return;
+      el.addEventListener('blur', function () {
+        if (el.value && fn(el.value)) { el.classList.add('is-ok'); el.classList.remove('err'); }
+        else { el.classList.remove('is-ok'); }
+      });
+    }
+    liveValid('vorname', function (v) { return v.trim() !== ''; });
+    liveValid('nachname', function (v) { return v.trim() !== ''; });
+    liveValid('email', function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); });
+
+    // Dynamisches Submit-Label (Paket + Preis)
+    function updateSubmitLabel() {
+      var btn = $('submit-btn'); if (!btn) return;
+      var sel = document.querySelector('input[name="paket"]:checked');
+      var cur = cfg.currencyFor($('land').value);
+      if (sel) {
+        var pkg = cfg.packageById(sel.value);
+        var price = pkg ? (pkg.price[cur] || pkg.price.CHF) : '';
+        btn.textContent = sel.value + ' · ' + cur + ' ' + price + ' — Anfrage absenden →';
+      } else { btn.textContent = 'Anfrage absenden →'; }
+    }
+    $('frm').addEventListener('change', updateSubmitLabel);
+    updateSubmitLabel();
+
+    // Formular zurücksetzen
+    $('reset-btn').addEventListener('click', function () {
+      if (!global.confirm('Formular wirklich zurücksetzen?')) return;
+      $('frm').reset();
+      clearDraft(); clearErrorSummary();
+      $('region').innerHTML = '<option value="">Zuerst Land wählen</option>';
+      fillBudgets('CHF');
+      ['vorname', 'nachname', 'email'].forEach(function (id) { $(id).classList.remove('is-ok', 'err'); });
+      updateProgress(); updPrioCount(); updateSubmitLabel();
+      if (global.TDS.toast) global.TDS.toast.info('Formular zurückgesetzt');
+    });
+
     // Fehler-Zusammenfassung: Klick springt zum Feld
     $('form-errors').addEventListener('click', function (e) {
       var a = e.target.closest && e.target.closest('a[data-target]');
@@ -3672,9 +3898,13 @@ section[id], .section-head { scroll-margin-top:80px; }
       if (t) { if (t.focus) t.focus(); if (t.scrollIntoView) t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     });
 
+    var PHONE_PH = { CH: '+41 79 123 45 67', DE: '+49 151 23456789', AT: '+43 660 1234567', LI: '+423 791 23 45' };
+
     $('land').addEventListener('change', function () {
       var land = this.value;
       var sel = $('region'), hint = $('quellen-hint');
+      $('telefon').placeholder = PHONE_PH[land] || '+41 79 123 45 67';
+      updateSubmitLabel();
       sel.innerHTML = '';
       if (!land) {
         sel.add(new Option('Zuerst Land wählen', ''));
@@ -4162,6 +4392,10 @@ section[id], .section-head { scroll-margin-top:80px; }
             '<a class="btn-primary" href="#/">Zur Startseite</a>' +
             '<a class="btn-ghost" href="#/form">Anfrage stellen</a>' +
           '</div>' +
+          '<div class="nf-links">' +
+            '<a href="#/preise">Preise</a><a href="#/ratgeber">Ratgeber</a>' +
+            '<a href="#/report/demo">Beispiel-Report</a><a href="#/kontakt">Kontakt</a>' +
+          '</div>' +
         '</div>' +
       '</div>' +
       '';
@@ -4370,6 +4604,7 @@ section[id], .section-head { scroll-margin-top:80px; }
               : '<a class="btn-ghost" href="#/admin/' + ui.esc(rec.id) + '">← Zur Anfrage</a>') +
             '<div class="report-actions-right">' +
               '<button class="btn-ghost" id="share-report" type="button">Report-Link kopieren</button>' +
+              '<button class="btn-ghost" id="dl-btn" type="button">Als Text speichern</button>' +
               '<button class="btn-ghost" id="copy-btn" type="button">Zusammenfassung kopieren</button>' +
               '<button class="btn-ghost" id="print-btn" type="button">🖨 Drucken / PDF</button>' +
               '<a class="btn-primary" href="#/">Fertig</a>' +
@@ -4389,6 +4624,11 @@ section[id], .section-head { scroll-margin-top:80px; }
             if (global.TDS.toast) global.TDS.toast.success('Link kopiert');
           }, function () { if (global.TDS.toast) global.TDS.toast.info('Link: ' + url); });
         } else if (global.TDS.toast) { global.TDS.toast.info('Link: ' + url); }
+      });
+      var dl = global.document.getElementById('dl-btn');
+      if (dl) dl.addEventListener('click', function () {
+        global.TDS.dom.download('toeffdealscout-report-' + rec.id + '.txt', summaryText(rec, deals, s), 'text/plain;charset=utf-8');
+        if (global.TDS.toast) global.TDS.toast.success('Report gespeichert');
       });
       var c = global.document.getElementById('copy-btn');
       if (c) c.addEventListener('click', function () {
@@ -4418,7 +4658,12 @@ section[id], .section-head { scroll-margin-top:80px; }
     });
     return '<div class="chart-card overview-card">' +
       '<div class="chart-card-head">Deal-Score im Vergleich</div>' +
-      charts.bars(bars) + '</div>';
+      charts.bars(bars) +
+      '<div class="score-legend">' +
+        '<span><i class="dot dot-ok"></i> 7.5–10 Top-Deal</span>' +
+        '<span><i class="dot dot-warn"></i> 5.5–7.4 solide</span>' +
+        '<span><i class="dot dot-err"></i> &lt; 5.5 Vorsicht</span>' +
+      '</div></div>';
   }
 
   function gapLabel(d) {
@@ -4443,6 +4688,7 @@ section[id], .section-head { scroll-margin-top:80px; }
         '<div class="deal-pricebox">' +
           '<div class="price-main">' + ui.esc(fmt.money(d.asking, d.currency)) + '</div>' +
           '<div class="price-sub">Marktwert Ø ' + ui.esc(fmt.money(d.marketValue, d.currency)) + ' · ' + gapLabel(d) + '</div>' +
+          priceMeter(d) +
         '</div>' +
 
         '<div class="deal-specs">' +
@@ -4453,9 +4699,22 @@ section[id], .section-head { scroll-margin-top:80px; }
         '</div>' +
 
         '<div class="deal-reco reco-' + d.recommendation.level + '"><strong>Empfehlung:</strong> ' + ui.esc(d.recommendation.text) + '</div>' +
+        '<div class="deal-confidence" title="Wie belastbar ist diese Einschätzung?">Einschätzungs-Sicherheit: <b>' + d.confidence + '%</b></div>' +
 
         '<div class="deal-args"><div class="deal-args-head">Verhandlungsargumente</div><ul>' + args + '</ul></div>' +
       '</div>';
+  }
+
+  // Mini-Balken: Angebot relativ zum Marktwert (links günstig, rechts teuer).
+  function priceMeter(d) {
+    var ratio = d.marketValue ? d.asking / d.marketValue : 1;
+    var pos = Math.max(4, Math.min(96, Math.round(ratio * 50))); // 50% = Marktwert
+    var col = d.valueGapPct > 1 ? 'var(--ok)' : d.valueGapPct < -1 ? 'var(--err)' : 'var(--warn)';
+    return '<div class="pmeter" title="Angebot vs. Marktwert">' +
+      '<div class="pmeter-track"><span class="pmeter-mid"></span>' +
+        '<span class="pmeter-dot" style="left:' + pos + '%;background:' + col + '"></span></div>' +
+      '<div class="pmeter-labels"><span>günstig</span><span>Markt</span><span>teuer</span></div>' +
+    '</div>';
   }
 
   function spec(label, val) {
@@ -4562,7 +4821,8 @@ section[id], .section-head { scroll-margin-top:80px; }
           '<div class="sec">' +
             '<div class="sec-head">Über diese App</div>' +
             aboutRow('Produkt', 'Töff Deal Scout — Motorrad-Kaufberatung') +
-            aboutRow('Version', '0.3.0 · Demo / Frontend-only') +
+            aboutRow('Version', '0.4.0 · Demo / Frontend-only') +
+            aboutRow('Shortcuts', '„/" Suche · „n" neue Anfrage · „Esc" Menü schliessen') +
             aboutRow('Technik', 'Vanilla JS, Hash-Router, LocalStorage, kein Build') +
             aboutRow('Geplant', 'Backend-API, Login, Stripe/TWINT — Architektur ist vorbereitet') +
             '<a class="btn-ghost btn-block" href="#/admin" style="margin-top:12px;">Zum Admin-Dashboard</a>' +
@@ -4852,6 +5112,33 @@ section[id], .section-head { scroll-margin-top:80px; }
   global.addEventListener('error', reportError);
   global.addEventListener('unhandledrejection', reportError);
 
+  // Scroll-to-Top-Button
+  var toTop = global.document.getElementById('to-top');
+  if (toTop) {
+    toTop.addEventListener('click', function () { global.scrollTo({ top: 0, behavior: 'smooth' }); });
+  }
+
+  // Online/Offline-Hinweis
+  global.addEventListener('offline', function () { if (TDS.toast) TDS.toast.info('Offline — App läuft weiter, Daten bleiben lokal.'); });
+  global.addEventListener('online', function () { if (TDS.toast) TDS.toast.success('Wieder online.'); });
+
+  // PWA: Installations-Angebot
+  var deferredPrompt = null;
+  var installBtn = global.document.getElementById('install-btn');
+  global.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); deferredPrompt = e;
+    if (installBtn) installBtn.hidden = false;
+  });
+  if (installBtn) installBtn.addEventListener('click', function () {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function () { deferredPrompt = null; installBtn.hidden = true; });
+  });
+  global.addEventListener('appinstalled', function () {
+    if (installBtn) installBtn.hidden = true;
+    if (TDS.toast) TDS.toast.success('App installiert — viel Spass!');
+  });
+
   router.start();
 
   // Verdichtende, "schwebende" Kopfzeile beim Scrollen.
@@ -4859,6 +5146,8 @@ section[id], .section-head { scroll-margin-top:80px; }
   var onScroll = function () {
     var y = global.scrollY || global.pageYOffset || 0;
     global.document.documentElement.classList.toggle('is-scrolled', y > 8);
+    var tt = global.document.getElementById('to-top');
+    if (tt) tt.hidden = y < 600;
     // Parallax-Wert nur einmal pro Frame setzen (RAF-Debounce, weniger Recalcs).
     if (!rafPending) {
       rafPending = true;
