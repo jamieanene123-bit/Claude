@@ -1055,3 +1055,21 @@ input.is-ok { border-color:var(--ok); background-image:url("data:image/svg+xml,%
 .pmeter-dot { position:absolute; top:50%; width:12px; height:12px; border-radius:50%; transform:translate(-50%,-50%); border:2px solid var(--surface); box-shadow:var(--shadow-sm); }
 .pmeter-labels { display:flex; justify-content:space-between; font-size:9.5px; color:var(--hint); margin-top:4px; text-transform:uppercase; letter-spacing:.04em; }
 @media print { .deal-card { break-inside:avoid; } .report-cols > * { break-inside:avoid; } .pmeter { display:none; } }
+
+/* ============================================================
+   R91–R98 — Admin-Power (Inline-Status, neu-Markierung, Blättern)
+   ============================================================ */
+.row-status-wrap { margin:0; }
+.row-status-wrap::after { right:8px; font-size:10px; }
+select.row-status { padding:5px 24px 5px 10px; font-size:12px; font-weight:600; border-radius:99px; border-width:1px; cursor:pointer; min-width:130px; }
+select.row-status.st-neu { color:var(--accent-h); background:var(--accent-lite); }
+select.row-status.st-in-pruefung { color:#2B4FB7; background:#EEF2FB; }
+select.row-status.st-report-erstellt { color:var(--ok); background:var(--ok-bg); }
+select.row-status.st-abgeschlossen { color:var(--muted); background:#EEEDEA; }
+[data-theme="dark"] select.row-status { background:var(--surface); }
+.new-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent); margin-right:6px; vertical-align:middle; box-shadow:0 0 0 3px var(--accent-lite); }
+.admin-bar-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.detail-pager { display:inline-flex; align-items:center; gap:8px; }
+.pager-pos { font-size:12px; color:#cdc6bc; }
+.btn-ghost.is-disabled { opacity:.4; pointer-events:none; }
+@media(max-width:560px){ .admin-bar-actions{ width:100%; } .detail-pager{ flex:1; justify-content:space-between; } }

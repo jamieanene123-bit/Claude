@@ -21,6 +21,8 @@
   var SKEY = 'tds_admin_state';
   var state = { q: '', status: 'Alle', sort: 'date-desc', limit: PAGE };
   var allRows = [];
+  var seenTs = 0;       // Zeitpunkt des letzten Besuchs (für "neu"-Markierung)
+  var lastOrder = [];   // ID-Reihenfolge der aktuellen Tabelle (für Blättern im Detail)
 
   function $(id) { return global.document.getElementById(id); }
 
@@ -38,6 +40,7 @@
   /* ============== LISTE / DASHBOARD ============== */
   function list() {
     loadState();
+    try { seenTs = parseInt(global.localStorage.getItem('tds_admin_seen'), 10) || 0; } catch (e) { seenTs = 0; }
     Promise.all([store.list(), store.stats()]).then(function (res) {
       allRows = res[0];
       var stats = res[1];
@@ -76,6 +79,7 @@
 
           '<div class="admin-tools">' +
             '<button class="btn-ghost btn-sm" id="seed-btn">Beispieldaten laden</button>' +
+            '<button class="btn-ghost btn-sm" id="emails-btn">E-Mails kopieren</button>' +
             '<button class="btn-ghost btn-sm" id="csv-btn">CSV exportieren</button>' +
             '<button class="btn-ghost btn-sm" id="json-btn">JSON exportieren</button>' +
             '<button class="btn-ghost btn-sm" id="import-btn">JSON importieren</button>' +
@@ -88,6 +92,8 @@
       ui.render(html);
       refreshTable();
       wireList();
+      // "Neu seit letztem Besuch" zurücksetzen (nach dem Markieren).
+      try { global.localStorage.setItem('tds_admin_seen', String(Date.now())); } catch (e) {}
     });
   }
 
@@ -230,6 +236,7 @@
 
   function refreshTable() {
     var rows = applyFilters();
+    lastOrder = rows.map(function (r) { return r.id; }); // für Blättern im Detail
     var tbody = $('tbody');
     var more = $('table-more');
     if (more) more.innerHTML = '';
@@ -248,17 +255,27 @@
     // Klicks werden delegiert (siehe wireList) — kein Listener pro Zeile.
   }
 
+  function statusSelect(r) {
+    var opts = cfg.STATUSES.map(function (s) {
+      return '<option value="' + ui.esc(s) + '"' + (s === r.status ? ' selected' : '') + '>' + ui.esc(s) + '</option>';
+    }).join('');
+    return '<div class="sel-wrap row-status-wrap"><select class="row-status ' + ui.statusClass(r.status) +
+      '" data-id="' + ui.esc(r.id) + '" aria-label="Status ändern">' + opts + '</select></div>';
+  }
+
+  function isNew(r) { return seenTs && new Date(r.createdAt).getTime() > seenTs; }
+
   function rowHtml(r) {
     var v = r.values;
     var wunsch = v.modell ? v.modell : (Array.isArray(v.stil) ? v.stil.join(', ') : v.stil || '–');
     return '<tr data-id="' + ui.esc(r.id) + '">' +
-      '<td class="mono">' + ui.esc(r.id) + '</td>' +
-      '<td>' + ui.esc(fmt.dateShort(r.createdAt)) + '</td>' +
+      '<td class="mono">' + (isNew(r) ? '<span class="new-dot" title="Neu seit deinem letzten Besuch"></span>' : '') + ui.esc(r.id) + '</td>' +
+      '<td title="' + ui.esc(fmt.relative(r.createdAt)) + '">' + ui.esc(fmt.dateShort(r.createdAt)) + '</td>' +
       '<td>' + ui.esc(v.vorname + ' ' + v.nachname) + '</td>' +
       '<td class="muted-cell">' + ui.esc(v.region || '–') + '</td>' +
       '<td class="muted-cell">' + ui.esc(wunsch) + '</td>' +
       '<td>' + ui.esc(v.paket || '–') + '</td>' +
-      '<td>' + ui.statusBadge(r.status) + '</td>' +
+      '<td>' + statusSelect(r) + '</td>' +
       '</tr>';
   }
 
@@ -277,8 +294,22 @@
 
     // Ein delegierter Klick-Listener für alle (auch künftige) Tabellenzeilen.
     $('tbody').addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('.row-status-wrap')) return; // Inline-Status nicht navigieren
       var tr = e.target.closest && e.target.closest('tr[data-id]');
       if (tr) router.navigate('/admin/' + tr.getAttribute('data-id'));
+    });
+
+    // Inline-Statuswechsel direkt in der Tabelle.
+    $('tbody').addEventListener('change', function (e) {
+      var selEl = e.target.closest && e.target.closest('.row-status');
+      if (!selEl) return;
+      var id = selEl.getAttribute('data-id'), val = selEl.value;
+      store.updateStatus(id, val).then(function () {
+        allRows.forEach(function (r) { if (r.id === id) r.status = val; });
+        selEl.className = 'row-status ' + ui.statusClass(val);
+        if (toast) toast.success('Status: ' + val);
+        refreshTable();
+      });
     });
 
     Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (btn) {
@@ -295,6 +326,16 @@
 
     $('seed-btn').addEventListener('click', function () {
       seedDemo().then(function () { toast.success('Beispieldaten geladen'); list(); });
+    });
+    $('emails-btn').addEventListener('click', function () {
+      var rows = applyFilters();
+      var mails = rows.map(function (r) { return r.values.email; }).filter(Boolean);
+      var unique = mails.filter(function (m, i) { return mails.indexOf(m) === i; });
+      var text = unique.join(', ');
+      var done = function () { toast.success(unique.length + ' E-Mail(s) kopiert'); };
+      if (!unique.length) { toast.info('Keine E-Mails vorhanden'); return; }
+      if (global.navigator && global.navigator.clipboard) global.navigator.clipboard.writeText(text).then(done, done);
+      else done();
     });
     $('csv-btn').addEventListener('click', exportCsv);
     $('json-btn').addEventListener('click', function () {
@@ -339,12 +380,24 @@
       }).join('');
       var nextStatus = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1] || null;
 
+      var idx = lastOrder.indexOf(rec.id);
+      var prevId = idx > 0 ? lastOrder[idx - 1] : null;
+      var nextId = (idx >= 0 && idx < lastOrder.length - 1) ? lastOrder[idx + 1] : null;
+      var pager = (prevId || nextId)
+        ? '<div class="detail-pager">' +
+            (prevId ? '<a class="btn-ghost btn-sm" href="#/admin/' + ui.esc(prevId) + '">← Vorherige</a>' : '<span class="btn-ghost btn-sm is-disabled">← Vorherige</span>') +
+            '<span class="pager-pos">' + (idx + 1) + ' / ' + lastOrder.length + '</span>' +
+            (nextId ? '<a class="btn-ghost btn-sm" href="#/admin/' + ui.esc(nextId) + '">Nächste →</a>' : '<span class="btn-ghost btn-sm is-disabled">Nächste →</span>') +
+          '</div>'
+        : '';
+
       var html = '' +
         '<div class="admin-bar"><div class="admin-bar-inner">' +
           '<div><a class="back-link" href="#/admin">← Dashboard</a>' +
             '<h2 class="admin-title">' + ui.esc(v.vorname + ' ' + v.nachname) + '</h2>' +
             '<div class="admin-sub mono">' + ui.esc(rec.id) + ' · ' + ui.esc(fmt.date(rec.createdAt)) + '</div></div>' +
-          '<a class="btn-primary btn-sm" href="#/report/' + ui.esc(rec.id) + '">Report ansehen →</a>' +
+          '<div class="admin-bar-actions">' + pager +
+            '<a class="btn-primary btn-sm" href="#/report/' + ui.esc(rec.id) + '">Report ansehen →</a></div>' +
         '</div></div>' +
 
         '<div class="wrap wrap-wide"><div class="detail-grid">' +
@@ -382,6 +435,7 @@
               '<div class="side-card-head">Aktionen</div>' +
               '<a class="btn-ghost btn-block" href="#/report/' + ui.esc(rec.id) + '">Report-Mockup öffnen</a>' +
               '<a class="btn-ghost btn-block" href="mailto:' + ui.esc(v.email) + '">E-Mail an Kunde</a>' +
+              '<button class="btn-ghost btn-block" id="copy-mail-btn" type="button">E-Mail-Adresse kopieren</button>' +
               '<button class="btn-ghost btn-block danger" id="del-btn">Anfrage löschen</button>' +
             '</div>' +
           '</aside>' +
@@ -449,6 +503,12 @@
         detail({ id: rec.id });
       });
     });
+    var cm = $('copy-mail-btn');
+    if (cm) cm.addEventListener('click', function () {
+      var done = function () { if (toast) toast.success('E-Mail kopiert: ' + rec.values.email); };
+      if (global.navigator && global.navigator.clipboard) global.navigator.clipboard.writeText(rec.values.email).then(done, done);
+      else done();
+    });
     $('del-btn').addEventListener('click', function () {
       if (global.confirm('Diese Anfrage wirklich löschen?')) {
         store.remove(rec.id).then(function (removed) {
@@ -491,7 +551,8 @@
       'Ausweis', 'Erfahrung', 'Stil', 'Modell', 'Budget von', 'Budget bis', 'Währung',
       'Baujahr ab', 'Max km', 'Nutzung', 'Prioritäten', 'Paket', 'Status'];
     var lines = [cols.map(csvCell).join(';')];
-    allRows.forEach(function (r) {
+    var rows = applyFilters(); // nur die aktuell gefilterten/gesuchten Zeilen
+    rows.forEach(function (r) {
       var v = r.values;
       lines.push([r.id, fmt.date(r.createdAt), v.vorname, v.nachname, v.email, v.telefon,
         v.landLabel || v.land, v.region, v.ausweis, v.erfahrung,
@@ -500,7 +561,7 @@
         v.prioritaeten, v.paket, r.status].map(csvCell).join(';'));
     });
     global.TDS.dom.download('toeffdealscout-anfragen.csv', '﻿' + lines.join('\r\n'), 'text/csv;charset=utf-8');
-    toast.success('CSV exportiert (' + allRows.length + ' Zeilen)');
+    toast.success('CSV exportiert (' + rows.length + ' Zeilen)');
   }
 
   function seedDemo() {
