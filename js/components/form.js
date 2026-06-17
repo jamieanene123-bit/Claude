@@ -40,9 +40,9 @@
 
       '<div class="wrap">' +
       '<div id="draft-banner"></div>' +
-      '<div class="form-progress" aria-hidden="true">' +
-        '<div class="fp-bar"><span id="fp-fill" style="width:0"></span></div>' +
-        '<div class="fp-label" id="fp-label">0 % ausgefüllt</div>' +
+      '<div class="form-progress">' +
+        '<div class="fp-bar" aria-hidden="true"><span id="fp-fill" style="width:0"></span></div>' +
+        '<div class="fp-label" id="fp-label" aria-live="polite">0 % ausgefüllt</div>' +
       '</div>' +
       '<form id="frm" novalidate>' +
 

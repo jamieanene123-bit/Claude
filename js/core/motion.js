@@ -23,9 +23,12 @@
 
   var REVEAL_SEL = [
     '.hero-eye', '.hero h1', '.hero p', '.hero .btn-primary', '.hero-pills',
-    '.section-eye', '.step', '.feat', '.sec', '.kpi', '.chart-card', '.deal-card',
+    '.section-eye', '.section-head', '.step', '.feat', '.sec', '.kpi', '.chart-card', '.deal-card',
     '.data-block', '.cta-band', '.table-card', '.toolbar', '.filters',
-    '.report-note', '.success', '.report-actions', '.report-cols > *', '.draft-bar'
+    '.report-note', '.success', '.report-actions', '.report-cols > *', '.draft-bar',
+    // Marketing-/Unterseiten
+    '.feature-block', '.step2', '.testi', '.price-card', '.value-card', '.guide-card',
+    '.stats-band', '.trust-strip', '.cta-hero', '.quick-score-section', '.report-kpis'
   ].join(',');
 
   var observer = null;
