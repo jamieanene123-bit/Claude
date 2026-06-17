@@ -146,7 +146,8 @@
             '</div>' +
           '</div>' +
           field('prioritaeten', 'Worauf legst du am meisten Wert?', false,
-            '<textarea id="prioritaeten" name="prioritaeten" placeholder="z.B. MFK frisch, Serviceheft vorhanden, keine Sturzschäden, privater Verkäufer bevorzugt …"></textarea>', '', 'optional') +
+            '<textarea id="prioritaeten" name="prioritaeten" maxlength="500" placeholder="z.B. MFK frisch, Serviceheft vorhanden, keine Sturzschäden, privater Verkäufer bevorzugt …"></textarea>' +
+            '<div class="char-count" id="prio-count" aria-live="polite">0 / 500</div>', '', 'optional') +
         '</div>' +
 
         // SEKTION 4: PAKET
@@ -172,6 +173,7 @@
         // SUBMIT
         '<div class="submit-area">' +
           '<button type="submit" class="btn-submit" id="submit-btn">Anfrage absenden →</button>' +
+          '<button type="button" class="btn-reset" id="reset-btn">Formular zurücksetzen</button>' +
           '<div class="submit-note">' +
             'Nach dem Absenden erhältst du einen <strong id="payment-hint">Zahlungslink</strong> (Demo).<br>' +
             'Der Report wird innerhalb von 24h nach Zahlungseingang geliefert.<br>' +
@@ -322,6 +324,7 @@
     box.innerHTML = '<strong>Bitte korrigiere ' + errs.length + (errs.length === 1 ? ' Angabe' : ' Angaben') + ':</strong>' +
       '<ul>' + links + '</ul>';
     box.hidden = false;
+    box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
     box.focus();
   }
 
@@ -515,6 +518,52 @@
     if (draftTimer) clearInterval(draftTimer);
     draftTimer = setInterval(saveDraft, 30000);
 
+    // Zeichenzähler für die Prioritäten
+    function updPrioCount() {
+      var prio = $('prioritaeten'); if (!prio) return;
+      $('prio-count').textContent = (prio.value || '').length + ' / 500';
+    }
+    $('prioritaeten').addEventListener('input', updPrioCount);
+    updPrioCount();
+
+    // Live-Validierung (grünes Häkchen bei Verlassen, wenn gültig)
+    function liveValid(id, fn) {
+      var el = $(id); if (!el) return;
+      el.addEventListener('blur', function () {
+        if (el.value && fn(el.value)) { el.classList.add('is-ok'); el.classList.remove('err'); }
+        else { el.classList.remove('is-ok'); }
+      });
+    }
+    liveValid('vorname', function (v) { return v.trim() !== ''; });
+    liveValid('nachname', function (v) { return v.trim() !== ''; });
+    liveValid('email', function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); });
+
+    // Dynamisches Submit-Label (Paket + Preis)
+    function updateSubmitLabel() {
+      var btn = $('submit-btn'); if (!btn) return;
+      var sel = document.querySelector('input[name="paket"]:checked');
+      var cur = cfg.currencyFor($('land').value);
+      if (sel) {
+        var pkg = cfg.packageById(sel.value);
+        var price = pkg ? (pkg.price[cur] || pkg.price.CHF) : '';
+        btn.textContent = sel.value + ' · ' + cur + ' ' + price + ' — Anfrage absenden →';
+      } else { btn.textContent = 'Anfrage absenden →'; }
+    }
+    $('frm').addEventListener('change', updateSubmitLabel);
+    updateSubmitLabel();
+
+    // Formular zurücksetzen
+    $('reset-btn').addEventListener('click', function () {
+      if (!global.confirm('Formular wirklich zurücksetzen?')) return;
+      $('frm').reset();
+      clearDraft(); clearErrorSummary();
+      $('region').innerHTML = '<option value="">Zuerst Land wählen</option>';
+      fillBudgets('CHF');
+      ['vorname', 'nachname', 'email'].forEach(function (id) { $(id).classList.remove('is-ok', 'err'); });
+      updateProgress(); updPrioCount(); updateSubmitLabel();
+      if (global.TDS.toast) global.TDS.toast.info('Formular zurückgesetzt');
+    });
+
     // Fehler-Zusammenfassung: Klick springt zum Feld
     $('form-errors').addEventListener('click', function (e) {
       var a = e.target.closest && e.target.closest('a[data-target]');
@@ -524,9 +573,13 @@
       if (t) { if (t.focus) t.focus(); if (t.scrollIntoView) t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
     });
 
+    var PHONE_PH = { CH: '+41 79 123 45 67', DE: '+49 151 23456789', AT: '+43 660 1234567', LI: '+423 791 23 45' };
+
     $('land').addEventListener('change', function () {
       var land = this.value;
       var sel = $('region'), hint = $('quellen-hint');
+      $('telefon').placeholder = PHONE_PH[land] || '+41 79 123 45 67';
+      updateSubmitLabel();
       sel.innerHTML = '';
       if (!land) {
         sel.add(new Option('Zuerst Land wählen', ''));

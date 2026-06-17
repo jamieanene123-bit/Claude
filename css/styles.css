@@ -1028,3 +1028,17 @@ section[id], .section-head { scroll-margin-top:80px; }
 @media (prefers-reduced-motion: reduce) {
   .hdr-nav, .nav-toggle-bars, .nav-toggle-bars::before, .nav-toggle-bars::after { transition:none !important; }
 }
+
+/* ============================================================
+   R76–R83 — Formular-Feinschliff
+   ============================================================ */
+.char-count { text-align:right; font-size:11px; color:var(--hint); margin-top:4px; }
+.btn-reset { display:block; width:100%; margin-top:10px; background:none; border:none; color:var(--muted); font:inherit; font-size:13px; cursor:pointer; padding:6px; border-radius:8px; transition:color .15s, background .15s; }
+.btn-reset:hover { color:var(--err); background:var(--err-bg); }
+/* Live-Valid: grünes Häkchen rechts im Feld */
+input.is-ok { border-color:var(--ok); background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%231A7A3F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3 8.5l3 3 7-7'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 11px center; padding-right:34px; }
+[data-theme="dark"] input.is-ok { background-color:var(--surface); }
+/* Shake bei Validierungsfehler */
+@keyframes tdsShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
+.form-errors.shake { animation:tdsShake .4s var(--ease); }
+@media (prefers-reduced-motion: reduce) { .form-errors.shake { animation:none; } }
