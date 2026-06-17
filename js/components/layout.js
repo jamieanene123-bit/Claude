@@ -31,6 +31,7 @@
   function activeKey() {
     var h = global.location.hash || '#/';
     if (h.indexOf('#/form') === 0) return 'form';
+    if (h.indexOf('#/preise') === 0) return 'preise';
     if (h.indexOf('#/admin') === 0) return 'admin';
     if (h.indexOf('#/settings') === 0) return 'settings';
     return 'home';
@@ -58,6 +59,7 @@
       '<header class="hdr">' +
         '<a class="logo" href="#/" aria-label="Töff Deal Scout — Startseite">Töff<em>Deal</em>Scout</a>' +
         '<nav class="hdr-nav" aria-label="Hauptnavigation">' +
+          navLink('#/preise', 'preise', 'Preise', active) +
           navLink('#/form', 'form', 'Anfrage', active) +
           navLink('#/admin', 'admin', 'Admin', active) +
           navLink('#/settings', 'settings', 'Einstellungen', active) +
@@ -87,8 +89,9 @@
             '</form>' +
           '</div>' +
           '<div class="foot-cols">' +
-            footCol('Produkt', [['Anfrage stellen', '#/form'], ['Beispiel-Report', '#/report/demo'], ['Pakete &amp; Preise', '#/']]) +
-            footCol('Unternehmen', [['Über uns', '#/'], ['Admin', '#/admin'], ['Einstellungen', '#/settings']]) +
+            footCol('Produkt', [['Anfrage stellen', '#/form'], ['Pakete & Preise', '#/preise'], ['Beispiel-Report', '#/report/demo']]) +
+            footCol('Unternehmen', [['Über uns', '#/ueber-uns'], ['Kontakt', '#/kontakt'], ['Admin', '#/admin'], ['Einstellungen', '#/settings']]) +
+            footCol('Ressourcen', [['Ratgeber', '#/ratgeber'], ['So funktioniert\'s', '#/ueber-uns'], ['FAQ', '#/preise']]) +
             footCol('Rechtliches', [['Datenschutz (DSG)', '#/datenschutz'], ['AGB', '#/agb'], ['Impressum', '#/impressum']]) +
           '</div>' +
         '</div>' +

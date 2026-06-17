@@ -960,6 +960,53 @@ section[id], .section-head { scroll-margin-top:80px; }
 .qs-title { font-weight:600; }
 .qs-sub { font-size:12.5px; color:var(--muted); margin-top:2px; }
 
+/* ============================================================
+   R65–R74 — Echte Unterseiten (Über uns, Preise, Kontakt, Ratgeber) + Footer 4-spaltig
+   ============================================================ */
+/* Footer: vier Spalten */
+.foot-cols { grid-template-columns:repeat(4,1fr); }
+@media(max-width:760px){ .foot-cols{ grid-template-columns:1fr 1fr; } }
+
+/* Über uns */
+.about-lead { font-size:15.5px; line-height:1.7; }
+.about-lead p { margin-bottom:12px; }
+.about-lead p:last-child { margin-bottom:0; }
+.values-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+@media(max-width:780px){ .values-grid{ grid-template-columns:1fr 1fr; } }
+@media(max-width:460px){ .values-grid{ grid-template-columns:1fr; } }
+.value-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:20px; box-shadow:var(--shadow-sm); transition:transform .28s var(--ease), box-shadow .28s var(--ease); }
+.value-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+.value-ico { font-size:24px; margin-bottom:10px; }
+.value-title { font-weight:600; margin-bottom:5px; }
+.value-text { font-size:13px; color:var(--muted); line-height:1.55; }
+
+/* Preise: Vergleichstabelle */
+.cmp-table th[scope="row"] { text-align:left; font-weight:500; }
+.cmp-table thead th { font-family:'Space Grotesk',sans-serif; }
+.cmp-table td { text-align:center; }
+.cmp-table .cmp-yes { color:var(--ok); font-weight:700; }
+.cmp-table .cmp-no { color:var(--hint); }
+.cmp-table tbody tr:hover { background:var(--accent-lite); }
+
+/* Kontakt */
+.contact-rows { display:grid; gap:14px; }
+.contact-row { display:flex; gap:14px; align-items:flex-start; }
+.contact-ico { width:40px; height:40px; border-radius:12px; background:var(--accent-lite); color:var(--accent); display:grid; place-items:center; font-size:18px; flex-shrink:0; }
+.contact-k { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--hint); }
+.contact-row a { color:var(--accent); }
+
+/* Ratgeber */
+.guide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+@media(max-width:820px){ .guide-grid{ grid-template-columns:1fr 1fr; } }
+@media(max-width:520px){ .guide-grid{ grid-template-columns:1fr; } }
+.guide-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:22px; box-shadow:var(--shadow-sm); transition:transform .28s var(--ease), box-shadow .28s var(--ease); }
+.guide-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+.guide-tag { display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--accent); background:var(--accent-lite); padding:3px 9px; border-radius:99px; margin-bottom:10px; }
+.guide-title { font-family:var(--font-display); font-size:18px; line-height:1.25; margin-bottom:8px; }
+.guide-text { font-size:13.5px; color:var(--muted); line-height:1.6; margin-bottom:6px; }
+
+@media (prefers-reduced-motion: reduce) { .value-card:hover, .guide-card:hover { transform:none; } }
+
 </style>
 </head>
 <body>
@@ -2358,6 +2405,7 @@ section[id], .section-head { scroll-margin-top:80px; }
   function activeKey() {
     var h = global.location.hash || '#/';
     if (h.indexOf('#/form') === 0) return 'form';
+    if (h.indexOf('#/preise') === 0) return 'preise';
     if (h.indexOf('#/admin') === 0) return 'admin';
     if (h.indexOf('#/settings') === 0) return 'settings';
     return 'home';
@@ -2385,6 +2433,7 @@ section[id], .section-head { scroll-margin-top:80px; }
       '<header class="hdr">' +
         '<a class="logo" href="#/" aria-label="Töff Deal Scout — Startseite">Töff<em>Deal</em>Scout</a>' +
         '<nav class="hdr-nav" aria-label="Hauptnavigation">' +
+          navLink('#/preise', 'preise', 'Preise', active) +
           navLink('#/form', 'form', 'Anfrage', active) +
           navLink('#/admin', 'admin', 'Admin', active) +
           navLink('#/settings', 'settings', 'Einstellungen', active) +
@@ -2414,8 +2463,9 @@ section[id], .section-head { scroll-margin-top:80px; }
             '</form>' +
           '</div>' +
           '<div class="foot-cols">' +
-            footCol('Produkt', [['Anfrage stellen', '#/form'], ['Beispiel-Report', '#/report/demo'], ['Pakete &amp; Preise', '#/']]) +
-            footCol('Unternehmen', [['Über uns', '#/'], ['Admin', '#/admin'], ['Einstellungen', '#/settings']]) +
+            footCol('Produkt', [['Anfrage stellen', '#/form'], ['Pakete & Preise', '#/preise'], ['Beispiel-Report', '#/report/demo']]) +
+            footCol('Unternehmen', [['Über uns', '#/ueber-uns'], ['Kontakt', '#/kontakt'], ['Admin', '#/admin'], ['Einstellungen', '#/settings']]) +
+            footCol('Ressourcen', [['Ratgeber', '#/ratgeber'], ['So funktioniert\'s', '#/ueber-uns'], ['FAQ', '#/preise']]) +
             footCol('Rechtliches', [['Datenschutz (DSG)', '#/datenschutz'], ['AGB', '#/agb'], ['Impressum', '#/impressum']]) +
           '</div>' +
         '</div>' +
@@ -4383,6 +4433,10 @@ section[id], .section-head { scroll-margin-top:80px; }
   router.register('/datenschutz', views.datenschutz);
   router.register('/agb', views.agb);
   router.register('/impressum', views.impressum);
+  router.register('/preise', views.preise);
+  router.register('/ueber-uns', views.ueberUns);
+  router.register('/kontakt', views.kontakt);
+  router.register('/ratgeber', views.ratgeber);
   router.setNotFound(views.notFound);
 
   // Globale, delegierte Interaktionen (überleben Re-Renders von #app).
@@ -4458,6 +4512,10 @@ section[id], .section-head { scroll-margin-top:80px; }
     else if (h.indexOf('#/datenschutz') === 0) label = 'Datenschutzerklärung';
     else if (h.indexOf('#/agb') === 0) label = 'AGB';
     else if (h.indexOf('#/impressum') === 0) label = 'Impressum';
+    else if (h.indexOf('#/preise') === 0) label = 'Pakete & Preise';
+    else if (h.indexOf('#/ueber-uns') === 0) label = 'Über uns';
+    else if (h.indexOf('#/kontakt') === 0) label = 'Kontakt';
+    else if (h.indexOf('#/ratgeber') === 0) label = 'Ratgeber';
     global.document.title = 'Töff Deal Scout — ' + label;
     var a = global.document.getElementById('route-announcer');
     if (a) a.textContent = 'Seite: ' + label;

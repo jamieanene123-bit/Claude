@@ -34,6 +34,10 @@
   router.register('/datenschutz', views.datenschutz);
   router.register('/agb', views.agb);
   router.register('/impressum', views.impressum);
+  router.register('/preise', views.preise);
+  router.register('/ueber-uns', views.ueberUns);
+  router.register('/kontakt', views.kontakt);
+  router.register('/ratgeber', views.ratgeber);
   router.setNotFound(views.notFound);
 
   // Globale, delegierte Interaktionen (überleben Re-Renders von #app).
@@ -109,6 +113,10 @@
     else if (h.indexOf('#/datenschutz') === 0) label = 'Datenschutzerklärung';
     else if (h.indexOf('#/agb') === 0) label = 'AGB';
     else if (h.indexOf('#/impressum') === 0) label = 'Impressum';
+    else if (h.indexOf('#/preise') === 0) label = 'Pakete & Preise';
+    else if (h.indexOf('#/ueber-uns') === 0) label = 'Über uns';
+    else if (h.indexOf('#/kontakt') === 0) label = 'Kontakt';
+    else if (h.indexOf('#/ratgeber') === 0) label = 'Ratgeber';
     global.document.title = 'Töff Deal Scout — ' + label;
     var a = global.document.getElementById('route-announcer');
     if (a) a.textContent = 'Seite: ' + label;
