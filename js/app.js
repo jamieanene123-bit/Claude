@@ -43,6 +43,12 @@
       var dark = TDS.theme.current() === 'dark';
       t.setAttribute('aria-pressed', dark ? 'true' : 'false');
       if (TDS.toast) TDS.toast.info('Design: ' + (dark ? 'Dunkel' : 'Hell'));
+    } else if (action === 'newsletter') {
+      var input = global.document.getElementById('nl-email');
+      var val = input && input.value ? input.value.trim() : '';
+      var okMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+      if (TDS.toast) TDS.toast[okMail ? 'success' : 'info'](okMail ? 'Danke! Eingetragen (Demo).' : 'Bitte gültige E-Mail eingeben.');
+      if (okMail && input) input.value = '';
     }
   });
 

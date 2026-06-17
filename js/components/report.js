@@ -14,14 +14,24 @@
   var charts = global.TDS.charts;
   var fmt = global.TDS.format;
 
+  function demoRecord() {
+    var v = global.TDS.data.demo.samples()[0];
+    return { id: 'demo', createdAt: new Date().toISOString(), status: 'Report erstellt', values: v };
+  }
+
   function view(params) {
+    if (params.id === 'demo') { renderReport(demoRecord()); return; }
     store.get(params.id).then(function (rec) {
       if (!rec) {
         ui.render('' + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
           '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + '');
         return;
       }
+      renderReport(rec);
+    });
+  }
 
+  function renderReport(rec) {
       var v = rec.values;
       var result = scout.generate(rec);
       var deals = result.deals;
@@ -59,7 +69,9 @@
           '</div>' +
 
           '<div class="report-actions">' +
-            '<a class="btn-ghost" href="#/admin/' + ui.esc(rec.id) + '">← Zur Anfrage</a>' +
+            (rec.id === 'demo'
+              ? '<a class="btn-ghost" href="#/">← Zur Startseite</a>'
+              : '<a class="btn-ghost" href="#/admin/' + ui.esc(rec.id) + '">← Zur Anfrage</a>') +
             '<div class="report-actions-right">' +
               '<button class="btn-ghost" id="copy-btn" type="button">Zusammenfassung kopieren</button>' +
               '<button class="btn-ghost" id="print-btn" type="button">🖨 Drucken / PDF</button>' +
@@ -79,7 +91,6 @@
         if (global.navigator && global.navigator.clipboard) global.navigator.clipboard.writeText(text).then(done, done);
         else done();
       });
-    });
   }
 
   function summaryText(rec, deals, s) {

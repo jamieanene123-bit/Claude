@@ -42,11 +42,19 @@
       (on ? ' aria-current="page"' : '') + '>' + esc(label) + '</a>';
   }
 
+  function announce() {
+    return '<div class="annc">' +
+      '<span class="annc-text">🏍️ Beta · Schweiz &amp; DACH — die ganze Anfrage ist kostenlos.</span>' +
+      '<a class="annc-link" href="#/form">Jetzt starten →</a>' +
+      '</div>';
+  }
+
   function header() {
     var active = activeKey();
     var isDark = global.TDS.theme ? global.TDS.theme.current() === 'dark' : false;
     return '' +
       '<a class="skip-link" href="#main">Zum Inhalt springen</a>' +
+      announce() +
       '<header class="hdr">' +
         '<a class="logo" href="#/" aria-label="Töff Deal Scout — Startseite">Töff<em>Deal</em>Scout</a>' +
         '<nav class="hdr-nav" aria-label="Hauptnavigation">' +
@@ -59,14 +67,36 @@
       '</header>';
   }
 
+  function footCol(title, links) {
+    var items = links.map(function (l) {
+      return '<li><a href="' + l[1] + '">' + esc(l[0]) + '</a></li>';
+    }).join('');
+    return '<div class="foot-col"><div class="foot-head">' + esc(title) + '</div><ul>' + items + '</ul></div>';
+  }
+
   function footer() {
     return '' +
-      '<footer>' +
-        '<div class="footer-inner">' +
+      '<footer class="footer">' +
+        '<div class="footer-top">' +
+          '<div class="foot-brand">' +
+            '<div class="logo logo-foot">Töff<em>Deal</em>Scout</div>' +
+            '<p class="foot-tag">Die smarte Motorrad-Kaufberatung für die Schweiz &amp; DACH. Finde den besten Deal — mit Daten statt Bauchgefühl.</p>' +
+            '<form class="newsletter" data-action="newsletter">' +
+              '<input type="email" id="nl-email" placeholder="E-Mail für Tipps &amp; Updates" aria-label="E-Mail-Adresse">' +
+              '<button class="btn-primary" type="button" data-action="newsletter">Abonnieren</button>' +
+            '</form>' +
+          '</div>' +
+          '<div class="foot-cols">' +
+            footCol('Produkt', [['Anfrage stellen', '#/form'], ['Beispiel-Report', '#/report/demo'], ['Pakete &amp; Preise', '#/']]) +
+            footCol('Unternehmen', [['Über uns', '#/'], ['Admin', '#/admin'], ['Einstellungen', '#/settings']]) +
+            footCol('Rechtliches', [['Datenschutz (DSG)', '#/'], ['AGB', '#/'], ['Impressum', '#/']]) +
+          '</div>' +
+        '</div>' +
+        '<div class="footer-bottom">' +
           '<span>&copy; 2025 Töff Deal Scout · Zürich</span>' +
-          '<span><a href="mailto:info@toeffdealscout.ch">info@toeffdealscout.ch</a></span>' +
-          '<span><a href="#/admin">Admin</a> · <a href="#/settings">Einstellungen</a></span>' +
           '<span class="footer-note">Demo / MVP — Daten nur lokal im Browser (LocalStorage).</span>' +
+          '<span class="foot-social"><a href="mailto:info@toeffdealscout.ch" aria-label="E-Mail">✉</a>' +
+            '<a href="#/" aria-label="Instagram">◎</a><a href="#/" aria-label="X">✕</a></span>' +
         '</div>' +
       '</footer>';
   }

@@ -1,5 +1,8 @@
 /*
- * components/landing.js — Startseite mit Erklärung, Ablauf und CTA.
+ * components/landing.js — Marketing-Startseite (Shopify-Stil).
+ * Reichhaltige Sektionen: zweispaltiger Hero mit Produkt-Visual, Trust-Leiste,
+ * Statistik-Band, alternierende Feature-Blöcke, Ablauf-Stepper, Testimonials,
+ * Pricing und FAQ. Liefert nur Content; render() ergänzt Header/Main/Footer.
  */
 (function (global) {
   'use strict';
@@ -7,8 +10,150 @@
   var ui = global.TDS.ui;
   var cfg = global.TDS.config;
 
-  function pricingHtml() {
-    return '<div class="pricing-grid">' + cfg.PACKAGES.map(function (p) {
+  /* ---------- Hero ---------- */
+  function heroVisual() {
+    // Dekoratives "Deal-Vorschau"-Kärtchen (rein visuell).
+    return '<div class="hero-visual" aria-hidden="true">' +
+      '<div class="hv-card hv-card-main">' +
+        '<div class="hv-row"><span class="hv-rank">Bestes Angebot</span><span class="hv-risk">Risiko: Niedrig</span></div>' +
+        '<div class="hv-model">Yamaha MT-07</div>' +
+        '<div class="hv-meta">2021 · 18 000 km · privat</div>' +
+        '<div class="hv-score"><div class="hv-gauge"><span>8.7</span></div>' +
+          '<div class="hv-price"><div class="hv-amount">CHF 6’450</div><div class="hv-sub">12% unter Markt</div></div></div>' +
+        '<div class="hv-bar"><i style="width:87%"></i></div>' +
+      '</div>' +
+      '<div class="hv-card hv-card-float hv-f1">📊 Deal-Score 8.7</div>' +
+      '<div class="hv-card hv-card-float hv-f2">🤝 CHF 850 Sparpotenzial</div>' +
+    '</div>';
+  }
+
+  function hero() {
+    return '<section class="hero2">' +
+      '<div class="hero2-inner">' +
+        '<div class="hero2-text">' +
+          '<div class="hero-eye">Motorrad-Kaufberatung · Schweiz &amp; DACH</div>' +
+          '<h1>Das beste Töff zum besten Preis — <span class="accentword">ohne Risiko</span>.</h1>' +
+          '<p class="hero2-sub">Sag uns, welches Motorrad du suchst. Wir scannen den Markt und liefern einen klaren Report mit Deal-Score, Risiko-Check und Verhandlungsargumenten.</p>' +
+          '<div class="hero2-cta">' +
+            '<a class="btn-primary btn-lg" href="#/form">Kostenlos starten →</a>' +
+            '<a class="btn-secondary btn-lg" href="#/report/demo">Beispiel-Report ansehen</a>' +
+          '</div>' +
+          '<div class="hero2-trust"><span class="stars">★★★★★</span> 4.8/5 · Beta · kostenlos &amp; unverbindlich</div>' +
+        '</div>' +
+        heroVisual() +
+      '</div>' +
+    '</section>';
+  }
+
+  /* ---------- Trust / Quellen ---------- */
+  function trust() {
+    var srcs = ['anibis.ch', 'tutti.ch', 'ricardo.ch', 'mobile.de', 'kleinanzeigen.de', 'willhaben.at', 'autoscout24'];
+    return '<section class="trust-strip"><div class="wrap wrap-wide">' +
+      '<div class="trust-label">Wir durchsuchen u.a.</div>' +
+      '<div class="trust-logos">' + srcs.map(function (s) {
+        return '<span class="trust-logo">' + ui.esc(s) + '</span>';
+      }).join('') + '</div>' +
+    '</div></section>';
+  }
+
+  /* ---------- Statistik-Band ---------- */
+  function stats() {
+    var items = [
+      ['12’000+', 'Inserate analysiert', 'pro Monat (Beispiel)'],
+      ['Ø 850', 'CHF Sparpotenzial', 'pro Deal (Beispiel)'],
+      ['< 24 h', 'bis zum Report', 'nach Anfrage'],
+      ['4', 'Länder', 'CH · DE · AT · LI']
+    ];
+    return '<section class="stats-band"><div class="wrap wrap-wide"><div class="stats-grid">' +
+      items.map(function (s) {
+        return '<div class="stat"><div class="stat-num">' + ui.esc(s[0]) + '</div>' +
+          '<div class="stat-label">' + ui.esc(s[1]) + '</div>' +
+          '<div class="stat-sub">' + ui.esc(s[2]) + '</div></div>';
+      }).join('') + '</div></div></section>';
+  }
+
+  /* ---------- Feature-Blöcke (alternierend) ---------- */
+  function illu(kind) {
+    if (kind === 'score') {
+      return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
+        '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
+        '<rect x="32" y="120" width="22" height="26" rx="3" fill="var(--accent)" opacity=".35"/>' +
+        '<rect x="62" y="98" width="22" height="48" rx="3" fill="var(--accent)" opacity=".55"/>' +
+        '<rect x="92" y="74" width="22" height="72" rx="3" fill="var(--accent)" opacity=".75"/>' +
+        '<rect x="122" y="52" width="22" height="94" rx="3" fill="var(--accent)"/>' +
+        '<circle cx="170" cy="64" r="22" fill="none" stroke="var(--accent)" stroke-width="6" stroke-dasharray="104 40" transform="rotate(-90 170 64)"/>' +
+        '<text x="170" y="69" text-anchor="middle" font-size="15" font-weight="700" fill="var(--text)">8.7</text>' +
+      '</svg>';
+    }
+    if (kind === 'risk') {
+      return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
+        '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
+        '<path d="M110 44 l46 18 v34 c0 30 -22 46 -46 56 c-24 -10 -46 -26 -46 -56 V62 Z" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="3"/>' +
+        '<path d="M96 100 l12 12 l22 -26" fill="none" stroke="var(--ok)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+    }
+    return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
+      '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
+      '<rect x="34" y="48" width="120" height="12" rx="6" fill="var(--accent)" opacity=".7"/>' +
+      '<rect x="34" y="74" width="152" height="10" rx="5" fill="var(--border)"/>' +
+      '<rect x="34" y="94" width="138" height="10" rx="5" fill="var(--border)"/>' +
+      '<rect x="34" y="120" width="84" height="26" rx="8" fill="var(--accent)"/>' +
+      '<text x="76" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">-CHF 500</text>' +
+    '</svg>';
+  }
+
+  function featureBlock(kind, eye, title, text, points, flip) {
+    var li = points.map(function (p) { return '<li>' + ui.esc(p) + '</li>'; }).join('');
+    var media = '<div class="fb-media">' + illu(kind) + '</div>';
+    var body = '<div class="fb-body">' +
+      '<div class="fb-eye">' + ui.esc(eye) + '</div>' +
+      '<h3 class="fb-title">' + ui.esc(title) + '</h3>' +
+      '<p class="fb-text">' + ui.esc(text) + '</p>' +
+      '<ul class="fb-list">' + li + '</ul>' +
+      '<a class="link-arrow" href="#/form">Jetzt analysieren lassen →</a>' +
+      '</div>';
+    return '<section class="feature-block' + (flip ? ' flip' : '') + '"><div class="wrap wrap-wide"><div class="fb-grid">' +
+      (flip ? body + media : media + body) + '</div></div></section>';
+  }
+
+  /* ---------- Stepper ---------- */
+  function steps() {
+    var data = [
+      ['1', 'Anfrage ausfüllen', 'Budget, Stil, Wunschmodell und Region — in rund 2 Minuten.'],
+      ['2', 'Wir scouten den Markt', 'Wir prüfen aktuelle Inserate auf Preis, Zustand und Risiko.'],
+      ['3', 'Report erhalten', 'Top-Deals mit Deal-Score, Risiko und Verhandlungsargumenten.']
+    ];
+    return '<section class="wrap wrap-wide">' +
+      '<div class="section-head"><div class="section-eye">So funktioniert\'s</div>' +
+      '<h2 class="section-title">In drei Schritten zum besten Deal</h2></div>' +
+      '<div class="stepper">' + data.map(function (s) {
+        return '<div class="step2"><div class="step2-num">' + s[0] + '</div>' +
+          '<div class="step2-title">' + ui.esc(s[1]) + '</div>' +
+          '<div class="step2-text">' + ui.esc(s[2]) + '</div></div>';
+      }).join('') + '</div></section>';
+  }
+
+  /* ---------- Testimonials ---------- */
+  function testimonials() {
+    var data = [
+      ['„Endlich wusste ich, was ein fairer Preis ist. CHF 700 runtergehandelt."', 'Lena B.', 'Zürich · Yamaha MT-07'],
+      ['„Der Risiko-Check hat mich vor einem Unfallbike bewahrt. Gold wert."', 'Marco F.', 'Bern · V-Strom 650'],
+      ['„A2-Filter top — nur passende Modelle, kein Suchen mehr."', 'Sara H.', 'München · CB500X']
+    ];
+    return '<section class="wrap wrap-wide">' +
+      '<div class="section-head"><div class="section-eye">Stimmen (Beispiel)</div>' +
+      '<h2 class="section-title">Käufer:innen, die sicher entschieden haben</h2></div>' +
+      '<div class="testi-grid">' + data.map(function (t) {
+        return '<figure class="testi"><div class="testi-stars">★★★★★</div>' +
+          '<blockquote>' + ui.esc(t[0]) + '</blockquote>' +
+          '<figcaption><span class="testi-name">' + ui.esc(t[1]) + '</span>' +
+          '<span class="testi-meta">' + ui.esc(t[2]) + '</span></figcaption></figure>';
+      }).join('') + '</div></section>';
+  }
+
+  /* ---------- Pricing ---------- */
+  function pricing() {
+    var cards = cfg.PACKAGES.map(function (p) {
       var feats = p.feats.map(function (f) { return '<li>' + ui.esc(f) + '</li>'; }).join('');
       return '<div class="price-card' + (p.recommended ? ' price-card-rec' : '') + '">' +
         (p.badge ? '<div class="pkg-badge">' + ui.esc(p.badge) + '</div>' : '') +
@@ -16,85 +161,64 @@
         '<div class="price-amount">CHF ' + ui.esc(p.price.CHF) + '</div>' +
         '<div class="price-sub2">' + ui.esc(p.sub) + '</div>' +
         '<ul class="price-feats">' + feats + '</ul>' +
-        '<a class="btn-' + (p.recommended ? 'primary' : 'ghost') + ' btn-block" href="#/form">Wählen</a>' +
+        '<a class="btn-' + (p.recommended ? 'primary' : 'secondary') + ' btn-block" href="#/form">' + ui.esc(p.name) + ' wählen</a>' +
         '</div>';
-    }).join('') + '</div>';
+    }).join('');
+    return '<section class="wrap wrap-wide">' +
+      '<div class="section-head"><div class="section-eye">Pakete &amp; Preise</div>' +
+      '<h2 class="section-title">Transparent. Du zahlst erst für den Report.</h2></div>' +
+      '<div class="pricing-grid">' + cards + '</div>' +
+      '<div class="pricing-note">Die Anfrage ist kostenlos. Kein Abo, keine versteckten Kosten.</div></section>';
   }
 
-  function faqHtml() {
+  /* ---------- FAQ ---------- */
+  function faq() {
     var qa = [
-      ['Was kostet der Service?', 'Die Anfrage ist kostenlos. Du zahlst erst für den gewählten Report (ab CHF 9.90). Diese Demo speichert alles nur lokal — es wird nichts verrechnet.'],
-      ['Woher kommen die Inserate?', 'In dieser Demo sind die Deals synthetisch (Beispieldaten). Produktiv durchsuchen wir Quellen wie anibis.ch, tutti.ch, mobile.de oder willhaben.at.'],
-      ['Wie schnell bekomme ich den Report?', 'Im Normalbetrieb innerhalb von 24 Stunden nach Eingang. Quick-Check-Einschätzungen schneller.'],
-      ['Berücksichtigt ihr meinen Führerausweis?', 'Ja. Bei A2/A1 filtern wir auf zulässige bzw. drosselbare Modelle, damit die Vorschläge wirklich passen.'],
-      ['Was passiert mit meinen Daten?', 'In dieser Demo bleiben sie ausschliesslich in deinem Browser (LocalStorage). Kein Server, kein Konto, keine Weitergabe.']
+      ['Was kostet der Service?', 'Die Anfrage ist kostenlos. Du zahlst erst für den gewählten Report (ab CHF 9.90). In dieser Demo wird nichts verrechnet — alles bleibt lokal im Browser.'],
+      ['Woher kommen die Inserate?', 'In der Demo sind die Deals synthetisch (Beispieldaten). Produktiv durchsuchen wir Quellen wie anibis.ch, tutti.ch, mobile.de oder willhaben.at.'],
+      ['Wie schnell bekomme ich den Report?', 'Im Normalbetrieb innerhalb von 24 Stunden. Quick-Check-Einschätzungen schneller.'],
+      ['Berücksichtigt ihr meinen Führerausweis?', 'Ja. Bei A2/A1 filtern wir auf zulässige bzw. drosselbare Modelle.'],
+      ['Was passiert mit meinen Daten?', 'In der Demo bleiben sie ausschliesslich in deinem Browser (LocalStorage). Kein Server, kein Konto, keine Weitergabe.']
     ];
-    return '<div class="faq">' + qa.map(function (x) {
-      return '<details class="faq-item"><summary>' + ui.esc(x[0]) + '</summary>' +
-        '<div class="faq-a">' + ui.esc(x[1]) + '</div></details>';
-    }).join('') + '</div>';
+    return '<section class="wrap wrap-wide">' +
+      '<div class="section-head"><div class="section-eye">Häufige Fragen</div>' +
+      '<h2 class="section-title">Alles Wichtige auf einen Blick</h2></div>' +
+      '<div class="faq faq-2col">' + qa.map(function (x) {
+        return '<details class="faq-item"><summary>' + ui.esc(x[0]) + '</summary>' +
+          '<div class="faq-a">' + ui.esc(x[1]) + '</div></details>';
+      }).join('') + '</div></section>';
   }
 
-  function feature(icon, title, text) {
-    return '<div class="feat"><div class="feat-ico">' + icon + '</div>' +
-      '<div class="feat-title">' + ui.esc(title) + '</div>' +
-      '<div class="feat-text">' + ui.esc(text) + '</div></div>';
-  }
-
-  function step(n, title, text) {
-    return '<div class="step"><div class="step-num">' + n + '</div>' +
-      '<div class="step-title">' + ui.esc(title) + '</div>' +
-      '<div class="step-text">' + ui.esc(text) + '</div></div>';
+  /* ---------- Finale CTA ---------- */
+  function finalCta() {
+    return '<section class="wrap wrap-wide"><div class="cta-hero">' +
+      '<div class="cta-hero-inner">' +
+        '<h2>Bereit, den besten Deal zu finden?</h2>' +
+        '<p>Starte kostenlos — in zwei Minuten zum persönlichen Deal-Report.</p>' +
+        '<a class="btn-primary btn-lg" href="#/form">Jetzt Anfrage stellen →</a>' +
+      '</div>' +
+    '</div></section>';
   }
 
   function view() {
-    var html = '' +
-      '<div class="hero">' +
-        '<div class="hero-eye">Motorrad-Kaufberatung · Schweiz &amp; DACH</div>' +
-        '<h1>Den besten Deal finden — ohne Risiko.</h1>' +
-        '<p>Sag uns, welches Töff du suchst. Wir analysieren den Markt und liefern eine klare Einschätzung mit Deal-Score, Risiko und Verhandlungsargumenten.</p>' +
-        '<a class="btn-primary" href="#/form">Suchanfrage starten →</a>' +
-        '<div class="hero-trust">Kostenlos &amp; unverbindlich · ~2 Minuten · kein Konto nötig</div>' +
-        '<div class="hero-pills">' +
-          '<div class="pill">Preis-Check</div>' +
-          '<div class="pill">Risikobewertung</div>' +
-          '<div class="pill">A2-Filter</div>' +
-          '<div class="pill">Verhandlungsskript</div>' +
-        '</div>' +
-      '</div>' +
-
-      '<div class="wrap wrap-wide">' +
-        '<div class="section-eye">So funktioniert\'s</div>' +
-        '<div class="steps">' +
-          step(1, 'Anfrage ausfüllen', 'Budget, Stil, Wunschmodell und Region — in 2 Minuten erledigt.') +
-          step(2, 'Wir scouten den Markt', 'Wir prüfen aktuelle Inserate auf Preis, Zustand und Risiko.') +
-          step(3, 'Report erhalten', 'Top-Deals mit Deal-Score und Verhandlungsargumenten.') +
-        '</div>' +
-
-        '<div class="section-eye">Das steckt im Report</div>' +
-        '<div class="feat-grid">' +
-          feature('📊', 'Deal-Score 0–10', 'Objektive Bewertung aus Preis vs. Marktwert, Zustand, Laufleistung und Zuverlässigkeit.') +
-          feature('🛡️', 'Risiko-Einschätzung', 'Niedrig / Mittel / Höher — basierend auf Alter, km, Service-Historie und modelltypischen Schwächen.') +
-          feature('🤝', 'Verhandlungsargumente', 'Konkrete Hebel und ein realistischer Zielpreis für dein Verkäufergespräch.') +
-          feature('📋', 'Besichtigungs-Checkliste', 'Worauf du bei genau diesem Modell vor Ort achten musst — plus Fragen für den Verkäufer.') +
-        '</div>' +
-
-        '<div class="section-eye">Pakete &amp; Preise</div>' +
-        pricingHtml() +
-
-        '<div class="section-eye">Häufige Fragen</div>' +
-        faqHtml() +
-
-        '<div class="cta-band">' +
-          '<div>' +
-            '<div class="cta-title">Bereit, den besten Deal zu finden?</div>' +
-            '<div class="cta-sub">Kostenlos starten — du zahlst erst für den Report.</div>' +
-          '</div>' +
-          '<a class="btn-primary" href="#/form">Jetzt Anfrage stellen →</a>' +
-        '</div>' +
-      '</div>' +
-
-      '';
+    var html =
+      hero() +
+      trust() +
+      stats() +
+      featureBlock('score', 'Deal-Score', 'Objektiv erkennen, ob der Preis stimmt',
+        'Wir vergleichen jedes Inserat mit dem Marktwert und bewerten es auf einer Skala von 0–10 — inklusive Zustand, Laufleistung und Zuverlässigkeit.',
+        ['Preis vs. realistischer Marktwert', 'Bewertung in 4+ Kriterien', 'Sofort sichtbar: Top oder Finger weg'], false) +
+      featureBlock('risk', 'Risiko & A2-Filter', 'Böse Überraschungen vermeiden',
+        'Alter, Kilometer, Service-Historie und modelltypische Schwächen ergeben eine klare Risiko-Einstufung. Mit A2/A1 zeigen wir nur passende Modelle.',
+        ['Risiko: Niedrig / Mittel / Höher', 'A2-/A1-konforme Auswahl', 'Modelltypische Schwachstellen im Blick'], true) +
+      featureBlock('deal', 'Verhandlung', 'Mit Argumenten zum besseren Preis',
+        'Du bekommst konkrete Verhandlungsargumente, einen realistischen Zielpreis und eine Besichtigungs-Checkliste für genau dieses Modell.',
+        ['Konkrete Hebel & Zielpreis', 'Besichtigungs-Checkliste', 'Fragen für den Verkäufer'], false) +
+      steps() +
+      testimonials() +
+      pricing() +
+      faq() +
+      finalCta();
 
     ui.render(html);
   }
