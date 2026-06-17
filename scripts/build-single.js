@@ -10,17 +10,25 @@ var ROOT = path.join(__dirname, '..');
 function read(f) { return fs.readFileSync(path.join(ROOT, f), 'utf8'); }
 
 // Lade-Reihenfolge wie in index.html
-var JS = [
-  'js/core/events.js', 'js/core/format.js', 'js/core/charts.js', 'js/core/theme.js',
-  'js/core/toast.js', 'js/core/motion.js', 'js/core/dom.js',
-  'js/data/config.js', 'js/data/market.js', 'js/data/demo.js',
-  'js/services/store.js', 'js/services/scout.js',
-  'js/router.js',
-  'js/components/layout.js', 'js/components/landing.js', 'js/components/form.js',
-  'js/components/success.js', 'js/components/admin.js', 'js/components/report.js',
-  'js/components/settings.js', 'js/components/notfound.js',
-  'js/app.js'
-];
+// Module dynamisch einsammeln (in Abhängigkeitsreihenfolge), damit die Liste
+// nie veraltet, wenn neue Dateien dazukommen.
+function dir(d) {
+  return fs.readdirSync(path.join(ROOT, d))
+    .filter(function (f) { return /\.js$/.test(f); })
+    .map(function (f) { return d + '/' + f; });
+}
+function ordered(d, first) {
+  var all = dir(d);
+  var rest = all.filter(function (f) { return first.indexOf(f) < 0; });
+  return first.filter(function (f) { return all.indexOf(f) >= 0; }).concat(rest);
+}
+var JS = []
+  .concat(ordered('js/core', ['js/core/events.js', 'js/core/format.js', 'js/core/charts.js', 'js/core/theme.js', 'js/core/toast.js', 'js/core/motion.js', 'js/core/dom.js']))
+  .concat(ordered('js/data', ['js/data/config.js', 'js/data/market.js', 'js/data/demo.js']))
+  .concat(ordered('js/services', ['js/services/store.js', 'js/services/scout.js']))
+  .concat(['js/router.js'])
+  .concat(ordered('js/components', ['js/components/layout.js'])) // layout zuerst
+  .concat(['js/app.js']);
 
 var css = read('css/styles.css');
 var js = JS.map(function (f) { return '/* ===== ' + f + ' ===== */\n' + read(f); }).join('\n');

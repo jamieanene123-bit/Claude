@@ -2506,330 +2506,605 @@ section[id], .section-head { scroll-margin-top:80px; }
   };
 })(window);
 
-/* ===== js/components/landing.js ===== */
+/* ===== js/components/admin.js ===== */
 /*
- * components/landing.js — Marketing-Startseite (Shopify-Stil).
- * Reichhaltige Sektionen: zweispaltiger Hero mit Produkt-Visual, Trust-Leiste,
- * Statistik-Band, alternierende Feature-Blöcke, Ablauf-Stepper, Testimonials,
- * Pricing und FAQ. Liefert nur Content; render() ergänzt Header/Main/Footer.
+ * components/admin.js — Admin-Bereich.
+ *   #/admin       -> Dashboard (KPIs + Charts) + durchsuchbare Liste
+ *   #/admin/:id   -> Detailansicht: Stammdaten, Status, Notizen, Historie
+ *
+ * Hinweis: Kein Login (MVP). Auth-Guard-Stelle ist in app.js markiert.
  */
 (function (global) {
   'use strict';
 
   var ui = global.TDS.ui;
   var cfg = global.TDS.config;
-  var scout = global.TDS.scout;
+  var store = global.TDS.store;
+  var router = global.TDS.router;
+  var charts = global.TDS.charts;
   var fmt = global.TDS.format;
+  var toast = global.TDS.toast;
 
-  // Feste Demo-Anfrage für den Live-Hero (deterministisch via Scout-Engine).
-  var DEMO_REQUEST = { id: 'demo-hero', values: { land: 'CH', region: 'Zürich', ausweis: 'A (unbeschränkt)', stil: ['Naked Bike'], budget_von: 4000, budget_bis: 9000, waehrung: 'CHF', paket: 'Scout' } };
+  // Tabellenzustand (in-memory, persistiert über Sitzungen)
+  var PAGE = 8;
+  var SKEY = 'tds_admin_state';
+  var state = { q: '', status: 'Alle', sort: 'date-desc', limit: PAGE };
+  var allRows = [];
 
-  /* ---------- Hero ---------- */
-  function staticHeroCard() {
-    // Dekoratives "Deal-Vorschau"-Kärtchen (rein visuell).
-    return '<div class="hero-visual" aria-hidden="true">' +
-      '<div class="hv-card hv-card-main">' +
-        '<div class="hv-row"><span class="hv-rank">Bestes Angebot</span><span class="hv-risk">Risiko: Niedrig</span></div>' +
-        '<div class="hv-model">Yamaha MT-07</div>' +
-        '<div class="hv-meta">2021 · 18 000 km · privat</div>' +
-        '<div class="hv-score"><div class="hv-gauge"><span>8.7</span></div>' +
-          '<div class="hv-price"><div class="hv-amount">CHF 6’450</div><div class="hv-sub">12% unter Markt</div></div></div>' +
-        '<div class="hv-bar"><i style="width:87%"></i></div>' +
-      '</div>' +
-      '<div class="hv-card hv-card-float hv-f1">📊 Deal-Score 8.7</div>' +
-      '<div class="hv-card hv-card-float hv-f2">🤝 CHF 850 Sparpotenzial</div>' +
-    '</div>';
+  function $(id) { return global.document.getElementById(id); }
+
+  function loadState() {
+    try {
+      var s = JSON.parse(global.localStorage.getItem(SKEY) || 'null');
+      if (s) { state.q = s.q || ''; state.status = s.status || 'Alle'; state.sort = s.sort || 'date-desc'; }
+    } catch (e) {}
+    state.limit = PAGE;
+  }
+  function saveState() {
+    try { global.localStorage.setItem(SKEY, JSON.stringify({ q: state.q, status: state.status, sort: state.sort })); } catch (e) {}
   }
 
-  // Live: ruft die echte Scout-Engine auf und zeigt das beste Beispiel-Angebot.
-  function heroVisual() {
-    var result = scout && scout.generate(DEMO_REQUEST);
-    var best = result && result.deals && result.deals[0];
-    if (!best) return staticHeroCard();
-    var cur = best.currency || 'CHF';
-    var scoreWidth = Math.round(best.score / 10 * 100);
-    var gapLabel = best.valueGapPct > 0
-      ? best.valueGapPct + '% unter Markt'
-      : (best.valueGapPct < 0 ? Math.abs(best.valueGapPct) + '% über Markt' : 'am Marktwert');
-    var savingAbs = Math.round(Math.abs(best.marketValue - best.asking));
-    return '<div class="hero-visual" aria-label="Beispiel Deal-Report (Live-Demo)">' +
-      '<div class="hv-card hv-card-main">' +
-        '<div class="hv-row">' +
-          '<span class="hv-rank">Bestes Angebot</span>' +
-          '<span class="hv-risk hv-risk-' + best.risk.level + '">Risiko: ' + ui.esc(best.risk.label) + '</span>' +
-        '</div>' +
-        '<div class="hv-model">' + ui.esc(best.brand + ' ' + best.model) + '</div>' +
-        '<div class="hv-meta">' + ui.esc(best.year + ' · ' + fmt.km(best.km) + ' · ' + best.seller) + '</div>' +
-        '<div class="hv-score">' +
-          '<div class="hv-gauge"><span>' + best.score.toFixed(1) + '</span></div>' +
-          '<div class="hv-price">' +
-            '<div class="hv-amount">' + ui.esc(fmt.money(best.asking, cur)) + '</div>' +
-            '<div class="hv-sub">' + ui.esc(gapLabel) + '</div>' +
+  /* ============== LISTE / DASHBOARD ============== */
+  function list() {
+    loadState();
+    Promise.all([store.list(), store.stats()]).then(function (res) {
+      allRows = res[0];
+      var stats = res[1];
+
+      var html = '' +
+        '<div class="admin-bar">' +
+          '<div class="admin-bar-inner">' +
+            '<div><h2 class="admin-title">Dashboard</h2>' +
+            '<div class="admin-sub">' + stats.total + ' Anfragen · lokal gespeichert</div></div>' +
+            '<a class="btn-primary btn-sm" href="#/form">+ Neue Anfrage</a>' +
           '</div>' +
         '</div>' +
-        '<div class="hv-bar"><i style="width:' + scoreWidth + '%"></i></div>' +
-      '</div>' +
-      '<div class="hv-card hv-card-float hv-f1">Deal-Score ' + best.score.toFixed(1) + '</div>' +
-      '<div class="hv-card hv-card-float hv-f2">' +
-        (best.valueGapPct > 0 ? ui.esc(fmt.money(savingAbs, cur)) + ' Sparpotenzial' : 'Preis nahe Marktwert') +
-      '</div>' +
-    '</div>';
-  }
 
-  function hero() {
-    return '<section class="hero2">' +
-      '<div class="hero2-inner">' +
-        '<div class="hero2-text">' +
-          '<div class="hero-eye">Motorrad-Kaufberatung · Schweiz &amp; DACH · Live-Demo</div>' +
-          '<h1>Das beste Töff zum besten Preis — <span class="accentword">ohne Risiko</span>.</h1>' +
-          '<p class="hero2-sub">Sag uns, welches Motorrad du suchst. Wir scannen den Markt und liefern einen klaren Report mit Deal-Score, Risiko-Check und Verhandlungsargumenten.</p>' +
-          '<div class="hero2-cta">' +
-            '<a class="btn-primary btn-lg" href="#/form">Kostenlos starten →</a>' +
-            '<a class="btn-secondary btn-lg" href="#/report/demo">Beispiel-Report ansehen</a>' +
+        '<div class="wrap wrap-wide">' +
+          dashboardHtml(stats) +
+
+          '<div class="toolbar">' +
+            '<input type="search" id="search" class="search-input" placeholder="Suche: Name, E-Mail, Modell, ID …" value="' + ui.esc(state.q) + '">' +
+            '<div class="sel-wrap toolbar-sort"><select id="sort">' +
+              sortOpt('date-desc', 'Neueste zuerst') + sortOpt('date-asc', 'Älteste zuerst') +
+              sortOpt('name-asc', 'Name A–Z') + sortOpt('status-asc', 'Status') +
+            '</select></div>' +
           '</div>' +
-          '<div class="hero2-trust"><span class="stars">★★★★★</span> Beta · kostenlos &amp; unverbindlich · keine Echtzahlungen</div>' +
+
+          '<div class="filters" id="filters">' + filterBtns(stats) + '</div>' +
+
+          '<div class="table-card">' +
+            '<table class="tbl"><thead><tr>' +
+              '<th scope="col">ID</th>' +
+              th('Datum', 'date') + th('Name', 'name') +
+              '<th scope="col">Region</th><th scope="col">Wunsch</th><th scope="col">Paket</th>' +
+              th('Status', 'status') +
+            '</tr></thead><tbody id="tbody"></tbody></table>' +
+            '<div class="table-more" id="table-more"></div>' +
+          '</div>' +
+
+          '<div class="admin-tools">' +
+            '<button class="btn-ghost btn-sm" id="seed-btn">Beispieldaten laden</button>' +
+            '<button class="btn-ghost btn-sm" id="csv-btn">CSV exportieren</button>' +
+            '<button class="btn-ghost btn-sm" id="json-btn">JSON exportieren</button>' +
+            '<button class="btn-ghost btn-sm" id="import-btn">JSON importieren</button>' +
+            '<button class="btn-ghost btn-sm danger" id="clear-btn">Alle löschen</button>' +
+            '<input type="file" id="import-file" accept="application/json,.json" hidden>' +
+          '</div>' +
         '</div>' +
-        heroVisual() +
-      '</div>' +
-    '</section>';
-  }
+        '';
 
-  /* ---------- Trust / Quellen ---------- */
-  function trust() {
-    var srcs = ['anibis.ch', 'tutti.ch', 'ricardo.ch', 'mobile.de', 'kleinanzeigen.de', 'willhaben.at', 'autoscout24'];
-    return '<section class="trust-strip" aria-label="Quellen"><div class="wrap wrap-wide">' +
-      '<h2 class="sr-only">Quellen, die wir durchsuchen</h2>' +
-      '<div class="trust-label">Wir durchsuchen u.a.</div>' +
-      '<div class="trust-logos">' + srcs.map(function (s) {
-        return '<span class="trust-logo">' + ui.esc(s) + '</span>';
-      }).join('') + '</div>' +
-    '</div></section>';
-  }
-
-  /* ---------- Statistik-Band ---------- */
-  function stats() {
-    var items = [
-      ['12’000+', 'Inserate analysiert', 'pro Monat (Beispiel)'],
-      ['Ø 850', 'CHF Sparpotenzial', 'pro Deal (Beispiel)'],
-      ['< 24 h', 'bis zum Report', 'nach Anfrage'],
-      ['4', 'Länder', 'CH · DE · AT · LI']
-    ];
-    return '<section class="stats-band" aria-label="Kennzahlen"><div class="wrap wrap-wide">' +
-      '<h2 class="sr-only">Kennzahlen</h2>' +
-      '<div class="stats-demo-label">Beispielwerte · Demo</div>' +
-      '<div class="stats-grid">' +
-      items.map(function (s) {
-        return '<div class="stat"><div class="stat-num">' + ui.esc(s[0]) + '</div>' +
-          '<div class="stat-label">' + ui.esc(s[1]) + '</div>' +
-          '<div class="stat-sub">' + ui.esc(s[2]) + '</div></div>';
-      }).join('') + '</div></div></section>';
-  }
-
-  /* ---------- Feature-Blöcke (alternierend) ---------- */
-  function illu(kind) {
-    if (kind === 'score') {
-      return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
-        '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
-        '<rect x="32" y="120" width="22" height="26" rx="3" fill="var(--accent)" opacity=".35"/>' +
-        '<rect x="62" y="98" width="22" height="48" rx="3" fill="var(--accent)" opacity=".55"/>' +
-        '<rect x="92" y="74" width="22" height="72" rx="3" fill="var(--accent)" opacity=".75"/>' +
-        '<rect x="122" y="52" width="22" height="94" rx="3" fill="var(--accent)"/>' +
-        '<circle cx="170" cy="64" r="22" fill="none" stroke="var(--accent)" stroke-width="6" stroke-dasharray="104 40" transform="rotate(-90 170 64)"/>' +
-        '<text x="170" y="69" text-anchor="middle" font-size="15" font-weight="700" fill="var(--text)">8.7</text>' +
-      '</svg>';
-    }
-    if (kind === 'risk') {
-      return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
-        '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
-        '<path d="M110 44 l46 18 v34 c0 30 -22 46 -46 56 c-24 -10 -46 -26 -46 -56 V62 Z" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="3"/>' +
-        '<path d="M96 100 l12 12 l22 -26" fill="none" stroke="var(--ok)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '</svg>';
-    }
-    return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
-      '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
-      '<rect x="34" y="48" width="120" height="12" rx="6" fill="var(--accent)" opacity=".7"/>' +
-      '<rect x="34" y="74" width="152" height="10" rx="5" fill="var(--border)"/>' +
-      '<rect x="34" y="94" width="138" height="10" rx="5" fill="var(--border)"/>' +
-      '<rect x="34" y="120" width="84" height="26" rx="8" fill="var(--accent)"/>' +
-      '<text x="76" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">-CHF 500</text>' +
-    '</svg>';
-  }
-
-  function featureBlock(kind, eye, title, text, points, flip) {
-    var li = points.map(function (p) { return '<li>' + ui.esc(p) + '</li>'; }).join('');
-    var media = '<div class="fb-media">' + illu(kind) + '</div>';
-    var body = '<div class="fb-body">' +
-      '<div class="fb-eye">' + ui.esc(eye) + '</div>' +
-      '<h3 class="fb-title">' + ui.esc(title) + '</h3>' +
-      '<p class="fb-text">' + ui.esc(text) + '</p>' +
-      '<ul class="fb-list">' + li + '</ul>' +
-      '<a class="link-arrow" href="#/form">Jetzt analysieren lassen →</a>' +
-      '</div>';
-    return '<section class="feature-block' + (flip ? ' flip' : '') + '"><div class="wrap wrap-wide"><div class="fb-grid">' +
-      (flip ? body + media : media + body) + '</div></div></section>';
-  }
-
-  /* ---------- Stepper ---------- */
-  function steps() {
-    var data = [
-      ['1', 'Anfrage ausfüllen', 'Budget, Stil, Wunschmodell und Region — in rund 2 Minuten.'],
-      ['2', 'Wir scouten den Markt', 'Wir prüfen aktuelle Inserate auf Preis, Zustand und Risiko.'],
-      ['3', 'Report erhalten', 'Top-Deals mit Deal-Score, Risiko und Verhandlungsargumenten.']
-    ];
-    return '<section class="wrap wrap-wide">' +
-      '<div class="section-head"><div class="section-eye">So funktioniert\'s</div>' +
-      '<h2 class="section-title">In drei Schritten zum besten Deal</h2></div>' +
-      '<div class="stepper">' + data.map(function (s) {
-        return '<div class="step2"><div class="step2-num">' + s[0] + '</div>' +
-          '<div class="step2-title">' + ui.esc(s[1]) + '</div>' +
-          '<div class="step2-text">' + ui.esc(s[2]) + '</div></div>';
-      }).join('') + '</div></section>';
-  }
-
-  /* ---------- Testimonials ---------- */
-  function testimonials() {
-    var data = [
-      ['„Endlich wusste ich, was ein fairer Preis ist. CHF 700 runtergehandelt."', 'Lena B.', 'Zürich · Yamaha MT-07'],
-      ['„Der Risiko-Check hat mich vor einem Unfallbike bewahrt. Gold wert."', 'Marco F.', 'Bern · V-Strom 650'],
-      ['„A2-Filter top — nur passende Modelle, kein Suchen mehr."', 'Sara H.', 'München · CB500X']
-    ];
-    return '<section class="wrap wrap-wide">' +
-      '<div class="section-head"><div class="section-eye">Stimmen (Beispiel)</div>' +
-      '<h2 class="section-title">Was Käufer:innen sagen könnten (Beispielzitate)</h2></div>' +
-      '<div class="testi-grid">' + data.map(function (t) {
-        return '<figure class="testi"><div class="testi-stars">★★★★★</div>' +
-          '<blockquote>' + ui.esc(t[0]) + '</blockquote>' +
-          '<figcaption><span class="testi-name">' + ui.esc(t[1]) + '</span>' +
-          '<span class="testi-meta">' + ui.esc(t[2]) + '</span></figcaption></figure>';
-      }).join('') + '</div></section>';
-  }
-
-  /* ---------- Pricing ---------- */
-  function pricing() {
-    var cards = cfg.PACKAGES.map(function (p) {
-      var feats = p.feats.map(function (f) { return '<li>' + ui.esc(f) + '</li>'; }).join('');
-      return '<div class="price-card' + (p.recommended ? ' price-card-rec' : '') + '">' +
-        (p.badge ? '<div class="pkg-badge">' + ui.esc(p.badge) + '</div>' : '') +
-        '<div class="price-name">' + ui.esc(p.name) + '</div>' +
-        '<div class="price-amount">CHF ' + ui.esc(p.price.CHF) + '</div>' +
-        '<div class="price-sub2">' + ui.esc(p.sub) + '</div>' +
-        '<ul class="price-feats">' + feats + '</ul>' +
-        '<a class="btn-' + (p.recommended ? 'primary' : 'secondary') + ' btn-block" href="#/form">' + ui.esc(p.name) + ' wählen</a>' +
-        '</div>';
-    }).join('');
-    return '<section class="wrap wrap-wide">' +
-      '<div class="section-head"><div class="section-eye">Pakete &amp; Preise</div>' +
-      '<h2 class="section-title">Transparent. Du zahlst erst für den Report.</h2></div>' +
-      '<div class="pricing-grid">' + cards + '</div>' +
-      '<div class="pricing-note">Die Anfrage ist kostenlos. Kein Abo, keine versteckten Kosten.</div></section>';
-  }
-
-  /* ---------- FAQ ---------- */
-  function faq() {
-    var qa = [
-      ['Was kostet der Service?', 'Die Anfrage ist kostenlos. Du zahlst erst für den gewählten Report (ab CHF 9.90). In dieser Demo wird nichts verrechnet — alles bleibt lokal im Browser.'],
-      ['Woher kommen die Inserate?', 'In der Demo sind die Deals synthetisch (Beispieldaten). Produktiv durchsuchen wir Quellen wie anibis.ch, tutti.ch, mobile.de oder willhaben.at.'],
-      ['Wie schnell bekomme ich den Report?', 'Im Normalbetrieb innerhalb von 24 Stunden. Quick-Check-Einschätzungen schneller.'],
-      ['Berücksichtigt ihr meinen Führerausweis?', 'Ja. Bei A2/A1 filtern wir auf zulässige bzw. drosselbare Modelle.'],
-      ['Was passiert mit meinen Daten?', 'In der Demo bleiben sie ausschliesslich in deinem Browser (LocalStorage). Kein Server, kein Konto, keine Weitergabe.']
-    ];
-    return '<section class="wrap wrap-wide">' +
-      '<div class="section-head"><div class="section-eye">Häufige Fragen</div>' +
-      '<h2 class="section-title">Alles Wichtige auf einen Blick</h2></div>' +
-      '<div class="faq faq-2col">' + qa.map(function (x) {
-        return '<details class="faq-item"><summary>' + ui.esc(x[0]) + '</summary>' +
-          '<div class="faq-a">' + ui.esc(x[1]) + '</div></details>';
-      }).join('') + '</div></section>';
-  }
-
-  /* ---------- Finale CTA ---------- */
-  function finalCta() {
-    return '<section class="wrap wrap-wide"><div class="cta-hero">' +
-      '<div class="cta-hero-inner">' +
-        '<h2>Bereit, den besten Deal zu finden?</h2>' +
-        '<p>Starte kostenlos — in zwei Minuten zum persönlichen Deal-Report.</p>' +
-        '<a class="btn-primary btn-lg" href="#/form">Jetzt Anfrage stellen →</a>' +
-      '</div>' +
-    '</div></section>';
-  }
-
-  /* ---------- Schnell-Score-Widget ---------- */
-  function quickScore() {
-    return '<section class="quick-score-section wrap wrap-narrow">' +
-      '<div class="sec qs-card">' +
-        '<div class="sec-head">Schnell-Check — passt der Preis?</div>' +
-        '<div class="row2">' +
-          '<div class="field"><label class="lbl" for="qs-model">Modell</label>' +
-            '<input type="text" id="qs-model" placeholder="z.B. Yamaha MT-07"></div>' +
-          '<div class="field"><label class="lbl" for="qs-price">Angebotspreis (CHF)</label>' +
-            '<input type="text" id="qs-price" placeholder="z.B. 7200" inputmode="numeric"></div>' +
-        '</div>' +
-        '<button class="btn-primary" id="qs-btn" type="button">Score schätzen →</button>' +
-        '<div id="qs-result" class="qs-result" role="status"></div>' +
-      '</div>' +
-    '</section>';
-  }
-
-  function wireQuickScore() {
-    var btn = global.document.getElementById('qs-btn');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      var model = (global.document.getElementById('qs-model').value || '').trim();
-      var price = parseInt((global.document.getElementById('qs-price').value || '').replace(/[^\d]/g, ''), 10);
-      var res = global.document.getElementById('qs-result');
-      if (!model || !price) {
-        res.innerHTML = '<div class="qs-hint">Bitte Modell und Preis eingeben.</div>';
-        return;
-      }
-      var match = global.TDS.data.market.search(model)[0];
-      var values = { land: 'CH', region: 'Zürich', ausweis: 'A (unbeschränkt)', stil: [], modell: model,
-        budget_von: price, budget_bis: price, waehrung: 'CHF', paket: 'Quick-Check' };
-      var out = scout.generate({ id: 'qs-' + model + '-' + price, values: values });
-      var best = out.deals && out.deals[0];
-      if (!best) { res.innerHTML = '<div class="qs-hint">Keine Einschätzung möglich.</div>'; return; }
-      var col = best.score >= 7.5 ? 'var(--ok)' : best.score >= 5.5 ? 'var(--warn)' : 'var(--err)';
-      var gap = best.valueGapPct > 0 ? best.valueGapPct + '% unter Markt'
-        : (best.valueGapPct < 0 ? Math.abs(best.valueGapPct) + '% über Markt' : 'am Marktwert');
-      res.innerHTML = '<div class="qs-out">' +
-        '<div class="qs-badge" style="background:' + col + '">' + best.score.toFixed(1) + '</div>' +
-        '<div class="qs-info"><div class="qs-title">' + ui.esc(best.brand + ' ' + best.model) + '</div>' +
-          '<div class="qs-sub">Angebot ' + ui.esc(fmt.money(price, 'CHF')) + ' · Marktwert Ø ' +
-            ui.esc(fmt.money(best.marketValue, 'CHF')) + ' · ' + ui.esc(gap) + '</div>' +
-          (match ? '' : '<div class="qs-hint">Modell nicht im Demo-Katalog — grobe Schätzung.</div>') +
-        '</div>' +
-        '<a class="btn-primary" href="#/form">Vollständige Analyse →</a>' +
-      '</div>';
+      ui.render(html);
+      refreshTable();
+      wireList();
     });
   }
 
-  function view() {
-    var html =
-      hero() +
-      quickScore() +
-      trust() +
-      stats() +
-      featureBlock('score', 'Deal-Score', 'Objektiv erkennen, ob der Preis stimmt',
-        'Wir vergleichen jedes Inserat mit dem Marktwert und bewerten es auf einer Skala von 0–10 — inklusive Zustand, Laufleistung und Zuverlässigkeit.',
-        ['Preis vs. realistischer Marktwert', 'Bewertung in 4+ Kriterien', 'Sofort sichtbar: Top oder Finger weg'], false) +
-      featureBlock('risk', 'Risiko & A2-Filter', 'Böse Überraschungen vermeiden',
-        'Alter, Kilometer, Service-Historie und modelltypische Schwächen ergeben eine klare Risiko-Einstufung. Mit A2/A1 zeigen wir nur passende Modelle.',
-        ['Risiko: Niedrig / Mittel / Höher', 'A2-/A1-konforme Auswahl', 'Modelltypische Schwachstellen im Blick'], true) +
-      featureBlock('deal', 'Verhandlung', 'Mit Argumenten zum besseren Preis',
-        'Du bekommst konkrete Verhandlungsargumente, einen realistischen Zielpreis und eine Besichtigungs-Checkliste für genau dieses Modell.',
-        ['Konkrete Hebel & Zielpreis', 'Besichtigungs-Checkliste', 'Fragen für den Verkäufer'], false) +
-      steps() +
-      testimonials() +
-      pricing() +
-      faq() +
-      finalCta();
+  function dashboardHtml(s) {
+    var segments = cfg.STATUSES.map(function (st) {
+      return { label: st, value: s.byStatus[st] || 0, color: cfg.STATUS_COLORS[st] };
+    });
+    var legend = segments.map(function (seg) {
+      return '<div class="legend-row"><span class="legend-dot" style="background:' + seg.color + '"></span>' +
+        ui.esc(seg.label) + '<span class="legend-val">' + seg.value + '</span></div>';
+    }).join('');
 
-    ui.render(html);
-    wireQuickScore();
+    var pkgBars = Object.keys(s.byPackage).map(function (k) {
+      return { label: k, value: s.byPackage[k] };
+    });
+    var countryBars = Object.keys(s.byCountry).map(function (k) {
+      return { label: k, value: s.byCountry[k] };
+    }).sort(function (a, b) { return b.value - a.value; });
+
+    return '<div class="dash-grid">' +
+        kpi('Anfragen gesamt', s.total, '') +
+        kpi('Neu (7 Tage)', s.last7, 'frisch') +
+        kpi('Offen', s.open, 'in Bearbeitung') +
+        kpi('Conversion', fmt.pct(s.conversion), 'Report/abgeschlossen') +
+        kpi('Ø Budget', fmt.money(s.avgBudget, 'CHF'), 'Mittelwert') +
+      '</div>' +
+      '<div class="dash-charts">' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Status-Verteilung</div>' +
+          '<div class="donut-wrap">' +
+            charts.donut(segments, { center: s.total, centerSub: 'Anfragen' }) +
+            '<div class="legend">' + legend + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Pakete</div>' +
+          (pkgBars.length ? charts.bars(pkgBars) : '<div class="muted-cell">Noch keine Daten.</div>') +
+        '</div>' +
+      '</div>' +
+      '<div class="dash-charts">' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Länder</div>' +
+          (countryBars.length ? charts.bars(countryBars) : '<div class="muted-cell">Noch keine Daten.</div>') +
+        '</div>' +
+        '<div class="chart-card">' +
+          '<div class="chart-card-head">Letzte Aktivität</div>' +
+          recentHtml() +
+        '</div>' +
+      '</div>';
+  }
+
+  function recentHtml() {
+    if (!allRows.length) return '<div class="muted-cell">Noch keine Anfragen.</div>';
+    return '<div class="recent-list">' + allRows.slice(0, 5).map(function (r) {
+      var v = r.values;
+      return '<a class="recent-item" href="#/admin/' + ui.esc(r.id) + '">' +
+        '<span class="recent-name">' + ui.esc(v.vorname + ' ' + v.nachname) + '</span>' +
+        ui.statusBadge(r.status) +
+        '<span class="recent-time">' + ui.esc(fmt.relative(r.updatedAt || r.createdAt)) + '</span>' +
+        '</a>';
+    }).join('') + '</div>';
+  }
+
+  function kpi(label, value, sub) {
+    var valHtml = (typeof value === 'number')
+      ? '<div class="kpi-val" data-count="' + value + '">0</div>'
+      : '<div class="kpi-val">' + ui.esc(value) + '</div>';
+    return '<div class="kpi">' + valHtml +
+      '<div class="kpi-label">' + ui.esc(label) + '</div>' +
+      (sub ? '<div class="kpi-sub">' + ui.esc(sub) + '</div>' : '') + '</div>';
+  }
+
+  function sortOpt(val, label) {
+    return '<option value="' + val + '"' + (state.sort === val ? ' selected' : '') + '>' + ui.esc(label) + '</option>';
+  }
+
+  // Sortierbarer Spaltenkopf (klickbar, mit aria-sort)
+  function th(label, key) {
+    var parts = state.sort.split('-'), active = parts[0] === key;
+    var aria = active ? (parts[1] === 'asc' ? 'ascending' : 'descending') : 'none';
+    var arrow = active ? (parts[1] === 'asc' ? ' ▲' : ' ▼') : '';
+    return '<th scope="col" class="th-sort' + (active ? ' active' : '') + '" data-key="' + key + '" aria-sort="' + aria + '" tabindex="0" role="button">' +
+      ui.esc(label) + '<span class="th-arrow">' + arrow + '</span></th>';
+  }
+
+  // Spaltenkopf-Klick: gleiche Spalte -> Richtung wechseln, sonst aufsteigend.
+  function setSort(key) {
+    var parts = state.sort.split('-');
+    var dir = (parts[0] === key && parts[1] === 'asc') ? 'desc' : 'asc';
+    state.sort = key + '-' + dir;
+    state.limit = PAGE;
+    saveState();
+    var sel = $('sort'); if (sel) sel.value = state.sort; // falls Option existiert
+    syncSortHeaders();
+    refreshTable();
+  }
+
+  // aria-sort / Pfeile an den aktuellen state.sort angleichen.
+  function syncSortHeaders() {
+    var parts = state.sort.split('-'), key = parts[0], dir = parts[1];
+    Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
+      var on = el.getAttribute('data-key') === key;
+      el.classList.toggle('active', on);
+      el.setAttribute('aria-sort', on ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
+      var a = el.querySelector('.th-arrow'); if (a) a.textContent = on ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
+    });
+  }
+
+  function filterBtns(stats) {
+    var counts = { Alle: stats.total };
+    cfg.STATUSES.forEach(function (s) { counts[s] = stats.byStatus[s] || 0; });
+    return ['Alle'].concat(cfg.STATUSES).map(function (s) {
+      return '<button class="filter-btn' + (state.status === s ? ' active' : '') +
+        '" data-filter="' + ui.esc(s) + '">' + ui.esc(s) +
+        ' <span class="filter-count">' + (counts[s] || 0) + '</span></button>';
+    }).join('');
+  }
+
+  function applyFilters() {
+    var rows = allRows.slice();
+    if (state.status !== 'Alle') rows = rows.filter(function (r) { return r.status === state.status; });
+    if (state.q) {
+      var q = state.q.toLowerCase();
+      rows = rows.filter(function (r) {
+        var v = r.values;
+        return [r.id, v.vorname, v.nachname, v.email, v.modell, v.region, v.paket,
+          (Array.isArray(v.stil) ? v.stil.join(' ') : v.stil)].join(' ').toLowerCase().indexOf(q) !== -1;
+      });
+    }
+    var parts = state.sort.split('-'), key = parts[0], dir = parts[1] === 'desc' ? -1 : 1;
+    rows.sort(function (a, b) {
+      var r;
+      if (key === 'name') r = (a.values.nachname || '').localeCompare(b.values.nachname || '');
+      else if (key === 'status') r = cfg.STATUSES.indexOf(a.status) - cfg.STATUSES.indexOf(b.status);
+      else r = new Date(a.createdAt) - new Date(b.createdAt);
+      return r * dir;
+    });
+    return rows;
+  }
+
+  function refreshTable() {
+    var rows = applyFilters();
+    var tbody = $('tbody');
+    var more = $('table-more');
+    if (more) more.innerHTML = '';
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Keine Treffer. ' +
+        '<a href="#/form">Neue Anfrage erstellen →</a></td></tr>';
+      return;
+    }
+    var shown = rows.slice(0, state.limit);
+    tbody.innerHTML = shown.map(rowHtml).join('');
+    if (more && rows.length > state.limit) {
+      more.innerHTML = '<button class="btn-ghost btn-sm" id="more-btn">Weitere ' +
+        Math.min(PAGE, rows.length - state.limit) + ' von ' + rows.length + ' anzeigen</button>';
+      $('more-btn').addEventListener('click', function () { state.limit += PAGE; refreshTable(); });
+    }
+    // Klicks werden delegiert (siehe wireList) — kein Listener pro Zeile.
+  }
+
+  function rowHtml(r) {
+    var v = r.values;
+    var wunsch = v.modell ? v.modell : (Array.isArray(v.stil) ? v.stil.join(', ') : v.stil || '–');
+    return '<tr data-id="' + ui.esc(r.id) + '">' +
+      '<td class="mono">' + ui.esc(r.id) + '</td>' +
+      '<td>' + ui.esc(fmt.dateShort(r.createdAt)) + '</td>' +
+      '<td>' + ui.esc(v.vorname + ' ' + v.nachname) + '</td>' +
+      '<td class="muted-cell">' + ui.esc(v.region || '–') + '</td>' +
+      '<td class="muted-cell">' + ui.esc(wunsch) + '</td>' +
+      '<td>' + ui.esc(v.paket || '–') + '</td>' +
+      '<td>' + ui.statusBadge(r.status) + '</td>' +
+      '</tr>';
+  }
+
+  function wireList() {
+    var search = $('search');
+    search.addEventListener('input', global.TDS.dom.debounce(function () { state.q = search.value; state.limit = PAGE; saveState(); refreshTable(); }, 140));
+    $('sort').addEventListener('change', function () { state.sort = this.value; state.limit = PAGE; saveState(); syncSortHeaders(); refreshTable(); });
+
+    // Sortierbare Spaltenköpfe (Klick + Tastatur)
+    Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
+      el.addEventListener('click', function () { setSort(this.getAttribute('data-key')); });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSort(this.getAttribute('data-key')); }
+      });
+    });
+
+    // Ein delegierter Klick-Listener für alle (auch künftige) Tabellenzeilen.
+    $('tbody').addEventListener('click', function (e) {
+      var tr = e.target.closest && e.target.closest('tr[data-id]');
+      if (tr) router.navigate('/admin/' + tr.getAttribute('data-id'));
+    });
+
+    Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (btn) {
+      btn.addEventListener('click', function () {
+        state.status = this.getAttribute('data-filter');
+        state.limit = PAGE;
+        saveState();
+        Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (b) {
+          b.classList.toggle('active', b === btn);
+        });
+        refreshTable();
+      });
+    });
+
+    $('seed-btn').addEventListener('click', function () {
+      seedDemo().then(function () { toast.success('Beispieldaten geladen'); list(); });
+    });
+    $('csv-btn').addEventListener('click', exportCsv);
+    $('json-btn').addEventListener('click', function () {
+      store.exportJSON().then(function (json) {
+        global.TDS.dom.download('toeffdealscout-export.json', json, 'application/json');
+        toast.success('JSON exportiert');
+      });
+    });
+    $('import-btn').addEventListener('click', function () { $('import-file').click(); });
+    $('import-file').addEventListener('change', function (e) {
+      var file = e.target.files[0]; if (!file) return;
+      var reader = new global.FileReader();
+      reader.onload = function () {
+        store.importJSON(reader.result, 'merge').then(function (r) {
+          toast.success('Import: ' + r.imported + ' neu, ' + r.skipped + ' übersprungen');
+          list();
+        }).catch(function () { toast.error('Import fehlgeschlagen — ungültige Datei.'); });
+      };
+      reader.readAsText(file);
+    });
+    $('clear-btn').addEventListener('click', function () {
+      if (global.confirm('Wirklich ALLE Anfragen löschen?')) {
+        store.clear().then(function (prev) {
+          state.status = 'Alle'; state.q = '';
+          toast.info((prev.length) + ' Anfragen gelöscht', { action: { label: 'Rückgängig', fn: function () {
+            store.restoreMany(prev).then(function () { toast.success('Wiederhergestellt'); list(); });
+          } } });
+          list();
+        });
+      }
+    });
+  }
+
+  /* ============== DETAIL ============== */
+  function detail(params) {
+    store.get(params.id).then(function (rec) {
+      if (!rec) return notFound();
+      var v = rec.values;
+
+      var statusOpts = cfg.STATUSES.map(function (s) {
+        return '<option value="' + ui.esc(s) + '"' + (s === rec.status ? ' selected' : '') + '>' + ui.esc(s) + '</option>';
+      }).join('');
+      var nextStatus = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1] || null;
+
+      var html = '' +
+        '<div class="admin-bar"><div class="admin-bar-inner">' +
+          '<div><a class="back-link" href="#/admin">← Dashboard</a>' +
+            '<h2 class="admin-title">' + ui.esc(v.vorname + ' ' + v.nachname) + '</h2>' +
+            '<div class="admin-sub mono">' + ui.esc(rec.id) + ' · ' + ui.esc(fmt.date(rec.createdAt)) + '</div></div>' +
+          '<a class="btn-primary btn-sm" href="#/report/' + ui.esc(rec.id) + '">Report ansehen →</a>' +
+        '</div></div>' +
+
+        '<div class="wrap wrap-wide"><div class="detail-grid">' +
+          '<div class="detail-main">' +
+            dataBlock('Kontakt', [
+              ['Vorname', v.vorname], ['Nachname', v.nachname], ['E-Mail', v.email],
+              ['Telefon', v.telefon || '–'], ['Land', v.landLabel || v.land], ['Region', v.region]
+            ]) +
+            dataBlock('Führerausweis & Erfahrung', [
+              ['Führerausweis', v.ausweis], ['Erfahrung', v.erfahrung || '–']
+            ]) +
+            dataBlock('Wunsch-Motorrad', [
+              ['Stil', Array.isArray(v.stil) ? v.stil.join(', ') : v.stil],
+              ['Modell', v.modell || '–'], ['Budget', budgetText(v)],
+              ['Baujahr ab', v.baujahr || '–'], ['Max. km', v.km || '–'],
+              ['Nutzung', v.nutzung || '–'], ['Prioritäten', v.prioritaeten || '–']
+            ]) +
+            notesBlock(rec) +
+          '</div>' +
+
+          '<aside class="detail-side">' +
+            '<div class="side-card">' +
+              '<div class="side-card-head">Status</div>' +
+              '<div class="current-status">' + ui.statusBadge(rec.status) + '</div>' +
+              '<div class="sel-wrap"><select id="status-sel">' + statusOpts + '</select></div>' +
+              (nextStatus ? '<button class="btn-ghost btn-sm btn-block" id="advance-btn" style="margin-top:8px">Weiter zu „' + ui.esc(nextStatus) + '" →</button>' : '') +
+              '<div class="side-saved" id="status-saved">✓ Gespeichert</div>' +
+            '</div>' +
+            '<div class="side-card">' +
+              '<div class="side-card-head">Paket</div>' +
+              '<div class="side-pkg">' + ui.esc(v.paket || '–') + '</div>' +
+            '</div>' +
+            historyBlock(rec) +
+            '<div class="side-card">' +
+              '<div class="side-card-head">Aktionen</div>' +
+              '<a class="btn-ghost btn-block" href="#/report/' + ui.esc(rec.id) + '">Report-Mockup öffnen</a>' +
+              '<a class="btn-ghost btn-block" href="mailto:' + ui.esc(v.email) + '">E-Mail an Kunde</a>' +
+              '<button class="btn-ghost btn-block danger" id="del-btn">Anfrage löschen</button>' +
+            '</div>' +
+          '</aside>' +
+        '</div></div>' +
+        '';
+
+      ui.render(html);
+      wireDetail(rec);
+    });
+  }
+
+  function notesBlock(rec) {
+    var items = (rec.notes || []).slice().reverse().map(function (n) {
+      return '<div class="note-item"><div class="note-meta">' + ui.esc(fmt.relative(n.at)) + '</div>' +
+        '<div class="note-text">' + ui.esc(n.text) + '</div></div>';
+    }).join('');
+    return '<div class="data-block">' +
+      '<div class="data-block-head">Interne Notizen</div>' +
+      '<div class="note-add">' +
+        '<textarea id="note-input" placeholder="Notiz hinzufügen (nur intern sichtbar) …"></textarea>' +
+        '<button class="btn-ghost btn-sm" id="note-btn">Notiz speichern</button>' +
+      '</div>' +
+      '<div class="note-list">' + (items || '<div class="muted-cell">Noch keine Notizen.</div>') + '</div>' +
+      '</div>';
+  }
+
+  function historyBlock(rec) {
+    var items = (rec.history || []).slice().reverse().map(function (h) {
+      return '<div class="tl-item"><span class="tl-dot" style="background:' + (cfg.STATUS_COLORS[h.status] || 'var(--accent)') + '"></span>' +
+        '<div><div class="tl-status">' + ui.esc(h.status) + '</div>' +
+        '<div class="tl-time">' + ui.esc(fmt.date(h.at)) + '</div></div></div>';
+    }).join('');
+    return '<div class="side-card"><div class="side-card-head">Verlauf</div>' +
+      '<div class="timeline">' + items + '</div></div>';
+  }
+
+  function wireDetail(rec) {
+    var sel = $('status-sel');
+    sel.addEventListener('change', function () {
+      store.updateStatus(rec.id, this.value).then(function () {
+        var cur = global.document.querySelector('.current-status');
+        if (cur) cur.innerHTML = ui.statusBadge(sel.value);
+        var saved = $('status-saved');
+        saved.classList.add('show');
+        setTimeout(function () { saved.classList.remove('show'); }, 1600);
+        if (toast) toast.success('Status: ' + sel.value);
+        detail({ id: rec.id }); // Verlauf aktualisieren
+      });
+    });
+    var adv = $('advance-btn');
+    if (adv) adv.addEventListener('click', function () {
+      var next = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1];
+      if (!next) return;
+      store.updateStatus(rec.id, next).then(function () {
+        if (toast) toast.success('Status: ' + next);
+        detail({ id: rec.id });
+      });
+    });
+    $('note-btn').addEventListener('click', function () {
+      var input = $('note-input');
+      var text = (input.value || '').trim();
+      if (!text) { input.focus(); return; }
+      store.addNote(rec.id, text).then(function () {
+        if (toast) toast.success('Notiz gespeichert');
+        detail({ id: rec.id });
+      });
+    });
+    $('del-btn').addEventListener('click', function () {
+      if (global.confirm('Diese Anfrage wirklich löschen?')) {
+        store.remove(rec.id).then(function (removed) {
+          if (toast) toast.info('Anfrage gelöscht', { action: { label: 'Rückgängig', fn: function () {
+            store.restore(removed).then(function () { toast.success('Wiederhergestellt'); detail({ id: removed.id }); });
+          } } });
+          router.navigate('/admin');
+        });
+      }
+    });
+  }
+
+  /* ============== Helfer ============== */
+  function notFound() {
+    ui.render('' + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
+      '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + '');
+  }
+
+  function budgetText(v) {
+    if (!v.budget_von && !v.budget_bis) return '–';
+    var cur = v.waehrung || 'CHF';
+    return fmt.money(v.budget_von, cur) + ' – ' + fmt.money(v.budget_bis, cur);
+  }
+
+  function dataBlock(title, pairs) {
+    var rows = pairs.map(function (p) {
+      return '<div class="dl-row"><dt>' + ui.esc(p[0]) + '</dt><dd>' + ui.esc(p[1]) + '</dd></div>';
+    }).join('');
+    return '<div class="data-block"><div class="data-block-head">' + ui.esc(title) + '</div><dl class="dl">' + rows + '</dl></div>';
+  }
+
+  /* ---- Export / Demo ---- */
+  function csvCell(s) {
+    s = (s == null ? '' : String(s));
+    return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function exportCsv() {
+    var cols = ['ID', 'Datum', 'Vorname', 'Nachname', 'E-Mail', 'Telefon', 'Land', 'Region',
+      'Ausweis', 'Erfahrung', 'Stil', 'Modell', 'Budget von', 'Budget bis', 'Währung',
+      'Baujahr ab', 'Max km', 'Nutzung', 'Prioritäten', 'Paket', 'Status'];
+    var lines = [cols.map(csvCell).join(';')];
+    allRows.forEach(function (r) {
+      var v = r.values;
+      lines.push([r.id, fmt.date(r.createdAt), v.vorname, v.nachname, v.email, v.telefon,
+        v.landLabel || v.land, v.region, v.ausweis, v.erfahrung,
+        (Array.isArray(v.stil) ? v.stil.join(', ') : v.stil), v.modell,
+        v.budget_von, v.budget_bis, v.waehrung, v.baujahr, v.km, v.nutzung,
+        v.prioritaeten, v.paket, r.status].map(csvCell).join(';'));
+    });
+    global.TDS.dom.download('toeffdealscout-anfragen.csv', '﻿' + lines.join('\r\n'), 'text/csv;charset=utf-8');
+    toast.success('CSV exportiert (' + allRows.length + ' Zeilen)');
+  }
+
+  function seedDemo() {
+    var samples = global.TDS.data.demo.samples();
+    return Promise.all(samples.map(function (s) { return store.create(s); }));
   }
 
   global.TDS = global.TDS || {};
   global.TDS.views = global.TDS.views || {};
-  global.TDS.views.landing = view;
+  global.TDS.views.adminList = list;
+  global.TDS.views.adminDetail = detail;
+})(window);
+
+/* ===== js/components/agb.js ===== */
+/*
+ * components/agb.js — Allgemeine Geschäftsbedingungen (Pflichtseite).
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+
+  function view() {
+    var html = '' +
+      '<div class="hero hero-sm"><div class="hero-eye">Rechtliches</div>' +
+        '<h1>Allgemeine Geschäftsbedingungen</h1>' +
+        '<p>Die Rahmenbedingungen — für den Produktivbetrieb.</p></div>' +
+      '<div class="wrap">' +
+        '<div class="sec legal">' +
+          '<p><strong>Demo-Hinweis:</strong> Diese Version ist eine Demonstration. Es findet ' +
+            '<strong>keine Zahlung</strong> und keine kommerzielle Leistung statt. Die folgenden ' +
+            'Bedingungen gelten sinngemäss im späteren Produktivbetrieb.</p>' +
+          '<h2>1. Leistung</h2>' +
+          '<p>Töff Deal Scout erstellt eine unverbindliche Markteinschätzung (Deal-Report) zu ' +
+            'Motorrad-Inseraten. Es handelt sich um eine Beratungs-/Informationsleistung, nicht um ' +
+            'eine Kauf- oder Vermittlungsgarantie.</p>' +
+          '<h2>2. Preise &amp; Zahlung</h2>' +
+          '<p>Im Produktivbetrieb erfolgt die Zahlung pro Report (Paketpreis) via Stripe bzw. TWINT. ' +
+            'Preise verstehen sich inkl. allfälliger gesetzlicher Abgaben.</p>' +
+          '<h2>3. Widerruf</h2>' +
+          '<p>Da der Report unmittelbar als digitale Leistung erbracht wird, besteht nach Lieferung ' +
+            'des Reports kein Rücktrittsrecht.</p>' +
+          '<h2>4. Haftung</h2>' +
+          '<p>Einschätzungen beruhen auf öffentlich verfügbaren Daten und Modellannahmen. Eine ' +
+            'Gewähr für Vollständigkeit oder Kaufentscheidungen wird nicht übernommen.</p>' +
+          '<h2>5. Recht &amp; Gerichtsstand</h2>' +
+          '<p>Es gilt schweizerisches Recht. Gerichtsstand ist Zürich.</p>' +
+          '<a class="btn-ghost" href="#/">← Zur Startseite</a>' +
+        '</div>' +
+      '</div>';
+    ui.render(html);
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.agb = view;
+})(window);
+
+/* ===== js/components/datenschutz.js ===== */
+/*
+ * components/datenschutz.js — Datenschutzerklärung (Pflichtseite).
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+
+  function view() {
+    var html = '' +
+      '<div class="hero hero-sm"><div class="hero-eye">Rechtliches</div>' +
+        '<h1>Datenschutzerklärung</h1>' +
+        '<p>Wie wir mit deinen Daten umgehen — kurz und ehrlich.</p></div>' +
+      '<div class="wrap">' +
+        '<div class="sec legal">' +
+          '<p>Diese Anwendung ist eine <strong>Demo</strong>. Es gilt das schweizerische ' +
+            'Datenschutzgesetz (DSG); für Nutzer:innen aus DE/AT/LI zusätzlich die DSGVO.</p>' +
+          '<h2>Welche Daten wir verarbeiten</h2>' +
+          '<p>Alle Eingaben (Anfragen, Notizen, Einstellungen) werden ausschliesslich ' +
+            '<strong>lokal in deinem Browser</strong> über LocalStorage gespeichert. Es gibt ' +
+            '<strong>keinen Server</strong>, <strong>kein Tracking</strong>, keine Cookies zu ' +
+            'Analysezwecken und <strong>keine Weitergabe</strong> an Dritte.</p>' +
+          '<h2>Speicherdauer &amp; Löschung</h2>' +
+          '<p>Die Daten bleiben so lange erhalten, bis du sie löschst. Über ' +
+            '<a href="#/settings">Einstellungen → Daten</a> kannst du jederzeit alles entfernen.</p>' +
+          '<h2>Kontakt</h2>' +
+          '<p>Fragen zum Datenschutz: <a href="mailto:info@toeffdealscout.ch">info@toeffdealscout.ch</a></p>' +
+          '<a class="btn-ghost" href="#/">← Zur Startseite</a>' +
+        '</div>' +
+      '</div>';
+    ui.render(html);
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.datenschutz = view;
 })(window);
 
 /* ===== js/components/form.js ===== */
@@ -3413,590 +3688,565 @@ section[id], .section-head { scroll-margin-top:80px; }
   global.TDS.views.form = view;
 })(window);
 
-/* ===== js/components/success.js ===== */
+/* ===== js/components/impressum.js ===== */
 /*
- * success.js — Bestätigungsseite nach dem Absenden.
+ * components/impressum.js — Impressum (Pflichtseite).
  */
 (function (global) {
   'use strict';
 
   var ui = global.TDS.ui;
-  var cfg = global.TDS.config;
-  var store = global.TDS.store;
 
-  function view(params) {
-    store.get(params.id).then(function (rec) {
-      if (!rec) {
-        ui.render('' +
-          '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
-          '<a class="btn-primary" href="#/form">Neue Anfrage</a></div></div>' + '');
-        return;
-      }
+  function view() {
+    var html = '' +
+      '<div class="hero hero-sm"><div class="hero-eye">Rechtliches</div>' +
+        '<h1>Impressum</h1>' +
+        '<p>Wer hinter Töff Deal Scout steht.</p></div>' +
+      '<div class="wrap">' +
+        '<div class="sec legal">' +
+          '<h2>Anbieter</h2>' +
+          '<p>Töff Deal Scout<br>Zürich, Schweiz</p>' +
+          '<h2>Kontakt</h2>' +
+          '<p><a href="mailto:info@toeffdealscout.ch">info@toeffdealscout.ch</a></p>' +
+          '<h2>Hinweis</h2>' +
+          '<p>Dies ist ein <strong>Demo-Projekt</strong>. Aktuell ist keine kommerzielle ' +
+            'Tätigkeit aktiv; es werden keine Zahlungen abgewickelt und keine Daten an Server übertragen.</p>' +
+          '<a class="btn-ghost" href="#/">← Zur Startseite</a>' +
+        '</div>' +
+      '</div>';
+    ui.render(html);
+  }
 
-      var v = rec.values;
-      var quellen = (v.land && cfg.REGIONS[v.land]) ? cfg.REGIONS[v.land].hint.replace('Wir suchen', 'Gesucht wird') + '.' : '';
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.impressum = view;
+})(window);
 
-      var html = '' +
-        '<div class="wrap wrap-narrow">' +
-          '<div class="success">' +
-            '<div class="ok-ico">✓</div>' +
-            '<div class="ok-title">Anfrage erhalten!</div>' +
-            '<div class="ok-text">Danke, ' + ui.esc(v.vorname) + '. Wir melden uns innerhalb von 24 Stunden mit deinem persönlichen Deal-Report.</div>' +
-            '<div class="ok-detail">' +
-              '<strong>Was passiert jetzt?</strong>' +
-              'Wir analysieren aktuelle Inserate in deiner Region, bewerten sie nach Preis, Zustand und Risiko und schicken dir deinen Report. ' + ui.esc(quellen) +
-            '</div>' +
-            '<ol class="next-steps">' +
-              '<li>Wir durchsuchen den Markt in deiner Region.</li>' +
-              '<li>Jedes Inserat wird nach Preis, Zustand und Risiko bewertet.</li>' +
-              '<li>Du erhältst deinen Report mit Deal-Score und Verhandlungsargumenten.</li>' +
-            '</ol>' +
-            '<div class="ok-meta">' +
-              '<div><span>Anfrage-Nr.</span><strong id="ref-no">' + ui.esc(rec.id) + '</strong></div>' +
-              '<div><span>Paket</span><strong>' + ui.esc(v.paket) + '</strong></div>' +
-              '<div><span>Status</span>' + ui.statusBadge(rec.status) + '</div>' +
-            '</div>' +
-            '<div class="success-actions">' +
-              '<a class="btn-primary" href="#/report/' + ui.esc(rec.id) + '">Beispiel-Report ansehen →</a>' +
-              '<button class="btn-ghost" id="copy-ref" type="button">Anfrage-Nr. kopieren</button>' +
-              '<a class="btn-ghost" href="#/">Zur Startseite</a>' +
-            '</div>' +
+/* ===== js/components/kontakt.js ===== */
+/*
+ * components/kontakt.js — Kontaktseite (Demo: mailto, kein Backend).
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+
+  function view() {
+    var html = '' +
+      '<div class="hero hero-sm"><div class="hero-eye">Kontakt</div>' +
+        '<h1>Sag uns, wie wir helfen können</h1>' +
+        '<p>Fragen zum Service, Feedback oder eine Idee? Wir freuen uns.</p></div>' +
+
+      '<div class="wrap">' +
+        '<div class="sec">' +
+          '<div class="sec-head">Direkt erreichen</div>' +
+          '<div class="contact-rows">' +
+            '<div class="contact-row"><span class="contact-ico">✉</span><div><div class="contact-k">E-Mail</div>' +
+              '<a href="mailto:info@toeffdealscout.ch">info@toeffdealscout.ch</a></div></div>' +
+            '<div class="contact-row"><span class="contact-ico">📍</span><div><div class="contact-k">Ort</div>' +
+              '<span>Zürich, Schweiz</span></div></div>' +
+            '<div class="contact-row"><span class="contact-ico">⏱</span><div><div class="contact-k">Antwortzeit</div>' +
+              '<span>in der Regel innerhalb von 24 Stunden</span></div></div>' +
           '</div>' +
         '</div>' +
-        '';
 
-      ui.render(html);
+        '<div class="sec">' +
+          '<div class="sec-head">Nachricht schreiben</div>' +
+          '<div class="field"><label class="lbl" for="k-name">Name</label>' +
+            '<input type="text" id="k-name" placeholder="Dein Name"></div>' +
+          '<div class="field"><label class="lbl" for="k-msg">Nachricht</label>' +
+            '<textarea id="k-msg" placeholder="Wie können wir helfen?"></textarea></div>' +
+          '<button class="btn-primary" id="k-send" type="button">Per E-Mail senden →</button>' +
+          '<div class="hint-text">Öffnet dein E-Mail-Programm — es werden keine Daten an einen Server gesendet (Demo).</div>' +
+        '</div>' +
+      '</div>';
+    ui.render(html);
 
-      var copyBtn = global.document.getElementById('copy-ref');
-      if (copyBtn) copyBtn.addEventListener('click', function () {
-        var done = function () { if (global.TDS.toast) global.TDS.toast.success('Anfrage-Nr. kopiert: ' + rec.id); };
-        if (global.navigator && global.navigator.clipboard) {
-          global.navigator.clipboard.writeText(rec.id).then(done, done);
-        } else { done(); }
-      });
+    var btn = global.document.getElementById('k-send');
+    if (btn) btn.addEventListener('click', function () {
+      var name = (global.document.getElementById('k-name').value || '').trim();
+      var msg = (global.document.getElementById('k-msg').value || '').trim();
+      var body = encodeURIComponent((name ? 'Von: ' + name + '\n\n' : '') + msg);
+      var subject = encodeURIComponent('Anfrage über Töff Deal Scout');
+      global.location.href = 'mailto:info@toeffdealscout.ch?subject=' + subject + '&body=' + body;
     });
   }
 
   global.TDS = global.TDS || {};
   global.TDS.views = global.TDS.views || {};
-  global.TDS.views.success = view;
+  global.TDS.views.kontakt = view;
 })(window);
 
-/* ===== js/components/admin.js ===== */
+/* ===== js/components/landing.js ===== */
 /*
- * components/admin.js — Admin-Bereich.
- *   #/admin       -> Dashboard (KPIs + Charts) + durchsuchbare Liste
- *   #/admin/:id   -> Detailansicht: Stammdaten, Status, Notizen, Historie
- *
- * Hinweis: Kein Login (MVP). Auth-Guard-Stelle ist in app.js markiert.
+ * components/landing.js — Marketing-Startseite (Shopify-Stil).
+ * Reichhaltige Sektionen: zweispaltiger Hero mit Produkt-Visual, Trust-Leiste,
+ * Statistik-Band, alternierende Feature-Blöcke, Ablauf-Stepper, Testimonials,
+ * Pricing und FAQ. Liefert nur Content; render() ergänzt Header/Main/Footer.
  */
 (function (global) {
   'use strict';
 
   var ui = global.TDS.ui;
   var cfg = global.TDS.config;
-  var store = global.TDS.store;
-  var router = global.TDS.router;
-  var charts = global.TDS.charts;
+  var scout = global.TDS.scout;
   var fmt = global.TDS.format;
-  var toast = global.TDS.toast;
 
-  // Tabellenzustand (in-memory, persistiert über Sitzungen)
-  var PAGE = 8;
-  var SKEY = 'tds_admin_state';
-  var state = { q: '', status: 'Alle', sort: 'date-desc', limit: PAGE };
-  var allRows = [];
+  // Feste Demo-Anfrage für den Live-Hero (deterministisch via Scout-Engine).
+  var DEMO_REQUEST = { id: 'demo-hero', values: { land: 'CH', region: 'Zürich', ausweis: 'A (unbeschränkt)', stil: ['Naked Bike'], budget_von: 4000, budget_bis: 9000, waehrung: 'CHF', paket: 'Scout' } };
 
-  function $(id) { return global.document.getElementById(id); }
-
-  function loadState() {
-    try {
-      var s = JSON.parse(global.localStorage.getItem(SKEY) || 'null');
-      if (s) { state.q = s.q || ''; state.status = s.status || 'Alle'; state.sort = s.sort || 'date-desc'; }
-    } catch (e) {}
-    state.limit = PAGE;
-  }
-  function saveState() {
-    try { global.localStorage.setItem(SKEY, JSON.stringify({ q: state.q, status: state.status, sort: state.sort })); } catch (e) {}
-  }
-
-  /* ============== LISTE / DASHBOARD ============== */
-  function list() {
-    loadState();
-    Promise.all([store.list(), store.stats()]).then(function (res) {
-      allRows = res[0];
-      var stats = res[1];
-
-      var html = '' +
-        '<div class="admin-bar">' +
-          '<div class="admin-bar-inner">' +
-            '<div><h2 class="admin-title">Dashboard</h2>' +
-            '<div class="admin-sub">' + stats.total + ' Anfragen · lokal gespeichert</div></div>' +
-            '<a class="btn-primary btn-sm" href="#/form">+ Neue Anfrage</a>' +
-          '</div>' +
-        '</div>' +
-
-        '<div class="wrap wrap-wide">' +
-          dashboardHtml(stats) +
-
-          '<div class="toolbar">' +
-            '<input type="search" id="search" class="search-input" placeholder="Suche: Name, E-Mail, Modell, ID …" value="' + ui.esc(state.q) + '">' +
-            '<div class="sel-wrap toolbar-sort"><select id="sort">' +
-              sortOpt('date-desc', 'Neueste zuerst') + sortOpt('date-asc', 'Älteste zuerst') +
-              sortOpt('name-asc', 'Name A–Z') + sortOpt('status-asc', 'Status') +
-            '</select></div>' +
-          '</div>' +
-
-          '<div class="filters" id="filters">' + filterBtns(stats) + '</div>' +
-
-          '<div class="table-card">' +
-            '<table class="tbl"><thead><tr>' +
-              '<th scope="col">ID</th>' +
-              th('Datum', 'date') + th('Name', 'name') +
-              '<th scope="col">Region</th><th scope="col">Wunsch</th><th scope="col">Paket</th>' +
-              th('Status', 'status') +
-            '</tr></thead><tbody id="tbody"></tbody></table>' +
-            '<div class="table-more" id="table-more"></div>' +
-          '</div>' +
-
-          '<div class="admin-tools">' +
-            '<button class="btn-ghost btn-sm" id="seed-btn">Beispieldaten laden</button>' +
-            '<button class="btn-ghost btn-sm" id="csv-btn">CSV exportieren</button>' +
-            '<button class="btn-ghost btn-sm" id="json-btn">JSON exportieren</button>' +
-            '<button class="btn-ghost btn-sm" id="import-btn">JSON importieren</button>' +
-            '<button class="btn-ghost btn-sm danger" id="clear-btn">Alle löschen</button>' +
-            '<input type="file" id="import-file" accept="application/json,.json" hidden>' +
-          '</div>' +
-        '</div>' +
-        '';
-
-      ui.render(html);
-      refreshTable();
-      wireList();
-    });
-  }
-
-  function dashboardHtml(s) {
-    var segments = cfg.STATUSES.map(function (st) {
-      return { label: st, value: s.byStatus[st] || 0, color: cfg.STATUS_COLORS[st] };
-    });
-    var legend = segments.map(function (seg) {
-      return '<div class="legend-row"><span class="legend-dot" style="background:' + seg.color + '"></span>' +
-        ui.esc(seg.label) + '<span class="legend-val">' + seg.value + '</span></div>';
-    }).join('');
-
-    var pkgBars = Object.keys(s.byPackage).map(function (k) {
-      return { label: k, value: s.byPackage[k] };
-    });
-    var countryBars = Object.keys(s.byCountry).map(function (k) {
-      return { label: k, value: s.byCountry[k] };
-    }).sort(function (a, b) { return b.value - a.value; });
-
-    return '<div class="dash-grid">' +
-        kpi('Anfragen gesamt', s.total, '') +
-        kpi('Neu (7 Tage)', s.last7, 'frisch') +
-        kpi('Offen', s.open, 'in Bearbeitung') +
-        kpi('Conversion', fmt.pct(s.conversion), 'Report/abgeschlossen') +
-        kpi('Ø Budget', fmt.money(s.avgBudget, 'CHF'), 'Mittelwert') +
+  /* ---------- Hero ---------- */
+  function staticHeroCard() {
+    // Dekoratives "Deal-Vorschau"-Kärtchen (rein visuell).
+    return '<div class="hero-visual" aria-hidden="true">' +
+      '<div class="hv-card hv-card-main">' +
+        '<div class="hv-row"><span class="hv-rank">Bestes Angebot</span><span class="hv-risk">Risiko: Niedrig</span></div>' +
+        '<div class="hv-model">Yamaha MT-07</div>' +
+        '<div class="hv-meta">2021 · 18 000 km · privat</div>' +
+        '<div class="hv-score"><div class="hv-gauge"><span>8.7</span></div>' +
+          '<div class="hv-price"><div class="hv-amount">CHF 6’450</div><div class="hv-sub">12% unter Markt</div></div></div>' +
+        '<div class="hv-bar"><i style="width:87%"></i></div>' +
       '</div>' +
-      '<div class="dash-charts">' +
-        '<div class="chart-card">' +
-          '<div class="chart-card-head">Status-Verteilung</div>' +
-          '<div class="donut-wrap">' +
-            charts.donut(segments, { center: s.total, centerSub: 'Anfragen' }) +
-            '<div class="legend">' + legend + '</div>' +
+      '<div class="hv-card hv-card-float hv-f1">📊 Deal-Score 8.7</div>' +
+      '<div class="hv-card hv-card-float hv-f2">🤝 CHF 850 Sparpotenzial</div>' +
+    '</div>';
+  }
+
+  // Live: ruft die echte Scout-Engine auf und zeigt das beste Beispiel-Angebot.
+  function heroVisual() {
+    var result = scout && scout.generate(DEMO_REQUEST);
+    var best = result && result.deals && result.deals[0];
+    if (!best) return staticHeroCard();
+    var cur = best.currency || 'CHF';
+    var scoreWidth = Math.round(best.score / 10 * 100);
+    var gapLabel = best.valueGapPct > 0
+      ? best.valueGapPct + '% unter Markt'
+      : (best.valueGapPct < 0 ? Math.abs(best.valueGapPct) + '% über Markt' : 'am Marktwert');
+    var savingAbs = Math.round(Math.abs(best.marketValue - best.asking));
+    return '<div class="hero-visual" aria-label="Beispiel Deal-Report (Live-Demo)">' +
+      '<div class="hv-card hv-card-main">' +
+        '<div class="hv-row">' +
+          '<span class="hv-rank">Bestes Angebot</span>' +
+          '<span class="hv-risk hv-risk-' + best.risk.level + '">Risiko: ' + ui.esc(best.risk.label) + '</span>' +
+        '</div>' +
+        '<div class="hv-model">' + ui.esc(best.brand + ' ' + best.model) + '</div>' +
+        '<div class="hv-meta">' + ui.esc(best.year + ' · ' + fmt.km(best.km) + ' · ' + best.seller) + '</div>' +
+        '<div class="hv-score">' +
+          '<div class="hv-gauge"><span>' + best.score.toFixed(1) + '</span></div>' +
+          '<div class="hv-price">' +
+            '<div class="hv-amount">' + ui.esc(fmt.money(best.asking, cur)) + '</div>' +
+            '<div class="hv-sub">' + ui.esc(gapLabel) + '</div>' +
           '</div>' +
         '</div>' +
-        '<div class="chart-card">' +
-          '<div class="chart-card-head">Pakete</div>' +
-          (pkgBars.length ? charts.bars(pkgBars) : '<div class="muted-cell">Noch keine Daten.</div>') +
-        '</div>' +
+        '<div class="hv-bar"><i style="width:' + scoreWidth + '%"></i></div>' +
       '</div>' +
-      '<div class="dash-charts">' +
-        '<div class="chart-card">' +
-          '<div class="chart-card-head">Länder</div>' +
-          (countryBars.length ? charts.bars(countryBars) : '<div class="muted-cell">Noch keine Daten.</div>') +
+      '<div class="hv-card hv-card-float hv-f1">Deal-Score ' + best.score.toFixed(1) + '</div>' +
+      '<div class="hv-card hv-card-float hv-f2">' +
+        (best.valueGapPct > 0 ? ui.esc(fmt.money(savingAbs, cur)) + ' Sparpotenzial' : 'Preis nahe Marktwert') +
+      '</div>' +
+    '</div>';
+  }
+
+  function hero() {
+    return '<section class="hero2">' +
+      '<div class="hero2-inner">' +
+        '<div class="hero2-text">' +
+          '<div class="hero-eye">Motorrad-Kaufberatung · Schweiz &amp; DACH · Live-Demo</div>' +
+          '<h1>Das beste Töff zum besten Preis — <span class="accentword">ohne Risiko</span>.</h1>' +
+          '<p class="hero2-sub">Sag uns, welches Motorrad du suchst. Wir scannen den Markt und liefern einen klaren Report mit Deal-Score, Risiko-Check und Verhandlungsargumenten.</p>' +
+          '<div class="hero2-cta">' +
+            '<a class="btn-primary btn-lg" href="#/form">Kostenlos starten →</a>' +
+            '<a class="btn-secondary btn-lg" href="#/report/demo">Beispiel-Report ansehen</a>' +
+          '</div>' +
+          '<div class="hero2-trust"><span class="stars">★★★★★</span> Beta · kostenlos &amp; unverbindlich · keine Echtzahlungen</div>' +
         '</div>' +
-        '<div class="chart-card">' +
-          '<div class="chart-card-head">Letzte Aktivität</div>' +
-          recentHtml() +
-        '</div>' +
+        heroVisual() +
+      '</div>' +
+    '</section>';
+  }
+
+  /* ---------- Trust / Quellen ---------- */
+  function trust() {
+    var srcs = ['anibis.ch', 'tutti.ch', 'ricardo.ch', 'mobile.de', 'kleinanzeigen.de', 'willhaben.at', 'autoscout24'];
+    return '<section class="trust-strip" aria-label="Quellen"><div class="wrap wrap-wide">' +
+      '<h2 class="sr-only">Quellen, die wir durchsuchen</h2>' +
+      '<div class="trust-label">Wir durchsuchen u.a.</div>' +
+      '<div class="trust-logos">' + srcs.map(function (s) {
+        return '<span class="trust-logo">' + ui.esc(s) + '</span>';
+      }).join('') + '</div>' +
+    '</div></section>';
+  }
+
+  /* ---------- Statistik-Band ---------- */
+  function stats() {
+    var items = [
+      ['12’000+', 'Inserate analysiert', 'pro Monat (Beispiel)'],
+      ['Ø 850', 'CHF Sparpotenzial', 'pro Deal (Beispiel)'],
+      ['< 24 h', 'bis zum Report', 'nach Anfrage'],
+      ['4', 'Länder', 'CH · DE · AT · LI']
+    ];
+    return '<section class="stats-band" aria-label="Kennzahlen"><div class="wrap wrap-wide">' +
+      '<h2 class="sr-only">Kennzahlen</h2>' +
+      '<div class="stats-demo-label">Beispielwerte · Demo</div>' +
+      '<div class="stats-grid">' +
+      items.map(function (s) {
+        return '<div class="stat"><div class="stat-num">' + ui.esc(s[0]) + '</div>' +
+          '<div class="stat-label">' + ui.esc(s[1]) + '</div>' +
+          '<div class="stat-sub">' + ui.esc(s[2]) + '</div></div>';
+      }).join('') + '</div></div></section>';
+  }
+
+  /* ---------- Feature-Blöcke (alternierend) ---------- */
+  function illu(kind) {
+    if (kind === 'score') {
+      return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
+        '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
+        '<rect x="32" y="120" width="22" height="26" rx="3" fill="var(--accent)" opacity=".35"/>' +
+        '<rect x="62" y="98" width="22" height="48" rx="3" fill="var(--accent)" opacity=".55"/>' +
+        '<rect x="92" y="74" width="22" height="72" rx="3" fill="var(--accent)" opacity=".75"/>' +
+        '<rect x="122" y="52" width="22" height="94" rx="3" fill="var(--accent)"/>' +
+        '<circle cx="170" cy="64" r="22" fill="none" stroke="var(--accent)" stroke-width="6" stroke-dasharray="104 40" transform="rotate(-90 170 64)"/>' +
+        '<text x="170" y="69" text-anchor="middle" font-size="15" font-weight="700" fill="var(--text)">8.7</text>' +
+      '</svg>';
+    }
+    if (kind === 'risk') {
+      return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
+        '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
+        '<path d="M110 44 l46 18 v34 c0 30 -22 46 -46 56 c-24 -10 -46 -26 -46 -56 V62 Z" fill="var(--ok-bg)" stroke="var(--ok)" stroke-width="3"/>' +
+        '<path d="M96 100 l12 12 l22 -26" fill="none" stroke="var(--ok)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+    }
+    return '<svg viewBox="0 0 220 180" class="illu" role="img" aria-hidden="true">' +
+      '<rect x="14" y="20" width="192" height="140" rx="14" fill="var(--surface)" stroke="var(--border)"/>' +
+      '<rect x="34" y="48" width="120" height="12" rx="6" fill="var(--accent)" opacity=".7"/>' +
+      '<rect x="34" y="74" width="152" height="10" rx="5" fill="var(--border)"/>' +
+      '<rect x="34" y="94" width="138" height="10" rx="5" fill="var(--border)"/>' +
+      '<rect x="34" y="120" width="84" height="26" rx="8" fill="var(--accent)"/>' +
+      '<text x="76" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">-CHF 500</text>' +
+    '</svg>';
+  }
+
+  function featureBlock(kind, eye, title, text, points, flip) {
+    var li = points.map(function (p) { return '<li>' + ui.esc(p) + '</li>'; }).join('');
+    var media = '<div class="fb-media">' + illu(kind) + '</div>';
+    var body = '<div class="fb-body">' +
+      '<div class="fb-eye">' + ui.esc(eye) + '</div>' +
+      '<h3 class="fb-title">' + ui.esc(title) + '</h3>' +
+      '<p class="fb-text">' + ui.esc(text) + '</p>' +
+      '<ul class="fb-list">' + li + '</ul>' +
+      '<a class="link-arrow" href="#/form">Jetzt analysieren lassen →</a>' +
       '</div>';
+    return '<section class="feature-block' + (flip ? ' flip' : '') + '"><div class="wrap wrap-wide"><div class="fb-grid">' +
+      (flip ? body + media : media + body) + '</div></div></section>';
   }
 
-  function recentHtml() {
-    if (!allRows.length) return '<div class="muted-cell">Noch keine Anfragen.</div>';
-    return '<div class="recent-list">' + allRows.slice(0, 5).map(function (r) {
-      var v = r.values;
-      return '<a class="recent-item" href="#/admin/' + ui.esc(r.id) + '">' +
-        '<span class="recent-name">' + ui.esc(v.vorname + ' ' + v.nachname) + '</span>' +
-        ui.statusBadge(r.status) +
-        '<span class="recent-time">' + ui.esc(fmt.relative(r.updatedAt || r.createdAt)) + '</span>' +
-        '</a>';
+  /* ---------- Stepper ---------- */
+  function steps() {
+    var data = [
+      ['1', 'Anfrage ausfüllen', 'Budget, Stil, Wunschmodell und Region — in rund 2 Minuten.'],
+      ['2', 'Wir scouten den Markt', 'Wir prüfen aktuelle Inserate auf Preis, Zustand und Risiko.'],
+      ['3', 'Report erhalten', 'Top-Deals mit Deal-Score, Risiko und Verhandlungsargumenten.']
+    ];
+    return '<section class="wrap wrap-wide">' +
+      '<div class="section-head"><div class="section-eye">So funktioniert\'s</div>' +
+      '<h2 class="section-title">In drei Schritten zum besten Deal</h2></div>' +
+      '<div class="stepper">' + data.map(function (s) {
+        return '<div class="step2"><div class="step2-num">' + s[0] + '</div>' +
+          '<div class="step2-title">' + ui.esc(s[1]) + '</div>' +
+          '<div class="step2-text">' + ui.esc(s[2]) + '</div></div>';
+      }).join('') + '</div></section>';
+  }
+
+  /* ---------- Testimonials ---------- */
+  function testimonials() {
+    var data = [
+      ['„Endlich wusste ich, was ein fairer Preis ist. CHF 700 runtergehandelt."', 'Lena B.', 'Zürich · Yamaha MT-07'],
+      ['„Der Risiko-Check hat mich vor einem Unfallbike bewahrt. Gold wert."', 'Marco F.', 'Bern · V-Strom 650'],
+      ['„A2-Filter top — nur passende Modelle, kein Suchen mehr."', 'Sara H.', 'München · CB500X']
+    ];
+    return '<section class="wrap wrap-wide">' +
+      '<div class="section-head"><div class="section-eye">Stimmen (Beispiel)</div>' +
+      '<h2 class="section-title">Was Käufer:innen sagen könnten (Beispielzitate)</h2></div>' +
+      '<div class="testi-grid">' + data.map(function (t) {
+        return '<figure class="testi"><div class="testi-stars">★★★★★</div>' +
+          '<blockquote>' + ui.esc(t[0]) + '</blockquote>' +
+          '<figcaption><span class="testi-name">' + ui.esc(t[1]) + '</span>' +
+          '<span class="testi-meta">' + ui.esc(t[2]) + '</span></figcaption></figure>';
+      }).join('') + '</div></section>';
+  }
+
+  /* ---------- Pricing ---------- */
+  function pricing() {
+    var cards = cfg.PACKAGES.map(function (p) {
+      var feats = p.feats.map(function (f) { return '<li>' + ui.esc(f) + '</li>'; }).join('');
+      return '<div class="price-card' + (p.recommended ? ' price-card-rec' : '') + '">' +
+        (p.badge ? '<div class="pkg-badge">' + ui.esc(p.badge) + '</div>' : '') +
+        '<div class="price-name">' + ui.esc(p.name) + '</div>' +
+        '<div class="price-amount">CHF ' + ui.esc(p.price.CHF) + '</div>' +
+        '<div class="price-sub2">' + ui.esc(p.sub) + '</div>' +
+        '<ul class="price-feats">' + feats + '</ul>' +
+        '<a class="btn-' + (p.recommended ? 'primary' : 'secondary') + ' btn-block" href="#/form">' + ui.esc(p.name) + ' wählen</a>' +
+        '</div>';
+    }).join('');
+    return '<section class="wrap wrap-wide">' +
+      '<div class="section-head"><div class="section-eye">Pakete &amp; Preise</div>' +
+      '<h2 class="section-title">Transparent. Du zahlst erst für den Report.</h2></div>' +
+      '<div class="pricing-grid">' + cards + '</div>' +
+      '<div class="pricing-note">Die Anfrage ist kostenlos. Kein Abo, keine versteckten Kosten.</div></section>';
+  }
+
+  /* ---------- FAQ ---------- */
+  function faq() {
+    var qa = [
+      ['Was kostet der Service?', 'Die Anfrage ist kostenlos. Du zahlst erst für den gewählten Report (ab CHF 9.90). In dieser Demo wird nichts verrechnet — alles bleibt lokal im Browser.'],
+      ['Woher kommen die Inserate?', 'In der Demo sind die Deals synthetisch (Beispieldaten). Produktiv durchsuchen wir Quellen wie anibis.ch, tutti.ch, mobile.de oder willhaben.at.'],
+      ['Wie schnell bekomme ich den Report?', 'Im Normalbetrieb innerhalb von 24 Stunden. Quick-Check-Einschätzungen schneller.'],
+      ['Berücksichtigt ihr meinen Führerausweis?', 'Ja. Bei A2/A1 filtern wir auf zulässige bzw. drosselbare Modelle.'],
+      ['Was passiert mit meinen Daten?', 'In der Demo bleiben sie ausschliesslich in deinem Browser (LocalStorage). Kein Server, kein Konto, keine Weitergabe.']
+    ];
+    return '<section class="wrap wrap-wide">' +
+      '<div class="section-head"><div class="section-eye">Häufige Fragen</div>' +
+      '<h2 class="section-title">Alles Wichtige auf einen Blick</h2></div>' +
+      '<div class="faq faq-2col">' + qa.map(function (x) {
+        return '<details class="faq-item"><summary>' + ui.esc(x[0]) + '</summary>' +
+          '<div class="faq-a">' + ui.esc(x[1]) + '</div></details>';
+      }).join('') + '</div></section>';
+  }
+
+  /* ---------- Finale CTA ---------- */
+  function finalCta() {
+    return '<section class="wrap wrap-wide"><div class="cta-hero">' +
+      '<div class="cta-hero-inner">' +
+        '<h2>Bereit, den besten Deal zu finden?</h2>' +
+        '<p>Starte kostenlos — in zwei Minuten zum persönlichen Deal-Report.</p>' +
+        '<a class="btn-primary btn-lg" href="#/form">Jetzt Anfrage stellen →</a>' +
+      '</div>' +
+    '</div></section>';
+  }
+
+  /* ---------- Schnell-Score-Widget ---------- */
+  function quickScore() {
+    return '<section class="quick-score-section wrap wrap-narrow">' +
+      '<div class="sec qs-card">' +
+        '<div class="sec-head">Schnell-Check — passt der Preis?</div>' +
+        '<div class="row2">' +
+          '<div class="field"><label class="lbl" for="qs-model">Modell</label>' +
+            '<input type="text" id="qs-model" placeholder="z.B. Yamaha MT-07"></div>' +
+          '<div class="field"><label class="lbl" for="qs-price">Angebotspreis (CHF)</label>' +
+            '<input type="text" id="qs-price" placeholder="z.B. 7200" inputmode="numeric"></div>' +
+        '</div>' +
+        '<button class="btn-primary" id="qs-btn" type="button">Score schätzen →</button>' +
+        '<div id="qs-result" class="qs-result" role="status"></div>' +
+      '</div>' +
+    '</section>';
+  }
+
+  function wireQuickScore() {
+    var btn = global.document.getElementById('qs-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var model = (global.document.getElementById('qs-model').value || '').trim();
+      var price = parseInt((global.document.getElementById('qs-price').value || '').replace(/[^\d]/g, ''), 10);
+      var res = global.document.getElementById('qs-result');
+      if (!model || !price) {
+        res.innerHTML = '<div class="qs-hint">Bitte Modell und Preis eingeben.</div>';
+        return;
+      }
+      var match = global.TDS.data.market.search(model)[0];
+      var values = { land: 'CH', region: 'Zürich', ausweis: 'A (unbeschränkt)', stil: [], modell: model,
+        budget_von: price, budget_bis: price, waehrung: 'CHF', paket: 'Quick-Check' };
+      var out = scout.generate({ id: 'qs-' + model + '-' + price, values: values });
+      var best = out.deals && out.deals[0];
+      if (!best) { res.innerHTML = '<div class="qs-hint">Keine Einschätzung möglich.</div>'; return; }
+      var col = best.score >= 7.5 ? 'var(--ok)' : best.score >= 5.5 ? 'var(--warn)' : 'var(--err)';
+      var gap = best.valueGapPct > 0 ? best.valueGapPct + '% unter Markt'
+        : (best.valueGapPct < 0 ? Math.abs(best.valueGapPct) + '% über Markt' : 'am Marktwert');
+      res.innerHTML = '<div class="qs-out">' +
+        '<div class="qs-badge" style="background:' + col + '">' + best.score.toFixed(1) + '</div>' +
+        '<div class="qs-info"><div class="qs-title">' + ui.esc(best.brand + ' ' + best.model) + '</div>' +
+          '<div class="qs-sub">Angebot ' + ui.esc(fmt.money(price, 'CHF')) + ' · Marktwert Ø ' +
+            ui.esc(fmt.money(best.marketValue, 'CHF')) + ' · ' + ui.esc(gap) + '</div>' +
+          (match ? '' : '<div class="qs-hint">Modell nicht im Demo-Katalog — grobe Schätzung.</div>') +
+        '</div>' +
+        '<a class="btn-primary" href="#/form">Vollständige Analyse →</a>' +
+      '</div>';
+    });
+  }
+
+  function view() {
+    var html =
+      hero() +
+      quickScore() +
+      trust() +
+      stats() +
+      featureBlock('score', 'Deal-Score', 'Objektiv erkennen, ob der Preis stimmt',
+        'Wir vergleichen jedes Inserat mit dem Marktwert und bewerten es auf einer Skala von 0–10 — inklusive Zustand, Laufleistung und Zuverlässigkeit.',
+        ['Preis vs. realistischer Marktwert', 'Bewertung in 4+ Kriterien', 'Sofort sichtbar: Top oder Finger weg'], false) +
+      featureBlock('risk', 'Risiko & A2-Filter', 'Böse Überraschungen vermeiden',
+        'Alter, Kilometer, Service-Historie und modelltypische Schwächen ergeben eine klare Risiko-Einstufung. Mit A2/A1 zeigen wir nur passende Modelle.',
+        ['Risiko: Niedrig / Mittel / Höher', 'A2-/A1-konforme Auswahl', 'Modelltypische Schwachstellen im Blick'], true) +
+      featureBlock('deal', 'Verhandlung', 'Mit Argumenten zum besseren Preis',
+        'Du bekommst konkrete Verhandlungsargumente, einen realistischen Zielpreis und eine Besichtigungs-Checkliste für genau dieses Modell.',
+        ['Konkrete Hebel & Zielpreis', 'Besichtigungs-Checkliste', 'Fragen für den Verkäufer'], false) +
+      steps() +
+      testimonials() +
+      pricing() +
+      faq() +
+      finalCta();
+
+    ui.render(html);
+    wireQuickScore();
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.landing = view;
+})(window);
+
+/* ===== js/components/notfound.js ===== */
+/*
+ * notfound.js — Fallback-Seite für unbekannte Routen.
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+
+  function view(ctx) {
+    var path = (ctx && ctx.path) ? ctx.path : '';
+    var html = '' +
+      '<div class="wrap wrap-narrow">' +
+        '<div class="sec notfound">' +
+          '<div class="nf-code">404</div>' +
+          '<div class="ok-title">Seite nicht gefunden</div>' +
+          '<div class="ok-text">Die Route <span class="mono">' + ui.esc(path) + '</span> gibt es nicht.</div>' +
+          '<div class="success-actions">' +
+            '<a class="btn-primary" href="#/">Zur Startseite</a>' +
+            '<a class="btn-ghost" href="#/form">Anfrage stellen</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '';
+    ui.render(html);
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.notFound = view;
+})(window);
+
+/* ===== js/components/preise.js ===== */
+/*
+ * components/preise.js — Pakete & Preise (eigene Seite mit Vergleichstabelle).
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+  var cfg = global.TDS.config;
+
+  function priceCards() {
+    return '<div class="pricing-grid">' + cfg.PACKAGES.map(function (p) {
+      var feats = p.feats.map(function (f) { return '<li>' + ui.esc(f) + '</li>'; }).join('');
+      return '<div class="price-card' + (p.recommended ? ' price-card-rec' : '') + '">' +
+        (p.badge ? '<div class="pkg-badge">' + ui.esc(p.badge) + '</div>' : '') +
+        '<div class="price-name">' + ui.esc(p.name) + '</div>' +
+        '<div class="price-amount">CHF ' + ui.esc(p.price.CHF) + '</div>' +
+        '<div class="price-sub2">' + ui.esc(p.sub) + '</div>' +
+        '<ul class="price-feats">' + feats + '</ul>' +
+        '<a class="btn-' + (p.recommended ? 'primary' : 'secondary') + ' btn-block" href="#/form">' + ui.esc(p.name) + ' wählen</a>' +
+        '</div>';
     }).join('') + '</div>';
   }
 
-  function kpi(label, value, sub) {
-    var valHtml = (typeof value === 'number')
-      ? '<div class="kpi-val" data-count="' + value + '">0</div>'
-      : '<div class="kpi-val">' + ui.esc(value) + '</div>';
-    return '<div class="kpi">' + valHtml +
-      '<div class="kpi-label">' + ui.esc(label) + '</div>' +
-      (sub ? '<div class="kpi-sub">' + ui.esc(sub) + '</div>' : '') + '</div>';
-  }
-
-  function sortOpt(val, label) {
-    return '<option value="' + val + '"' + (state.sort === val ? ' selected' : '') + '>' + ui.esc(label) + '</option>';
-  }
-
-  // Sortierbarer Spaltenkopf (klickbar, mit aria-sort)
-  function th(label, key) {
-    var parts = state.sort.split('-'), active = parts[0] === key;
-    var aria = active ? (parts[1] === 'asc' ? 'ascending' : 'descending') : 'none';
-    var arrow = active ? (parts[1] === 'asc' ? ' ▲' : ' ▼') : '';
-    return '<th scope="col" class="th-sort' + (active ? ' active' : '') + '" data-key="' + key + '" aria-sort="' + aria + '" tabindex="0" role="button">' +
-      ui.esc(label) + '<span class="th-arrow">' + arrow + '</span></th>';
-  }
-
-  // Spaltenkopf-Klick: gleiche Spalte -> Richtung wechseln, sonst aufsteigend.
-  function setSort(key) {
-    var parts = state.sort.split('-');
-    var dir = (parts[0] === key && parts[1] === 'asc') ? 'desc' : 'asc';
-    state.sort = key + '-' + dir;
-    state.limit = PAGE;
-    saveState();
-    var sel = $('sort'); if (sel) sel.value = state.sort; // falls Option existiert
-    syncSortHeaders();
-    refreshTable();
-  }
-
-  // aria-sort / Pfeile an den aktuellen state.sort angleichen.
-  function syncSortHeaders() {
-    var parts = state.sort.split('-'), key = parts[0], dir = parts[1];
-    Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
-      var on = el.getAttribute('data-key') === key;
-      el.classList.toggle('active', on);
-      el.setAttribute('aria-sort', on ? (dir === 'asc' ? 'ascending' : 'descending') : 'none');
-      var a = el.querySelector('.th-arrow'); if (a) a.textContent = on ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
-    });
-  }
-
-  function filterBtns(stats) {
-    var counts = { Alle: stats.total };
-    cfg.STATUSES.forEach(function (s) { counts[s] = stats.byStatus[s] || 0; });
-    return ['Alle'].concat(cfg.STATUSES).map(function (s) {
-      return '<button class="filter-btn' + (state.status === s ? ' active' : '') +
-        '" data-filter="' + ui.esc(s) + '">' + ui.esc(s) +
-        ' <span class="filter-count">' + (counts[s] || 0) + '</span></button>';
+  function compareTable() {
+    var rows = [
+      ['Deal-Score', ['✓', '✓', '✓']],
+      ['Preisvergleich Markt', ['✓', '✓', '✓']],
+      ['Anzahl bewertete Inserate', ['1', '3', '5']],
+      ['Verhandlungsargumente', ['–', '✓', '✓']],
+      ['Fragen für Verkäufer', ['–', '✓', '✓']],
+      ['Besichtigungs-Checkliste', ['–', '–', '✓']],
+      ['30-Min Beratungscall', ['–', '–', '✓']],
+      ['Lieferzeit', ['12 h', '24 h', '24 h']]
+    ];
+    var head = '<tr><th scope="col">Leistung</th>' +
+      cfg.PACKAGES.map(function (p) { return '<th scope="col">' + ui.esc(p.name) + '</th>'; }).join('') + '</tr>';
+    var body = rows.map(function (r) {
+      return '<tr><th scope="row">' + ui.esc(r[0]) + '</th>' +
+        r[1].map(function (c) {
+          var cls = c === '✓' ? ' class="cmp-yes"' : (c === '–' ? ' class="cmp-no"' : '');
+          return '<td' + cls + '>' + ui.esc(c) + '</td>';
+        }).join('') + '</tr>';
     }).join('');
+    return '<div class="table-card"><table class="tbl cmp-table"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
   }
 
-  function applyFilters() {
-    var rows = allRows.slice();
-    if (state.status !== 'Alle') rows = rows.filter(function (r) { return r.status === state.status; });
-    if (state.q) {
-      var q = state.q.toLowerCase();
-      rows = rows.filter(function (r) {
-        var v = r.values;
-        return [r.id, v.vorname, v.nachname, v.email, v.modell, v.region, v.paket,
-          (Array.isArray(v.stil) ? v.stil.join(' ') : v.stil)].join(' ').toLowerCase().indexOf(q) !== -1;
-      });
-    }
-    var parts = state.sort.split('-'), key = parts[0], dir = parts[1] === 'desc' ? -1 : 1;
-    rows.sort(function (a, b) {
-      var r;
-      if (key === 'name') r = (a.values.nachname || '').localeCompare(b.values.nachname || '');
-      else if (key === 'status') r = cfg.STATUSES.indexOf(a.status) - cfg.STATUSES.indexOf(b.status);
-      else r = new Date(a.createdAt) - new Date(b.createdAt);
-      return r * dir;
-    });
-    return rows;
-  }
+  function view() {
+    var html = '' +
+      '<div class="hero hero-sm"><div class="hero-eye">Pakete &amp; Preise</div>' +
+        '<h1>Transparent. Du zahlst erst für den Report.</h1>' +
+        '<p>Die Anfrage ist immer kostenlos. Kein Abo, keine versteckten Kosten.</p></div>' +
 
-  function refreshTable() {
-    var rows = applyFilters();
-    var tbody = $('tbody');
-    var more = $('table-more');
-    if (more) more.innerHTML = '';
-    if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Keine Treffer. ' +
-        '<a href="#/form">Neue Anfrage erstellen →</a></td></tr>';
-      return;
-    }
-    var shown = rows.slice(0, state.limit);
-    tbody.innerHTML = shown.map(rowHtml).join('');
-    if (more && rows.length > state.limit) {
-      more.innerHTML = '<button class="btn-ghost btn-sm" id="more-btn">Weitere ' +
-        Math.min(PAGE, rows.length - state.limit) + ' von ' + rows.length + ' anzeigen</button>';
-      $('more-btn').addEventListener('click', function () { state.limit += PAGE; refreshTable(); });
-    }
-    // Klicks werden delegiert (siehe wireList) — kein Listener pro Zeile.
-  }
-
-  function rowHtml(r) {
-    var v = r.values;
-    var wunsch = v.modell ? v.modell : (Array.isArray(v.stil) ? v.stil.join(', ') : v.stil || '–');
-    return '<tr data-id="' + ui.esc(r.id) + '">' +
-      '<td class="mono">' + ui.esc(r.id) + '</td>' +
-      '<td>' + ui.esc(fmt.dateShort(r.createdAt)) + '</td>' +
-      '<td>' + ui.esc(v.vorname + ' ' + v.nachname) + '</td>' +
-      '<td class="muted-cell">' + ui.esc(v.region || '–') + '</td>' +
-      '<td class="muted-cell">' + ui.esc(wunsch) + '</td>' +
-      '<td>' + ui.esc(v.paket || '–') + '</td>' +
-      '<td>' + ui.statusBadge(r.status) + '</td>' +
-      '</tr>';
-  }
-
-  function wireList() {
-    var search = $('search');
-    search.addEventListener('input', global.TDS.dom.debounce(function () { state.q = search.value; state.limit = PAGE; saveState(); refreshTable(); }, 140));
-    $('sort').addEventListener('change', function () { state.sort = this.value; state.limit = PAGE; saveState(); syncSortHeaders(); refreshTable(); });
-
-    // Sortierbare Spaltenköpfe (Klick + Tastatur)
-    Array.prototype.forEach.call(global.document.querySelectorAll('.th-sort'), function (el) {
-      el.addEventListener('click', function () { setSort(this.getAttribute('data-key')); });
-      el.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSort(this.getAttribute('data-key')); }
-      });
-    });
-
-    // Ein delegierter Klick-Listener für alle (auch künftige) Tabellenzeilen.
-    $('tbody').addEventListener('click', function (e) {
-      var tr = e.target.closest && e.target.closest('tr[data-id]');
-      if (tr) router.navigate('/admin/' + tr.getAttribute('data-id'));
-    });
-
-    Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (btn) {
-      btn.addEventListener('click', function () {
-        state.status = this.getAttribute('data-filter');
-        state.limit = PAGE;
-        saveState();
-        Array.prototype.forEach.call(global.document.querySelectorAll('.filter-btn'), function (b) {
-          b.classList.toggle('active', b === btn);
-        });
-        refreshTable();
-      });
-    });
-
-    $('seed-btn').addEventListener('click', function () {
-      seedDemo().then(function () { toast.success('Beispieldaten geladen'); list(); });
-    });
-    $('csv-btn').addEventListener('click', exportCsv);
-    $('json-btn').addEventListener('click', function () {
-      store.exportJSON().then(function (json) {
-        global.TDS.dom.download('toeffdealscout-export.json', json, 'application/json');
-        toast.success('JSON exportiert');
-      });
-    });
-    $('import-btn').addEventListener('click', function () { $('import-file').click(); });
-    $('import-file').addEventListener('change', function (e) {
-      var file = e.target.files[0]; if (!file) return;
-      var reader = new global.FileReader();
-      reader.onload = function () {
-        store.importJSON(reader.result, 'merge').then(function (r) {
-          toast.success('Import: ' + r.imported + ' neu, ' + r.skipped + ' übersprungen');
-          list();
-        }).catch(function () { toast.error('Import fehlgeschlagen — ungültige Datei.'); });
-      };
-      reader.readAsText(file);
-    });
-    $('clear-btn').addEventListener('click', function () {
-      if (global.confirm('Wirklich ALLE Anfragen löschen?')) {
-        store.clear().then(function (prev) {
-          state.status = 'Alle'; state.q = '';
-          toast.info((prev.length) + ' Anfragen gelöscht', { action: { label: 'Rückgängig', fn: function () {
-            store.restoreMany(prev).then(function () { toast.success('Wiederhergestellt'); list(); });
-          } } });
-          list();
-        });
-      }
-    });
-  }
-
-  /* ============== DETAIL ============== */
-  function detail(params) {
-    store.get(params.id).then(function (rec) {
-      if (!rec) return notFound();
-      var v = rec.values;
-
-      var statusOpts = cfg.STATUSES.map(function (s) {
-        return '<option value="' + ui.esc(s) + '"' + (s === rec.status ? ' selected' : '') + '>' + ui.esc(s) + '</option>';
-      }).join('');
-      var nextStatus = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1] || null;
-
-      var html = '' +
-        '<div class="admin-bar"><div class="admin-bar-inner">' +
-          '<div><a class="back-link" href="#/admin">← Dashboard</a>' +
-            '<h2 class="admin-title">' + ui.esc(v.vorname + ' ' + v.nachname) + '</h2>' +
-            '<div class="admin-sub mono">' + ui.esc(rec.id) + ' · ' + ui.esc(fmt.date(rec.createdAt)) + '</div></div>' +
-          '<a class="btn-primary btn-sm" href="#/report/' + ui.esc(rec.id) + '">Report ansehen →</a>' +
+      '<div class="wrap wrap-wide">' +
+        priceCards() +
+        '<div class="section-head"><div class="section-eye">Im Detail</div>' +
+        '<h2 class="section-title">Was steckt in welchem Paket?</h2></div>' +
+        compareTable() +
+        '<div class="pricing-note">Demo: Es werden keine echten Zahlungen ausgelöst. Im Produktivbetrieb via TWINT/Stripe.</div>' +
+        '<div class="cta-hero" style="margin-top:40px"><div class="cta-hero-inner">' +
+          '<h2>Bereit?</h2><p>Starte mit einer kostenlosen Anfrage.</p>' +
+          '<a class="btn-primary btn-lg" href="#/form">Anfrage starten →</a>' +
         '</div></div>' +
-
-        '<div class="wrap wrap-wide"><div class="detail-grid">' +
-          '<div class="detail-main">' +
-            dataBlock('Kontakt', [
-              ['Vorname', v.vorname], ['Nachname', v.nachname], ['E-Mail', v.email],
-              ['Telefon', v.telefon || '–'], ['Land', v.landLabel || v.land], ['Region', v.region]
-            ]) +
-            dataBlock('Führerausweis & Erfahrung', [
-              ['Führerausweis', v.ausweis], ['Erfahrung', v.erfahrung || '–']
-            ]) +
-            dataBlock('Wunsch-Motorrad', [
-              ['Stil', Array.isArray(v.stil) ? v.stil.join(', ') : v.stil],
-              ['Modell', v.modell || '–'], ['Budget', budgetText(v)],
-              ['Baujahr ab', v.baujahr || '–'], ['Max. km', v.km || '–'],
-              ['Nutzung', v.nutzung || '–'], ['Prioritäten', v.prioritaeten || '–']
-            ]) +
-            notesBlock(rec) +
-          '</div>' +
-
-          '<aside class="detail-side">' +
-            '<div class="side-card">' +
-              '<div class="side-card-head">Status</div>' +
-              '<div class="current-status">' + ui.statusBadge(rec.status) + '</div>' +
-              '<div class="sel-wrap"><select id="status-sel">' + statusOpts + '</select></div>' +
-              (nextStatus ? '<button class="btn-ghost btn-sm btn-block" id="advance-btn" style="margin-top:8px">Weiter zu „' + ui.esc(nextStatus) + '" →</button>' : '') +
-              '<div class="side-saved" id="status-saved">✓ Gespeichert</div>' +
-            '</div>' +
-            '<div class="side-card">' +
-              '<div class="side-card-head">Paket</div>' +
-              '<div class="side-pkg">' + ui.esc(v.paket || '–') + '</div>' +
-            '</div>' +
-            historyBlock(rec) +
-            '<div class="side-card">' +
-              '<div class="side-card-head">Aktionen</div>' +
-              '<a class="btn-ghost btn-block" href="#/report/' + ui.esc(rec.id) + '">Report-Mockup öffnen</a>' +
-              '<a class="btn-ghost btn-block" href="mailto:' + ui.esc(v.email) + '">E-Mail an Kunde</a>' +
-              '<button class="btn-ghost btn-block danger" id="del-btn">Anfrage löschen</button>' +
-            '</div>' +
-          '</aside>' +
-        '</div></div>' +
-        '';
-
-      ui.render(html);
-      wireDetail(rec);
-    });
-  }
-
-  function notesBlock(rec) {
-    var items = (rec.notes || []).slice().reverse().map(function (n) {
-      return '<div class="note-item"><div class="note-meta">' + ui.esc(fmt.relative(n.at)) + '</div>' +
-        '<div class="note-text">' + ui.esc(n.text) + '</div></div>';
-    }).join('');
-    return '<div class="data-block">' +
-      '<div class="data-block-head">Interne Notizen</div>' +
-      '<div class="note-add">' +
-        '<textarea id="note-input" placeholder="Notiz hinzufügen (nur intern sichtbar) …"></textarea>' +
-        '<button class="btn-ghost btn-sm" id="note-btn">Notiz speichern</button>' +
-      '</div>' +
-      '<div class="note-list">' + (items || '<div class="muted-cell">Noch keine Notizen.</div>') + '</div>' +
       '</div>';
-  }
-
-  function historyBlock(rec) {
-    var items = (rec.history || []).slice().reverse().map(function (h) {
-      return '<div class="tl-item"><span class="tl-dot" style="background:' + (cfg.STATUS_COLORS[h.status] || 'var(--accent)') + '"></span>' +
-        '<div><div class="tl-status">' + ui.esc(h.status) + '</div>' +
-        '<div class="tl-time">' + ui.esc(fmt.date(h.at)) + '</div></div></div>';
-    }).join('');
-    return '<div class="side-card"><div class="side-card-head">Verlauf</div>' +
-      '<div class="timeline">' + items + '</div></div>';
-  }
-
-  function wireDetail(rec) {
-    var sel = $('status-sel');
-    sel.addEventListener('change', function () {
-      store.updateStatus(rec.id, this.value).then(function () {
-        var cur = global.document.querySelector('.current-status');
-        if (cur) cur.innerHTML = ui.statusBadge(sel.value);
-        var saved = $('status-saved');
-        saved.classList.add('show');
-        setTimeout(function () { saved.classList.remove('show'); }, 1600);
-        if (toast) toast.success('Status: ' + sel.value);
-        detail({ id: rec.id }); // Verlauf aktualisieren
-      });
-    });
-    var adv = $('advance-btn');
-    if (adv) adv.addEventListener('click', function () {
-      var next = cfg.STATUSES[cfg.STATUSES.indexOf(rec.status) + 1];
-      if (!next) return;
-      store.updateStatus(rec.id, next).then(function () {
-        if (toast) toast.success('Status: ' + next);
-        detail({ id: rec.id });
-      });
-    });
-    $('note-btn').addEventListener('click', function () {
-      var input = $('note-input');
-      var text = (input.value || '').trim();
-      if (!text) { input.focus(); return; }
-      store.addNote(rec.id, text).then(function () {
-        if (toast) toast.success('Notiz gespeichert');
-        detail({ id: rec.id });
-      });
-    });
-    $('del-btn').addEventListener('click', function () {
-      if (global.confirm('Diese Anfrage wirklich löschen?')) {
-        store.remove(rec.id).then(function (removed) {
-          if (toast) toast.info('Anfrage gelöscht', { action: { label: 'Rückgängig', fn: function () {
-            store.restore(removed).then(function () { toast.success('Wiederhergestellt'); detail({ id: removed.id }); });
-          } } });
-          router.navigate('/admin');
-        });
-      }
-    });
-  }
-
-  /* ============== Helfer ============== */
-  function notFound() {
-    ui.render('' + '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
-      '<a class="btn-ghost" href="#/admin">← Zurück</a></div></div>' + '');
-  }
-
-  function budgetText(v) {
-    if (!v.budget_von && !v.budget_bis) return '–';
-    var cur = v.waehrung || 'CHF';
-    return fmt.money(v.budget_von, cur) + ' – ' + fmt.money(v.budget_bis, cur);
-  }
-
-  function dataBlock(title, pairs) {
-    var rows = pairs.map(function (p) {
-      return '<div class="dl-row"><dt>' + ui.esc(p[0]) + '</dt><dd>' + ui.esc(p[1]) + '</dd></div>';
-    }).join('');
-    return '<div class="data-block"><div class="data-block-head">' + ui.esc(title) + '</div><dl class="dl">' + rows + '</dl></div>';
-  }
-
-  /* ---- Export / Demo ---- */
-  function csvCell(s) {
-    s = (s == null ? '' : String(s));
-    return /[",\n;]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  }
-
-  function exportCsv() {
-    var cols = ['ID', 'Datum', 'Vorname', 'Nachname', 'E-Mail', 'Telefon', 'Land', 'Region',
-      'Ausweis', 'Erfahrung', 'Stil', 'Modell', 'Budget von', 'Budget bis', 'Währung',
-      'Baujahr ab', 'Max km', 'Nutzung', 'Prioritäten', 'Paket', 'Status'];
-    var lines = [cols.map(csvCell).join(';')];
-    allRows.forEach(function (r) {
-      var v = r.values;
-      lines.push([r.id, fmt.date(r.createdAt), v.vorname, v.nachname, v.email, v.telefon,
-        v.landLabel || v.land, v.region, v.ausweis, v.erfahrung,
-        (Array.isArray(v.stil) ? v.stil.join(', ') : v.stil), v.modell,
-        v.budget_von, v.budget_bis, v.waehrung, v.baujahr, v.km, v.nutzung,
-        v.prioritaeten, v.paket, r.status].map(csvCell).join(';'));
-    });
-    global.TDS.dom.download('toeffdealscout-anfragen.csv', '﻿' + lines.join('\r\n'), 'text/csv;charset=utf-8');
-    toast.success('CSV exportiert (' + allRows.length + ' Zeilen)');
-  }
-
-  function seedDemo() {
-    var samples = global.TDS.data.demo.samples();
-    return Promise.all(samples.map(function (s) { return store.create(s); }));
+    ui.render(html);
   }
 
   global.TDS = global.TDS || {};
   global.TDS.views = global.TDS.views || {};
-  global.TDS.views.adminList = list;
-  global.TDS.views.adminDetail = detail;
+  global.TDS.views.preise = view;
+})(window);
+
+/* ===== js/components/ratgeber.js ===== */
+/*
+ * components/ratgeber.js — Ratgeber/Ressourcen (statische Tipps-Karten).
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+
+  function card(tag, title, text) {
+    return '<article class="guide-card">' +
+      '<div class="guide-tag">' + ui.esc(tag) + '</div>' +
+      '<h3 class="guide-title">' + ui.esc(title) + '</h3>' +
+      '<p class="guide-text">' + ui.esc(text) + '</p>' +
+      '<a class="link-arrow" href="#/form">Passendes Töff finden →</a>' +
+      '</article>';
+  }
+
+  function view() {
+    var html = '' +
+      '<div class="hero hero-sm"><div class="hero-eye">Ratgeber</div>' +
+        '<h1>Clever zum richtigen Töff</h1>' +
+        '<p>Kurz und praxisnah: worauf es beim Gebrauchtkauf wirklich ankommt.</p></div>' +
+
+      '<div class="wrap wrap-wide">' +
+        '<div class="guide-grid">' +
+          card('Einsteiger', 'A2 verstehen — was darf ich fahren?', 'A2 erlaubt bis 35 kW (oder gedrosselte Modelle). Wir zeigen dir nur Motorräder, die wirklich passen — kein Risiko mit der Leistung.') +
+          card('Preis', 'Ist der Preis fair?', 'Vergleiche nie nur zwei Inserate. Marktwert hängt von Baujahr, Kilometern und Zustand ab — genau das macht unser Deal-Score sichtbar.') +
+          card('Besichtigung', 'Die wichtigsten Checks vor Ort', 'Kette & Ritzel, Reifenalter (DOT), Bremsen, Gabel auf Ölverlust, Kaltstart. Unser Report liefert die Checkliste je Modell.') +
+          card('Verhandlung', 'So holst du den besten Preis', 'Mit konkreten Argumenten (km über Schnitt, fehlender Service) und einem realistischen Zielpreis verhandelst du souverän.') +
+          card('Risiko', 'Unfallbikes erkennen', 'Achte auf Spaltmasse, Lacknasen und unrunde Schrauben. Eine erhöhte Risiko-Einstufung im Report ist ein klares Warnsignal.') +
+          card('Papiere', 'MFK, Serviceheft & Co.', 'Frische MFK (CH) und lückenloses Serviceheft sparen bares Geld und Ärger. Fehlt der Nachweis: Preis nachverhandeln.') +
+        '</div>' +
+      '</div>';
+    ui.render(html);
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.ratgeber = view;
 })(window);
 
 /* ===== js/components/report.js ===== */
@@ -4364,36 +4614,126 @@ section[id], .section-head { scroll-margin-top:80px; }
   global.TDS.views.settings = view;
 })(window);
 
-/* ===== js/components/notfound.js ===== */
+/* ===== js/components/success.js ===== */
 /*
- * notfound.js — Fallback-Seite für unbekannte Routen.
+ * success.js — Bestätigungsseite nach dem Absenden.
+ */
+(function (global) {
+  'use strict';
+
+  var ui = global.TDS.ui;
+  var cfg = global.TDS.config;
+  var store = global.TDS.store;
+
+  function view(params) {
+    store.get(params.id).then(function (rec) {
+      if (!rec) {
+        ui.render('' +
+          '<div class="wrap"><div class="sec"><p>Anfrage nicht gefunden.</p>' +
+          '<a class="btn-primary" href="#/form">Neue Anfrage</a></div></div>' + '');
+        return;
+      }
+
+      var v = rec.values;
+      var quellen = (v.land && cfg.REGIONS[v.land]) ? cfg.REGIONS[v.land].hint.replace('Wir suchen', 'Gesucht wird') + '.' : '';
+
+      var html = '' +
+        '<div class="wrap wrap-narrow">' +
+          '<div class="success">' +
+            '<div class="ok-ico">✓</div>' +
+            '<div class="ok-title">Anfrage erhalten!</div>' +
+            '<div class="ok-text">Danke, ' + ui.esc(v.vorname) + '. Wir melden uns innerhalb von 24 Stunden mit deinem persönlichen Deal-Report.</div>' +
+            '<div class="ok-detail">' +
+              '<strong>Was passiert jetzt?</strong>' +
+              'Wir analysieren aktuelle Inserate in deiner Region, bewerten sie nach Preis, Zustand und Risiko und schicken dir deinen Report. ' + ui.esc(quellen) +
+            '</div>' +
+            '<ol class="next-steps">' +
+              '<li>Wir durchsuchen den Markt in deiner Region.</li>' +
+              '<li>Jedes Inserat wird nach Preis, Zustand und Risiko bewertet.</li>' +
+              '<li>Du erhältst deinen Report mit Deal-Score und Verhandlungsargumenten.</li>' +
+            '</ol>' +
+            '<div class="ok-meta">' +
+              '<div><span>Anfrage-Nr.</span><strong id="ref-no">' + ui.esc(rec.id) + '</strong></div>' +
+              '<div><span>Paket</span><strong>' + ui.esc(v.paket) + '</strong></div>' +
+              '<div><span>Status</span>' + ui.statusBadge(rec.status) + '</div>' +
+            '</div>' +
+            '<div class="success-actions">' +
+              '<a class="btn-primary" href="#/report/' + ui.esc(rec.id) + '">Beispiel-Report ansehen →</a>' +
+              '<button class="btn-ghost" id="copy-ref" type="button">Anfrage-Nr. kopieren</button>' +
+              '<a class="btn-ghost" href="#/">Zur Startseite</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '';
+
+      ui.render(html);
+
+      var copyBtn = global.document.getElementById('copy-ref');
+      if (copyBtn) copyBtn.addEventListener('click', function () {
+        var done = function () { if (global.TDS.toast) global.TDS.toast.success('Anfrage-Nr. kopiert: ' + rec.id); };
+        if (global.navigator && global.navigator.clipboard) {
+          global.navigator.clipboard.writeText(rec.id).then(done, done);
+        } else { done(); }
+      });
+    });
+  }
+
+  global.TDS = global.TDS || {};
+  global.TDS.views = global.TDS.views || {};
+  global.TDS.views.success = view;
+})(window);
+
+/* ===== js/components/ueber-uns.js ===== */
+/*
+ * components/ueber-uns.js — Über-uns-Seite (Story, Mission, Werte).
  */
 (function (global) {
   'use strict';
 
   var ui = global.TDS.ui;
 
-  function view(ctx) {
-    var path = (ctx && ctx.path) ? ctx.path : '';
+  function value(icon, title, text) {
+    return '<div class="value-card"><div class="value-ico">' + icon + '</div>' +
+      '<div class="value-title">' + ui.esc(title) + '</div>' +
+      '<div class="value-text">' + ui.esc(text) + '</div></div>';
+  }
+
+  function view() {
     var html = '' +
-      '<div class="wrap wrap-narrow">' +
-        '<div class="sec notfound">' +
-          '<div class="nf-code">404</div>' +
-          '<div class="ok-title">Seite nicht gefunden</div>' +
-          '<div class="ok-text">Die Route <span class="mono">' + ui.esc(path) + '</span> gibt es nicht.</div>' +
-          '<div class="success-actions">' +
-            '<a class="btn-primary" href="#/">Zur Startseite</a>' +
-            '<a class="btn-ghost" href="#/form">Anfrage stellen</a>' +
-          '</div>' +
+      '<div class="hero hero-sm"><div class="hero-eye">Über uns</div>' +
+        '<h1>Bessere Töff-Käufe — mit Daten statt Bauchgefühl</h1>' +
+        '<p>Wir machen den unübersichtlichen Occasionsmarkt transparent: ein klarer Report statt stundenlangem Vergleichen.</p></div>' +
+
+      '<div class="wrap wrap-wide">' +
+        '<div class="about-lead sec">' +
+          '<p>Ein gutes gebrauchtes Motorrad zu finden, kostet Nerven: Hunderte Inserate, ' +
+          'schwankende Preise, versteckte Mängel. <strong>Töff Deal Scout</strong> ist entstanden, ' +
+          'weil wir genau dieses Problem selbst hatten — und fanden, dass es besser gehen muss.</p>' +
+          '<p>Unsere Engine vergleicht Angebote mit realistischen Marktwerten, bewertet Risiko und ' +
+          'liefert konkrete Verhandlungsargumente. So entscheidest du sicher statt aus dem Bauch heraus.</p>' +
         '</div>' +
-      '</div>' +
-      '';
+
+        '<div class="section-head"><div class="section-eye">Wofür wir stehen</div>' +
+        '<h2 class="section-title">Unsere Werte</h2></div>' +
+        '<div class="values-grid">' +
+          value('🔍', 'Transparenz', 'Nachvollziehbare Bewertungen statt Black-Box. Du siehst, warum ein Deal gut ist.') +
+          value('⚖️', 'Unabhängigkeit', 'Wir verkaufen keine Motorräder und kassieren keine Vermittlungs-Provision.') +
+          value('🛡️', 'Datenschutz', 'Deine Daten bleiben bei dir. In dieser Demo sogar ausschliesslich im Browser.') +
+          value('🇨🇭', 'DACH-Fokus', 'Quellen und Preise zugeschnitten auf Schweiz, Deutschland, Österreich und Liechtenstein.') +
+        '</div>' +
+
+        '<div class="cta-hero" style="margin-top:48px"><div class="cta-hero-inner">' +
+          '<h2>Probier es aus — kostenlos</h2>' +
+          '<p>In zwei Minuten zu deinem persönlichen Deal-Report.</p>' +
+          '<a class="btn-primary btn-lg" href="#/form">Anfrage starten →</a>' +
+        '</div></div>' +
+      '</div>';
     ui.render(html);
   }
 
   global.TDS = global.TDS || {};
   global.TDS.views = global.TDS.views || {};
-  global.TDS.views.notFound = view;
+  global.TDS.views.ueberUns = view;
 })(window);
 
 /* ===== js/app.js ===== */
