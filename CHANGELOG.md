@@ -2,6 +2,21 @@
 
 Alle nennenswerten Änderungen an Töff Deal Scout.
 
+## 0.3.0 — Council-Runden R39–R58 (Shopify-Style Redesign)
+
+Die Startseite wurde zu einer vollwertigen Marketing-Landingpage ausgebaut.
+
+- **Announcement-Bar** über dem Header
+- **Zweispaltiger Hero** mit Produkt-Visual (Deal-Vorschau-Karte, schwebende Badges)
+- **Trust-Leiste** (Quellen) und dunkles **Statistik-Band**
+- **Alternierende Feature-Blöcke** mit eigenen SVG-Illustrationen
+- **Stepper**, **Testimonials**, aufgewertete **Pricing-Cards** (Empfohlen hervorgehoben), **FAQ**
+- Große **Final-CTA** mit Verlauf; **Mega-Footer** (Spalten, Newsletter, Social)
+- **Live-Beispiel-Report** unter `#/report/demo` (ohne gespeicherte Daten)
+- Report-**KPI-Leiste** (Produktseiten-Gefühl)
+- Design-System: Spacing-/Elevation-Tokens (`--shadow-lg`), Button-Varianten
+  (`btn-lg`, `btn-secondary`), Dark-Mode-Feinschliff, Screen-Reader-Headings
+
 ## 0.2.0 — Council-Runden R1–R38
 
 Iterative Verbesserung durch einen „Council" (Design, Motion, Architektur,

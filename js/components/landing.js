@@ -48,7 +48,8 @@
   /* ---------- Trust / Quellen ---------- */
   function trust() {
     var srcs = ['anibis.ch', 'tutti.ch', 'ricardo.ch', 'mobile.de', 'kleinanzeigen.de', 'willhaben.at', 'autoscout24'];
-    return '<section class="trust-strip"><div class="wrap wrap-wide">' +
+    return '<section class="trust-strip" aria-label="Quellen"><div class="wrap wrap-wide">' +
+      '<h2 class="sr-only">Quellen, die wir durchsuchen</h2>' +
       '<div class="trust-label">Wir durchsuchen u.a.</div>' +
       '<div class="trust-logos">' + srcs.map(function (s) {
         return '<span class="trust-logo">' + ui.esc(s) + '</span>';
@@ -64,7 +65,8 @@
       ['< 24 h', 'bis zum Report', 'nach Anfrage'],
       ['4', 'Länder', 'CH · DE · AT · LI']
     ];
-    return '<section class="stats-band"><div class="wrap wrap-wide"><div class="stats-grid">' +
+    return '<section class="stats-band" aria-label="Kennzahlen"><div class="wrap wrap-wide">' +
+      '<h2 class="sr-only">Kennzahlen</h2><div class="stats-grid">' +
       items.map(function (s) {
         return '<div class="stat"><div class="stat-num">' + ui.esc(s[0]) + '</div>' +
           '<div class="stat-label">' + ui.esc(s[1]) + '</div>' +

@@ -1,6 +1,6 @@
 {
   "name": "toeff-deal-scout",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Töff Deal Scout — Frontend-MVP für eine Motorrad-Kaufberatung (Deal-Scout). Vanilla JS, kein Build, LocalStorage.",
   "scripts": {
