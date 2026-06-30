@@ -1,0 +1,14 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Generierte Demo-Assets (reproduzierbar via generate_assets.py) und Echtdaten.
+# Bewusst NICHT eingecheckt: Demo-Blobs sind reproduzierbar, echte Satzdatenbanken
+# und WKVZ-Vorlagen gehören nicht ins öffentliche Repo.
+data/*.xlsx
+templates/*.docx
+
+# Erzeugte Zeugnisse
+output/*.docx

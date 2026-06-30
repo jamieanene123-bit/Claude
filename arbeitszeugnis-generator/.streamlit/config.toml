@@ -1,0 +1,9 @@
+# Lokaler Betrieb: keine Telemetrie, keine Erstabfrage, deterministischer Start.
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+
+[runner]
+fastReruns = true
