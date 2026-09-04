@@ -2,6 +2,14 @@
 
 Alle nennenswerten Änderungen an Töff Deal Scout.
 
+## Unreleased
+
+- **Fix:** Das Autosave-Intervall des Formulars (30 s) lief nach dem Verlassen
+  der View weiter — im Browser ein Leck, in Node blieb der Event-Loop offen und
+  `npm test` terminierte nie. Views räumen jetzt über den neuen Hook
+  `TDS.ui.onTeardown(fn)` auf, den `render()` beim Wechsel ausführt;
+  `tests/smoke.js` prüft offene Intervalle mit.
+
 ## 0.4.0 — Council-Runden R75–R125
 
 - **Mobile-Navigation** (Burger-Menü, a11y-konform, Esc/Navigation schliessen)

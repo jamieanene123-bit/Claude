@@ -48,6 +48,15 @@ global.localStorage = { getItem: function (k) { return k in store ? store[k] : n
 global.Blob = function () {}; global.URL = { createObjectURL: function () { return 'blob:x'; }, revokeObjectURL: function () {} };
 global.FileReader = function () { this.readAsText = function () {}; };
 
+// Offene Intervalle mitzählen. Eine View, die eines hinterlässt, speichert im
+// Browser für eine längst verlassene Ansicht weiter und hält in Node den
+// Event-Loop offen — npm test terminiert dann nie. Cleanup gehört in
+// TDS.ui.onTeardown(); der Check unten schlägt sonst fehl.
+var liveIntervals = new Set();
+var _setInterval = global.setInterval, _clearInterval = global.clearInterval;
+global.setInterval = function (fn, ms) { var id = _setInterval(fn, ms); liveIntervals.add(id); return id; };
+global.clearInterval = function (id) { liveIntervals.delete(id); return _clearInterval(id); };
+
 var errors = [];
 process.on('unhandledRejection', function (e) { errors.push('unhandledRejection: ' + (e && e.stack || e)); });
 
@@ -85,7 +94,11 @@ T.store.create({ vorname: 'A', nachname: 'B', email: 'a@e.ch', land: 'CH', landL
   setTimeout(function () {
     var h = app.innerHTML;
     ['undefined', '[object Object]', 'NaN'].forEach(function (bad) { if (h.indexOf(bad) >= 0) errors.push('Render enthält "' + bad + '"'); });
+    if (liveIntervals.size) {
+      errors.push(liveIntervals.size + ' Intervall(e) nach dem letzten Render offen — ' +
+        'die View muss sie über TDS.ui.onTeardown() aufräumen');
+    }
     if (errors.length) { console.log('FAIL\n' + errors.join('\n')); process.exit(1); }
-    console.log('SMOKE OK: ' + files.length + ' Module geladen, 8 Views rendern sauber');
+    console.log('SMOKE OK: ' + files.length + ' Module geladen, 8 Views rendern sauber, keine offenen Intervalle');
   }, 40);
 });

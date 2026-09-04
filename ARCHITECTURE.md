@@ -33,6 +33,12 @@ Die Ladereihenfolge in `index.html` spiegelt das wider.
 `render(content)` ergänzt zentral `<header>`, `<main id="main">`-Landmark und
 `<footer>` (DRY + saubere Semantik/a11y) und stösst danach den Motion-Layer an.
 
+**Aufräum-Vertrag:** Was einen Render überlebt (Timer, Observer, globale
+Listener), meldet die View über `TDS.ui.onTeardown(fn)` an. `render()` führt
+diese Funktionen beim nächsten Wechsel aus — noch *bevor* das DOM ersetzt wird,
+damit ein Cleanup seine Elemente vorfindet. `tests/smoke.js` prüft, dass nach
+dem letzten Render kein Intervall mehr offen ist.
+
 **Bewegung:** `core/motion.js` ist der zentrale Motion-Layer (Page-In,
 Scroll-Reveals, Count-up, Chart-Animationen), aktiviert über `render()`. Views
 wissen nichts davon. `prefers-reduced-motion` schaltet alles ab.
