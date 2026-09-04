@@ -517,6 +517,11 @@
     // Zusätzliches Intervall-Autosave (alle 30 s); altes Intervall vermeiden.
     if (draftTimer) clearInterval(draftTimer);
     draftTimer = setInterval(saveDraft, 30000);
+    // Beim Verlassen der View stoppen — sonst speichert der Timer für ein
+    // längst ersetztes Formular weiter und hält den Event-Loop offen.
+    ui.onTeardown(function () {
+      if (draftTimer) { clearInterval(draftTimer); draftTimer = null; }
+    });
 
     // Zeichenzähler für die Prioritäten
     function updPrioCount() {

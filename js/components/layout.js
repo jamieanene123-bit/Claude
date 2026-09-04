@@ -9,11 +9,35 @@
 
   function app() { return global.document.getElementById('app'); }
 
+  /*
+   * Aufräum-Register. Views hinterlegen über onTeardown() eine Funktion für
+   * alles, was einen Render überlebt (Timer, Observer, globale Listener).
+   * Sie läuft beim nächsten render() — also noch bevor das DOM der View
+   * ersetzt wird, damit das Cleanup seine Elemente noch vorfindet.
+   *
+   * Ohne das läuft z.B. ein setInterval einer längst verlassenen View weiter:
+   * im Browser ein Leck, in Node hält es den Event-Loop offen (npm test
+   * terminiert dann nie).
+   */
+  var cleanups = [];
+
+  function onTeardown(fn) {
+    if (typeof fn === 'function') cleanups.push(fn);
+  }
+
+  function teardown() {
+    var pending = cleanups;
+    cleanups = [];
+    // Ein defektes Cleanup darf den Seitenwechsel nicht blockieren.
+    pending.forEach(function (fn) { try { fn(); } catch (e) {} });
+  }
+
   /**
    * Rendert eine View. Views liefern nur den Inhalt; Header, <main>-Landmark
    * und Footer werden hier zentral ergänzt (DRY + saubere Semantik/a11y).
    */
   function render(content) {
+    teardown(); // Ressourcen der vorherigen View freigeben, DOM steht noch
     var el = app();
     el.innerHTML = header() +
       '<main id="main" class="main" tabindex="-1">' + content + '</main>' +
@@ -125,6 +149,8 @@
   global.TDS = global.TDS || {};
   global.TDS.ui = {
     render: render,
+    onTeardown: onTeardown,
+    teardown: teardown,
     esc: esc,
     header: header,
     footer: footer,

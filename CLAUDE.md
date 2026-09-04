@@ -39,6 +39,10 @@ Im Browser: `tests.html` öffnen für die visuelle Test-Übersicht.
   `<main>`-Landmark und Footer. KEIN `ui.header()/ui.footer()` mehr in Views.
 - **Bewegung** ist zentral in `core/motion.js` (läuft via `render()`); Views
   brauchen nichts zu tun. `prefers-reduced-motion` wird respektiert.
+- **Aufräumen beim View-Wechsel:** Alles, was einen Render überlebt (Timer,
+  Observer, globale Listener), über `TDS.ui.onTeardown(fn)` anmelden — `render()`
+  führt es beim nächsten Wechsel aus. Ein vergessenes `setInterval` lässt
+  `npm test` nie terminieren; der Smoke-Test schlägt dafür jetzt fehl.
 - **Datei-Download** über `TDS.dom.download(...)`, **Demo-Daten** über
   `TDS.data.demo.samples()` — nicht duplizieren.
 - HTML aus Nutzerdaten immer mit `TDS.ui.esc(...)` escapen; Formatierung über `TDS.format`.
